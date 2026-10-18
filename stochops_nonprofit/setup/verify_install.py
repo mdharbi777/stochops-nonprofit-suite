@@ -20,6 +20,9 @@ EXPECTED_REPORTS = [
 def run():
     doctypes = frappe.get_all("DocType", filters={"module": "Stochops Nonprofit"}, pluck="name")
     reports = frappe.get_all("Report", filters={"module": "Stochops Nonprofit"}, pluck="name")
+    notifications = frappe.get_all(
+        "Notification", filters={"channel": "System Notification", "enabled": 1}, pluck="name"
+    )
     result = {
         "doctypes_ok": sorted(EXPECTED_DOCTYPES) == sorted(doctypes),
         "doctypes": sorted(doctypes),
@@ -27,11 +30,14 @@ def run():
         "reports_ok": all(r in reports for r in EXPECTED_REPORTS),
         "reports": sorted(reports),
         "dashboard_page_ok": bool(frappe.db.exists("Page", "nonprofit-dashboard")),
+        "notifications_ok": len(notifications) >= 6,
+        "notifications_count": len(notifications),
     }
     result["all_ok"] = (
         result["doctypes_ok"]
         and result["roles_ok"]
         and result["reports_ok"]
         and result["dashboard_page_ok"]
+        and result["notifications_ok"]
     )
     return result

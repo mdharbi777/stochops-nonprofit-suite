@@ -26,6 +26,12 @@
 - **Decisions by Committee**: متابعة القرارات حسب اللجنة/المسؤول/الحالة.
 - التصدير CSV من زر Actions وفق صلاحياتك.
 
+### الإشعارات داخل التطبيق
+تصلك إشعارات في **جرس Frappe** (أعلى الشاشة) تلقائياً:
+- **عند إسناد** قرار/مهمة إليك.
+- **قبل يومين** من تاريخ الاستحقاق، و**بعد يوم** من التأخير (إن لم يكن مكتملاً/ملغى).
+> تحتاج إشعارات «قبل/بعد الموعد» أن يكون **Scheduler** مفعّلاً (`bench --site <site> scheduler enable` + `bench start`/supervisor). بلا قنوات SMS/بريد مدفوعة.
+
 ### بيانات تجريبية
 لتعبئة عيّنة آمنة: `bench --site nonprofit.localhost execute stochops_nonprofit.setup.seed_demo.run` — وللحذف: `...seed_demo.clear`.
 

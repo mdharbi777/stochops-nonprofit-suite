@@ -220,3 +220,31 @@ class TestDashboardMetrics(FrappeTestCase):
         finally:
             frappe.set_user("Administrator")
         self.assertEqual(metrics["decisions_non_cancelled"], 0)
+
+
+class TestNotifications(FrappeTestCase):
+    """إعداد الإشعارات داخل التطبيق موجود ومفعّل (قناة System Notification، بلا قنوات مدفوعة)."""
+
+    def test_system_notifications_present_and_enabled(self):
+        from stochops_nonprofit.setup.notifications import NOTIFICATIONS
+
+        for n in NOTIFICATIONS:
+            exists = frappe.db.exists(
+                "Notification",
+                {
+                    "subject": n["subject"],
+                    "document_type": n["document_type"],
+                    "channel": "System Notification",
+                    "enabled": 1,
+                },
+            )
+            self.assertTrue(exists, f"إشعار مفقود/معطّل: {n['subject']}")
+
+    def test_no_paid_channels(self):
+        # لا إشعارات SMS/بريد في MVP — كلها System Notification فقط
+        paid = frappe.get_all(
+            "Notification",
+            filters={"channel": ["in", ["SMS", "Email"]], "document_type": ["in", ["Decision", "Initiative Task"]]},
+            pluck="name",
+        )
+        self.assertEqual(paid, [])
