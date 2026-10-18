@@ -1,0 +1,18 @@
+{
+ "content": null,
+ "creation": "2026-10-18 00:00:00.000000",
+ "doctype": "Page",
+ "module": "Stochops Nonprofit",
+ "name": "nonprofit-dashboard",
+ "owner": "Administrator",
+ "page_name": "nonprofit-dashboard",
+ "roles": [
+  {"role": "Nonprofit Admin"},
+  {"role": "Executive Viewer"},
+  {"role": "Committee Coordinator"},
+  {"role": "Program Coordinator"}
+ ],
+ "standard": "Yes",
+ "system_page": 0,
+ "title": "لوحة الجمعية"
+}

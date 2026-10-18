@@ -2,6 +2,8 @@ import frappe
 from frappe.tests.utils import FrappeTestCase
 from frappe.utils import add_days, today
 
+from stochops_nonprofit.dashboard_metrics import compute
+
 
 def make_user(email, roles):
     if frappe.db.exists("User", email):
@@ -148,3 +150,73 @@ class TestDecision(FrappeTestCase):
         self.assertTrue(can_read)
         self.assertFalse(can_write)
         self.assertFalse(can_create)
+
+
+class TestDashboardMetrics(FrappeTestCase):
+    """الوحدة 3: المؤشرات — تطابق رقمي + حدود الفترة + الصلاحيات."""
+
+    def setUp(self):
+        self.tok = frappe.generate_hash(length=6)
+        self.committee = make_committee(f"لجنة لوحة {self.tok}")
+        self.meeting = make_meeting(self.committee, "اجتماع لوحة")
+
+    def _dec(self, status, due, note=None):
+        d = frappe.get_doc(
+            {"doctype": "Decision", "meeting": self.meeting, "title": f"قرار لوحة {self.tok}",
+             "decision_owner": "Administrator", "due_date": due}
+        ).insert()
+        if status != "Open":
+            d.status = status
+            if status == "Completed":
+                d.completion_note = note or "تم"
+            d.save()
+        return d
+
+    def test_decision_counts_delta(self):
+        base = compute()
+        self._dec("Open", add_days(today(), -3))        # overdue
+        self._dec("In Progress", add_days(today(), 5))
+        self._dec("Cancelled", today())                 # excluded
+        self._dec("Completed", add_days(today(), -1), "ok")  # completed today (in current month)
+        after = compute()
+        self.assertEqual(after["decisions_non_cancelled"] - base["decisions_non_cancelled"], 3)
+        self.assertEqual(after["decisions_open_inprogress"] - base["decisions_open_inprogress"], 2)
+        self.assertEqual(after["decisions_overdue"] - base["decisions_overdue"], 1)
+        self.assertEqual(after["decisions_completed_in_period"] - base["decisions_completed_in_period"], 1)
+
+    def test_budget_sums_exclude_missing(self):
+        base = compute()
+        frappe.get_doc(
+            {"doctype": "Initiative", "title": f"ب {self.tok}", "initiative_owner": "Administrator",
+             "objective": "x", "start_date": today(), "end_date": add_days(today(), 10),
+             "planned_budget_sar": 1000, "actual_spend_sar": 400}
+        ).insert()
+        frappe.get_doc(
+            {"doctype": "Initiative", "title": f"ب بلا ميزانية {self.tok}", "initiative_owner": "Administrator",
+             "objective": "x", "start_date": today(), "end_date": add_days(today(), 10)}
+        ).insert()
+        after = compute()
+        self.assertEqual(after["total_planned_budget"] - base["total_planned_budget"], 1000)
+        self.assertEqual(after["total_actual_spend"] - base["total_actual_spend"], 400)
+        self.assertEqual(after["initiatives_without_budget"] - base["initiatives_without_budget"], 1)
+
+    def test_completed_outside_period_excluded(self):
+        base = compute("2020-01-01", "2020-01-31")
+        self._dec("Completed", today(), "ok")
+        after = compute("2020-01-01", "2020-01-31")
+        self.assertEqual(after["decisions_completed_in_period"], base["decisions_completed_in_period"])
+
+    def test_permission_scope_zero_for_other_committee(self):
+        self._dec("Open", today())
+        user = make_user(f"dash_{self.tok}@test.local", ["Committee Coordinator"])
+        other = make_committee(f"لجنة أخرى {self.tok}")
+        frappe.get_doc(
+            {"doctype": "User Permission", "user": user, "allow": "Committee",
+             "for_value": other, "apply_to_all_doctypes": 1}
+        ).insert(ignore_permissions=True)
+        frappe.set_user(user)
+        try:
+            metrics = compute()
+        finally:
+            frappe.set_user("Administrator")
+        self.assertEqual(metrics["decisions_non_cancelled"], 0)
