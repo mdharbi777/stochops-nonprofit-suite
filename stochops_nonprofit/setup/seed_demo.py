@@ -81,13 +81,73 @@ def run():
             d.save()
         out["decisions"].append(d.name)
 
+    # --- المبادرات والمهام (الوحدة 2) — أعداد إجمالية فقط، بلا أي بيانات مستفيدين ---
+    init_specs = [
+        {"title": f"برنامج التأهيل {TAG}", "status": "Active", "start": add_days(today(), -30), "end": add_days(today(), 60),
+         "objective": "تأهيل (عدد إجمالي)", "planned": 50000, "actual": 32000, "target": 200, "actual_count": 120, "unit": "مستفيد (عدد إجمالي فقط)"},
+        {"title": f"مبادرة التوعية {TAG}", "status": "Completed", "start": add_days(today(), -90), "end": add_days(today(), -10),
+         "objective": "حملات توعية", "planned": 15000, "actual": 16500, "note": "أُغلقت بنجاح", "target": 10, "actual_count": 10, "unit": "نشاط"},
+        {"title": f"مشروع التطوير المؤسسي {TAG}", "status": "Planned", "start": today(), "end": add_days(today(), 120),
+         "objective": "تطوير الإجراءات الداخلية"},
+    ]
+    initiatives = []
+    for s in init_specs:
+        existing = frappe.db.get_value("Initiative", {"title": s["title"]})
+        if existing:
+            initiatives.append(existing)
+            continue
+        doc = frappe.get_doc(
+            {
+                "doctype": "Initiative", "title": s["title"], "initiative_owner": "Administrator",
+                "objective": s["objective"], "start_date": s["start"], "end_date": s["end"],
+                "planned_budget_sar": s.get("planned"), "actual_spend_sar": s.get("actual"),
+                "target_count": s.get("target"), "actual_count": s.get("actual_count"), "target_unit": s.get("unit"),
+            }
+        )
+        doc.insert()
+        if s["status"] != "Planned":
+            doc.status = s["status"]
+            if s.get("note"):
+                doc.closing_note = s["note"]
+            doc.save()
+        initiatives.append(doc.name)
+    out["initiatives"] = initiatives
+
+    task_specs = [
+        {"initiative": initiatives[0], "title": f"إعداد الخطة {TAG}", "status": "Completed", "due": add_days(today(), -20), "note": "أُنجز"},
+        {"initiative": initiatives[0], "title": f"تنفيذ الأنشطة {TAG}", "status": "In Progress", "due": add_days(today(), 15)},
+        {"initiative": initiatives[0], "title": f"تقرير المتابعة {TAG}", "status": "Open", "due": add_days(today(), -2)},
+        {"initiative": initiatives[1], "title": f"إغلاق الحملة {TAG}", "status": "Completed", "due": add_days(today(), -12), "note": "تم"},
+    ]
+    tasks = []
+    for s in task_specs:
+        if frappe.db.exists("Initiative Task", {"title": s["title"]}):
+            continue
+        d = frappe.get_doc(
+            {"doctype": "Initiative Task", "initiative": s["initiative"], "title": s["title"], "assigned_to": "Administrator", "due_date": s["due"]}
+        )
+        d.insert()
+        if s["status"] != "Open":
+            d.status = s["status"]
+            if s.get("note"):
+                d.completion_note = s["note"]
+            d.save()
+        tasks.append(d.name)
+    out["tasks"] = tasks
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"decisions": 0, "meetings": 0, "committees": 0}
+    deleted = {"tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Initiative Task", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Initiative Task", name, force=1)
+        deleted["tasks"] += 1
+    for name in frappe.get_all("Initiative", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Initiative", name, force=1)
+        deleted["initiatives"] += 1
     for name in frappe.get_all("Decision", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Decision", name, force=1)
         deleted["decisions"] += 1
