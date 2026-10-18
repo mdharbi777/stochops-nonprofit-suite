@@ -1,0 +1,37 @@
+"""التحقق من سلامة التثبيت — يُشغّل بعد install-app/migrate على أي موقع.
+
+bench --site <site> execute stochops_nonprofit.setup.verify_install.run
+يعيد ملخّصاً بوجود الـ DocTypes والأدوار والتقارير ولوحة المؤشرات (للتسليم/الفحص).
+"""
+import frappe
+
+EXPECTED_DOCTYPES = [
+    "Committee", "Meeting", "Decision", "Decision Follow-up",
+    "Initiative", "Initiative Task",
+]
+EXPECTED_ROLES = [
+    "Nonprofit Admin", "Executive Viewer", "Committee Coordinator", "Program Coordinator",
+]
+EXPECTED_REPORTS = [
+    "Overdue Decisions", "Decisions by Committee", "Initiatives Overview", "Executive Summary",
+]
+
+
+def run():
+    doctypes = frappe.get_all("DocType", filters={"module": "Stochops Nonprofit"}, pluck="name")
+    reports = frappe.get_all("Report", filters={"module": "Stochops Nonprofit"}, pluck="name")
+    result = {
+        "doctypes_ok": sorted(EXPECTED_DOCTYPES) == sorted(doctypes),
+        "doctypes": sorted(doctypes),
+        "roles_ok": all(frappe.db.exists("Role", r) for r in EXPECTED_ROLES),
+        "reports_ok": all(r in reports for r in EXPECTED_REPORTS),
+        "reports": sorted(reports),
+        "dashboard_page_ok": bool(frappe.db.exists("Page", "nonprofit-dashboard")),
+    }
+    result["all_ok"] = (
+        result["doctypes_ok"]
+        and result["roles_ok"]
+        and result["reports_ok"]
+        and result["dashboard_page_ok"]
+    )
+    return result
