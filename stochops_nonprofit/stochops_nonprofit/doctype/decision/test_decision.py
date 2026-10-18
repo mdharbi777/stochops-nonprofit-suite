@@ -116,7 +116,14 @@ class TestDecision(FrappeTestCase):
             }
         ).insert().name
 
+        # ضمن نفس الجمعية: تقييد إضافي على مستوى اللجنة عبر User Permission
+        ch = frappe.get_doc(
+            {"doctype": "Charity", "charity_name": f"جمعية العزل {self.tok}"}
+        ).insert(ignore_permissions=True).name
+        for d in (dec_a, dec_b):
+            frappe.db.set_value("Decision", d, "charity", ch)
         user = make_user("coord_a@test.local", ["Committee Coordinator"])
+        frappe.db.set_value("User", user, "charity", ch)
         frappe.get_doc(
             {
                 "doctype": "User Permission",

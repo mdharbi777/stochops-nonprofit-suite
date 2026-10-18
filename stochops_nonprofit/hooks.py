@@ -5,8 +5,35 @@ app_description = "Nonprofit Operations Suite for Saudi charities"
 app_email = "mohd.s.alharbi@gmail.com"
 app_license = "Proprietary"  # الرخصة معلّقة — ليست مفتوحة المصدر (انظر LICENSE)
 
-# خطوات ما بعد التثبيت: الأدوار + الإشعارات داخل التطبيق (idempotent)
+# خطوات ما بعد التثبيت: الأدوار + الإشعارات + حقل الجمعية على المستخدم (idempotent)
 after_install = "stochops_nonprofit.setup.install.after_install"
+
+# ===== عزل متعدّد الجمعيات (multi-tenancy) =====
+permission_query_conditions = {
+    "Committee": "stochops_nonprofit.multitenancy.committee_query",
+    "Meeting": "stochops_nonprofit.multitenancy.meeting_query",
+    "Decision": "stochops_nonprofit.multitenancy.decision_query",
+    "Initiative": "stochops_nonprofit.multitenancy.initiative_query",
+    "Initiative Task": "stochops_nonprofit.multitenancy.initiative_task_query",
+    "Charity": "stochops_nonprofit.multitenancy.charity_query",
+}
+
+has_permission = {
+    "Committee": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Meeting": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Decision": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Initiative": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Initiative Task": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
+}
+
+doc_events = {
+    "Committee": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Meeting": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Decision": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Initiative": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Initiative Task": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+}
 
 # Apps
 # ------------------

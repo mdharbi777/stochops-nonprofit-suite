@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:charity_name",
+ "creation": "2026-10-18 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "charity_name",
+  "registration_number",
+  "status",
+  "col_break_1",
+  "contact_email",
+  "contact_mobile",
+  "max_accounts"
+ ],
+ "fields": [
+  {"fieldname": "charity_name", "fieldtype": "Data", "label": "اسم الجمعية", "reqd": 1, "unique": 1, "in_list_view": 1},
+  {"fieldname": "registration_number", "fieldtype": "Data", "label": "رقم التسجيل/الترخيص", "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "Active\nSuspended", "default": "Active", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "contact_email", "fieldtype": "Data", "label": "البريد الرسمي", "options": "Email"},
+  {"fieldname": "contact_mobile", "fieldtype": "Data", "label": "جوال التواصل"},
+  {"fieldname": "max_accounts", "fieldtype": "Int", "label": "حد الحسابات", "default": "5", "non_negative": 1}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-18 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Charity",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Stochops Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "print": 1, "email": 1, "share": 1},
+  {"role": "Nonprofit Admin", "read": 1, "print": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -22,7 +22,8 @@
   "evidence",
   "sec_followup",
   "last_followup",
-  "follow_ups"
+  "follow_ups",
+  "charity"
  ],
  "fields": [
   {
@@ -131,6 +132,14 @@
    "fieldtype": "Table",
    "label": "سجل المتابعات",
    "options": "Decision Follow-up"
+  },
+  {
+   "fieldname": "charity",
+   "fieldtype": "Link",
+   "label": "الجمعية",
+   "options": "Charity",
+   "read_only": 1,
+   "in_standard_filter": 1
   }
  ],
  "index_web_pages_for_search": 1,

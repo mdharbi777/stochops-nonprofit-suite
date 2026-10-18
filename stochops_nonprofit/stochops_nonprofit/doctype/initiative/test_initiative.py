@@ -75,7 +75,14 @@ class TestInitiative(FrappeTestCase):
     def test_isolation_via_api(self):
         a = make_initiative(f"مبادرة أ {self.tok}").name
         b = make_initiative(f"مبادرة ب {self.tok}").name
+        # ضمن نفس الجمعية: تقييد إضافي على مستوى المبادرة عبر User Permission
+        ch = frappe.get_doc(
+            {"doctype": "Charity", "charity_name": f"جمعية العزل {self.tok}"}
+        ).insert(ignore_permissions=True).name
+        for i in (a, b):
+            frappe.db.set_value("Initiative", i, "charity", ch)
         user = make_user(f"pcoord_{self.tok}@test.local", ["Program Coordinator"])
+        frappe.db.set_value("User", user, "charity", ch)
         frappe.get_doc(
             {"doctype": "User Permission", "user": user, "allow": "Initiative",
              "for_value": a, "apply_to_all_doctypes": 1}

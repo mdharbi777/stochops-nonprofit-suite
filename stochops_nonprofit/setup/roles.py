@@ -3,6 +3,7 @@ import frappe
 # أدوار الوحدة الأولى (القرارات واللجان). Program Coordinator يُستخدم في الوحدة الثانية
 # لكن يُنشأ الآن حتى تكون مصفوفة الأدوار كاملة.
 MODULE_ROLES = [
+    "Stochops Admin",  # مشغّل المنصة (يرى كل الجمعيات) — platform operator
     "Nonprofit Admin",
     "Executive Viewer",
     "Committee Coordinator",

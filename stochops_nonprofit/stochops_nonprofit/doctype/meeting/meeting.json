@@ -16,7 +16,8 @@
   "approved_by",
   "approved_on",
   "minutes_attachment",
-  "notes"
+  "notes",
+  "charity"
  ],
  "fields": [
   {
@@ -83,6 +84,14 @@
    "fieldname": "notes",
    "fieldtype": "Small Text",
    "label": "ملاحظات"
+  },
+  {
+   "fieldname": "charity",
+   "fieldtype": "Link",
+   "label": "الجمعية",
+   "options": "Charity",
+   "read_only": 1,
+   "in_standard_filter": 1
   }
  ],
  "index_web_pages_for_search": 1,

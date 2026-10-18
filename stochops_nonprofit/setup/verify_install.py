@@ -6,10 +6,12 @@ bench --site <site> execute stochops_nonprofit.setup.verify_install.run
 import frappe
 
 EXPECTED_DOCTYPES = [
+    "Charity",
     "Committee", "Meeting", "Decision", "Decision Follow-up",
     "Initiative", "Initiative Task",
 ]
 EXPECTED_ROLES = [
+    "Stochops Admin",
     "Nonprofit Admin", "Executive Viewer", "Committee Coordinator", "Program Coordinator",
 ]
 EXPECTED_REPORTS = [
@@ -32,6 +34,7 @@ def run():
         "dashboard_page_ok": bool(frappe.db.exists("Page", "nonprofit-dashboard")),
         "notifications_ok": len(notifications) >= 6,
         "notifications_count": len(notifications),
+        "user_charity_field_ok": frappe.db.has_column("User", "charity"),
     }
     result["all_ok"] = (
         result["doctypes_ok"]
@@ -39,5 +42,6 @@ def run():
         and result["reports_ok"]
         and result["dashboard_page_ok"]
         and result["notifications_ok"]
+        and result["user_charity_field_ok"]
     )
     return result
