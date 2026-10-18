@@ -56,6 +56,8 @@
 
 **التأخير صفة مشتقة** (لا تُخزَّن): `due_date < today` و`status ∉ {Completed, Cancelled}`.
 
+> **حقل مُضاف أثناء Sprint 1 (موثّق):** `committee` (Link → Committee, read-only, `fetch_from: meeting.committee`) — يُجلب تلقائياً من الاجتماع. أُضيف لتمكين **عزل السجلات بين اللجان** عبر User Permissions (اختبارات U1-05/06/07)، لأن القرار يرتبط بالاجتماع لا باللجنة مباشرةً.
+
 ## 4. Decision Follow-up (متابعة قرار) — Child Table
 | الحقل | النوع | قيود |
 |---|---|---|

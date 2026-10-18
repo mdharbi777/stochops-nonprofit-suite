@@ -1,0 +1,63 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-10-18 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": [
+  "followup_date",
+  "update_text",
+  "updated_by",
+  "previous_status",
+  "new_status"
+ ],
+ "fields": [
+  {
+   "fieldname": "followup_date",
+   "fieldtype": "Datetime",
+   "label": "تاريخ المتابعة",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "update_text",
+   "fieldtype": "Small Text",
+   "label": "التحديث",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "updated_by",
+   "fieldtype": "Link",
+   "label": "بواسطة",
+   "options": "User",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "previous_status",
+   "fieldtype": "Data",
+   "label": "الحالة السابقة",
+   "read_only": 1
+  },
+  {
+   "fieldname": "new_status",
+   "fieldtype": "Data",
+   "label": "الحالة الجديدة",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-10-18 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Decision Follow-up",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

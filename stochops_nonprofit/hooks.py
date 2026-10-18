@@ -3,7 +3,10 @@ app_title = "Stochops Nonprofit"
 app_publisher = "STOCHOPS"
 app_description = "Nonprofit Operations Suite for Saudi charities"
 app_email = "mohd.s.alharbi@gmail.com"
-app_license = "mit"
+app_license = "Proprietary"  # الرخصة معلّقة — ليست مفتوحة المصدر (انظر LICENSE)
+
+# إنشاء أدوار التطبيق عند التثبيت (idempotent)
+after_install = "stochops_nonprofit.setup.roles.ensure_roles"
 
 # Apps
 # ------------------
