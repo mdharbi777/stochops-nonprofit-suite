@@ -246,14 +246,48 @@ def run():
         )
     out["obligations"] = obligations
 
+    # --- الموارد البشرية والعقود والمشتريات (الوحدة N6) — بيانات وهمية، بلا رواتب فعلية ---
+    person_specs = [
+        {"full_name": f"موظف إداري {TAG}", "personnel_type": "موظف", "job_title": "منسق إداري", "national_id": "1050000001"},
+        {"full_name": f"متطوّع {TAG}", "personnel_type": "متطوّع", "job_title": "متطوّع برامج"},
+    ]
+    people = []
+    for s in person_specs:
+        existing = frappe.db.get_value("Personnel", {"full_name": s["full_name"]})
+        people.append(existing or frappe.get_doc({"doctype": "Personnel", **s}).insert().name)
+    out["personnel"] = people
+
+    if not frappe.db.exists("Contract", {"contract_title": f"عقد عمل {TAG}"}):
+        out["contracts"] = [frappe.get_doc(
+            {"doctype": "Contract", "contract_title": f"عقد عمل {TAG}", "contract_type": "عمل",
+             "personnel": people[0], "start_date": add_days(today(), -60), "end_date": add_days(today(), 120),
+             "value": 0, "status": "ساري"}
+        ).insert().name]
+
+    if not frappe.db.exists("Procurement Request", {"title": f"شراء أجهزة {TAG}"}):
+        out["procurements"] = [frappe.get_doc(
+            {"doctype": "Procurement Request", "request_date": today(), "title": f"شراء أجهزة {TAG}",
+             "category": "أجهزة", "amount": 7000, "status": "مقدّم"}
+        ).insert().name]
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"obligations": 0, "expenses": 0, "grants": 0, "donations": 0, "donors": 0, "requests": 0,
-               "beneficiaries": 0, "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    deleted = {"procurements": 0, "contracts": 0, "personnel": 0, "obligations": 0, "expenses": 0, "grants": 0,
+               "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0, "tasks": 0, "initiatives": 0,
+               "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Procurement Request", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Procurement Request", name, force=1)
+        deleted["procurements"] += 1
+    for name in frappe.get_all("Contract", filters=[["contract_title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Contract", name, force=1)
+        deleted["contracts"] += 1
+    for name in frappe.get_all("Personnel", filters=[["full_name", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Personnel", name, force=1)
+        deleted["personnel"] += 1
     for name in frappe.get_all("Compliance Obligation", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Compliance Obligation", name, force=1)
         deleted["obligations"] += 1

@@ -96,6 +96,18 @@ def compliance_obligation_query(user):
     return _condition(user, "Compliance Obligation")
 
 
+def personnel_query(user):
+    return _condition(user, "Personnel")
+
+
+def contract_query(user):
+    return _condition(user, "Contract")
+
+
+def procurement_request_query(user):
+    return _condition(user, "Procurement Request")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):

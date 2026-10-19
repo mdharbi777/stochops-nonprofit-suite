@@ -53,6 +53,12 @@ NOTIFICATIONS = [
         "subject": "التزام متأخر: {{ doc.title }}",
         "message": "تجاوز تاريخ الاستحقاق: {{ doc.due_date }} — الجهة: {{ doc.authority }}",
     },
+    {
+        "document_type": "Contract", "event": "Days Before", "date": "end_date", "days": 30,
+        "field": "responsible", "condition": "doc.status not in ['منتهٍ', 'ملغى']",
+        "subject": "عقد يقترب انتهاؤه: {{ doc.contract_title }}",
+        "message": "تاريخ الانتهاء: {{ doc.end_date }}",
+    },
 ]
 
 

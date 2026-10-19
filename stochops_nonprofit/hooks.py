@@ -24,6 +24,9 @@ permission_query_conditions = {
     "Grant": "stochops_nonprofit.multitenancy.grant_query",
     "Expense Request": "stochops_nonprofit.multitenancy.expense_request_query",
     "Compliance Obligation": "stochops_nonprofit.multitenancy.compliance_obligation_query",
+    "Personnel": "stochops_nonprofit.multitenancy.personnel_query",
+    "Contract": "stochops_nonprofit.multitenancy.contract_query",
+    "Procurement Request": "stochops_nonprofit.multitenancy.procurement_request_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -40,6 +43,9 @@ has_permission = {
     "Grant": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Expense Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Compliance Obligation": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Personnel": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Contract": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Procurement Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -56,6 +62,9 @@ doc_events = {
     "Grant": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Expense Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Compliance Obligation": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Personnel": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Contract": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Procurement Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الموظفون والعقود | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#fbbf24; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; overflow-x:auto; }
+    .panel h3 { color:#fff; font-size:16px; margin-bottom:6px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:13.5px; white-space:nowrap; }
+    th { color:var(--muted); font-weight:500; }
+    .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; background:rgba(148,163,184,.15); color:var(--muted); }
+    .pill.on { background:rgba(34,197,94,.14); color:var(--green); } .pill.soon { background:rgba(251,191,36,.15); color:var(--amber); } .pill.off { background:rgba(248,113,113,.14); color:var(--red); }
+    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
+    input, select { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
+    input:focus, select:focus { outline:none; border-color:var(--blue); }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
+    .btn-sm { background:transparent; border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 12px; font-size:13px; font-family:inherit; cursor:pointer; } .btn-sm:hover{ border-color:var(--cyan); }
+    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
+    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    .mono { font-variant-numeric:tabular-nums; letter-spacing:1px; }
+    @media (max-width:720px){ .grid3{ grid-template-columns:1fr; } th,td{ white-space:normal; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التشغيل</a>
+        <a href="/nos/procurement">المشتريات</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var TODAY = "{{ frappe.utils.today() }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+    var PEOPLE = [];
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function today(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+    function api(method, args, isPost){
+      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
+      var url = "/api/method/" + method;
+      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
+      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>الموظفون والعقود</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { render(); }
+
+    function render(){
+      Promise.all([
+        api("frappe.client.get_list", {doctype:"Personnel", fields:JSON.stringify(["name","full_name","personnel_type","job_title","status"]), order_by:"creation desc", limit_page_length:0}),
+        api("frappe.client.get_list", {doctype:"Contract", fields:JSON.stringify(["name","contract_title","contract_type","end_date","status"]), order_by:"end_date asc", limit_page_length:0})
+      ]).then(function(r){
+        if(!r[0].ok){ app.innerHTML='<div class="center"><h1>الموظفون</h1><p class="msg err" style="display:block">'+esc(errMsg(r[0]))+'</p></div>'; return; }
+        PEOPLE = r[0].j.message||[];
+        var pRows = PEOPLE.map(function(p){
+          var st = p.status==="نشط"?'<span class="pill on">نشط</span>':(p.status==="موقوف"?'<span class="pill off">موقوف</span>':'<span class="pill">منتهٍ</span>');
+          return '<tr><td>'+esc(p.full_name)+'</td><td>'+esc(p.personnel_type||"")+'</td><td>'+esc(p.job_title||"—")+'</td><td>'+st+'</td>'+
+            '<td><button class="btn-sm" onclick="reveal(\''+esc(p.name)+'\',this)">كشف الهوية</button></td></tr>';
+        }).join("");
+        var cRows = (r[1].ok?r[1].j.message:[]||[]).map(function(c){
+          var exp = c.end_date && c.end_date < TODAY && c.status!=="منتهٍ" && c.status!=="ملغى";
+          var soon = c.end_date && !exp && c.status==="ساري";
+          var badge = exp ? ' <span class="pill off">منتهٍ المدة</span>' : '';
+          return '<tr><td>'+esc(c.contract_title)+'</td><td>'+esc(c.contract_type||"")+'</td><td>'+esc(c.end_date||"—")+badge+'</td><td>'+esc(c.status)+'</td></tr>';
+        }).join("");
+        var opts = '<option value="">—</option>'+PEOPLE.map(function(p){ return '<option value="'+esc(p.name)+'">'+esc(p.full_name)+'</option>'; }).join("");
+        app.innerHTML =
+          '<h1>الموظفون والمتطوعون والعقود</h1>'+
+          '<p class="muted">سجلّ الموارد البشرية والعقود، معزول بجمعيتك.</p>'+
+          '<div class="note">بيانات HR أدنى — <b>بلا رواتب فعلية ولا تكامل تأمينات</b>. رقم الهوية مشفّر ومحجوب (كشفه لمدير الجمعية فقط). قيمة العقد تسجيل فقط. تنبيه انتهاء العقد داخل النظام.</div>'+
+          '<div class="panel"><h3>الموظفون/المتطوعون</h3><table><thead><tr><th>الاسم</th><th>النوع</th><th>المسمّى</th><th>الحالة</th><th>الهوية</th></tr></thead><tbody>'+
+            (pRows||'<tr><td colspan="5" class="muted" style="text-align:center;padding:20px">لا سجلات بعد.</td></tr>')+'</tbody></table>'+
+            '<div class="grid3" style="margin-top:14px">'+
+              '<div><label>الاسم</label><input id="p_name"></div>'+
+              '<div><label>النوع</label><select id="p_type"><option>موظف</option><option>متطوّع</option></select></div>'+
+              '<div><label>رقم الهوية (10 أرقام)</label><input id="p_nid" inputmode="numeric"></div>'+
+              '<div><label>المسمّى الوظيفي</label><input id="p_title"></div>'+
+              '<div><label>الجوال</label><input id="p_phone"></div>'+
+              '<div><label>تاريخ المباشرة</label><input id="p_join" type="date"></div>'+
+            '</div><div style="margin-top:12px"><button class="btn" id="pbtn" onclick="addPerson()">إضافة</button></div>'+
+            '<div class="msg" id="pmsg"></div></div>'+
+          '<div class="panel"><h3>العقود</h3><table><thead><tr><th>العنوان</th><th>النوع</th><th>الانتهاء</th><th>الحالة</th></tr></thead><tbody>'+
+            (cRows||'<tr><td colspan="4" class="muted" style="text-align:center;padding:20px">لا عقود بعد.</td></tr>')+'</tbody></table>'+
+            '<div class="grid3" style="margin-top:14px">'+
+              '<div><label>عنوان العقد</label><input id="c_title"></div>'+
+              '<div><label>النوع</label><select id="c_type"><option>عمل</option><option>خدمات</option><option>تطوّع</option><option>إيجار</option><option>أخرى</option></select></div>'+
+              '<div><label>الموظف (اختياري)</label><select id="c_person">'+opts+'</select></div>'+
+              '<div><label>البداية</label><input id="c_start" type="date"></div>'+
+              '<div><label>الانتهاء</label><input id="c_end" type="date"></div>'+
+              '<div><label>القيمة (ريال، تسجيل)</label><input id="c_value" type="number" min="0"></div>'+
+            '</div><div style="margin-top:12px"><button class="btn" id="cbtn" onclick="addContract()">إضافة عقد</button></div>'+
+            '<div class="msg" id="cmsg"></div></div>';
+      });
+    }
+
+    function show(id, type, text){ var m=document.getElementById(id); if(!m)return; m.className="msg "+type; m.textContent=text; }
+
+    window.addPerson = function(){
+      var name=document.getElementById("p_name").value.trim();
+      if(!name){ show("pmsg","err","الاسم مطلوب."); return; }
+      var nid=document.getElementById("p_nid").value.trim();
+      if(nid && !/^\d{10}$/.test(nid)){ show("pmsg","err","رقم الهوية يجب أن يكون 10 أرقام."); return; }
+      var doc = { doctype:"Personnel", full_name:name, personnel_type:document.getElementById("p_type").value,
+        job_title:document.getElementById("p_title").value.trim(), phone:document.getElementById("p_phone").value.trim(),
+        join_date:document.getElementById("p_join").value||null };
+      if(nid) doc.national_id=nid;
+      document.getElementById("pbtn").disabled=true;
+      api("frappe.client.insert", {doc:doc}, true).then(function(res){
+        if(res.ok&&res.j.message){ render(); } else { show("pmsg","err",errMsg(res)); document.getElementById("pbtn").disabled=false; }
+      });
+    };
+
+    window.addContract = function(){
+      var title=document.getElementById("c_title").value.trim();
+      if(!title){ show("cmsg","err","عنوان العقد مطلوب."); return; }
+      var doc = { doctype:"Contract", contract_title:title, contract_type:document.getElementById("c_type").value,
+        personnel:document.getElementById("c_person").value||null, start_date:document.getElementById("c_start").value||null,
+        end_date:document.getElementById("c_end").value||null, value:parseFloat(document.getElementById("c_value").value||"0"),
+        responsible:USER };
+      document.getElementById("cbtn").disabled=true;
+      api("frappe.client.insert", {doc:doc}, true).then(function(res){
+        if(res.ok&&res.j.message){ render(); } else { show("cmsg","err",errMsg(res)); document.getElementById("cbtn").disabled=false; }
+      });
+    };
+
+    window.reveal = function(name, btn){
+      btn.disabled=true;
+      api("stochops_nonprofit.personnel.reveal_national_id", {personnel:name}, true).then(function(res){
+        btn.disabled=false;
+        if(res.ok && res.j.message){ btn.outerHTML = '<span class="mono">'+esc(res.j.message.national_id||"—")+'</span>'; }
+        else { alert(errMsg(res)); }
+      });
+    };
+  </script>
+</body>
+</html>
