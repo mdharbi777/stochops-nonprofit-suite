@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تأكيد الحساب | STOCHOPS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#0b1220;--navy2:#101b2b;--blue:#2563eb;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--card:#111a2e;--border:#1e293b;--green:#22c55e;--red:#f87171;}
+    *{box-sizing:border-box;margin:0;padding:0;} body{font-family:"Tajawal",sans-serif;color:var(--text);background:var(--navy);background-image:radial-gradient(1000px 500px at 80% -10%,#1b2a4a 0%,transparent 60%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px 16px;}
+    a{color:var(--cyan);text-decoration:none;}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;justify-content:center;margin-bottom:10px;direction:ltr;}
+    .logo .mark{width:28px;height:28px;border-radius:8px;background:var(--navy2);display:inline-grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:5px;align-items:end;}
+    .logo .mark i{display:block;background:var(--blue);border-radius:1px;} .logo .mark i:nth-child(2){background:var(--cyan);height:70%;} .logo .mark i:nth-child(1){height:45%;} .logo .mark i:nth-child(3){height:100%;}
+    .logo b{color:#fff;} .logo span{color:var(--cyan);}
+    .box{width:100%;max-width:460px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:34px;text-align:center;}
+    h1{color:#fff;font-size:22px;font-weight:800;margin:8px 0;} p{color:var(--muted);font-size:15px;}
+    .icon{font-size:42px;margin-bottom:6px;} .ok{color:var(--green);} .err{color:var(--red);}
+    .btn{display:inline-block;background:var(--blue);color:#fff;border-radius:999px;padding:12px 26px;font-weight:700;margin-top:18px;}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+    <div id="app"><p>جارٍ التحقّق…</p></div>
+  </div>
+  <script>
+    var CSRF="{{ frappe.session.csrf_token or '' }}";
+    var token=new URLSearchParams(location.search).get("token")||"";
+    var app=document.getElementById("app");
+    function errMsg(j){try{var sm=JSON.parse(j._server_messages||"[]");if(sm.length)return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,"");}catch(e){}return "تعذّر التأكيد.";}
+    if(!token){ app.innerHTML='<div class="icon err">⚠</div><h1>رابط غير صالح</h1><p>الرابط لا يحتوي رمز تأكيد.</p>'; }
+    else{
+      fetch("/api/method/stochops_nonprofit.signup.confirm_email",{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify({token:token})})
+        .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+        .then(function(res){
+          if(res.ok && res.j.message){ app.innerHTML='<div class="icon ok">✓</div><h1>تم تفعيل حسابك</h1><p>يمكنك الآن تسجيل الدخول والبدء.</p><a class="btn" href="/login">تسجيل الدخول</a>'; }
+          else{ app.innerHTML='<div class="icon err">⚠</div><h1>تعذّر التأكيد</h1><p>'+errMsg(res.j)+'</p><a class="btn" href="/nos/register">إعادة التسجيل</a>'; }
+        }).catch(function(){ app.innerHTML='<div class="icon err">⚠</div><h1>خطأ في الاتصال</h1><p>حاول مجدداً.</p>'; });
+    }
+  </script>
+</body>
+</html>

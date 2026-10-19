@@ -74,6 +74,8 @@
           <input name="password2" type="password" required minlength="8" />
         </div>
       </div>
+      <label>التحقّق البشري — كم ناتج <span class="req" id="cap_q">…</span>؟ <a href="javascript:void(0)" id="cap_refresh" style="font-size:12px;margin-inline-start:8px">تحديث</a></label>
+      <input id="cap_ans" inputmode="numeric" autocomplete="off" required placeholder="أدخل الناتج" />
       <button class="btn" type="submit" id="submit">إنشاء الحساب</button>
       <div class="msg" id="msg"></div>
     </form>
@@ -82,17 +84,26 @@
 
   <script>
     var CSRF = "{{ frappe.session.csrf_token or '' }}";
-    var form = document.getElementById("f");
-    var msg = document.getElementById("msg");
-    var btn = document.getElementById("submit");
+    var form = document.getElementById("f"), msg = document.getElementById("msg"), btn = document.getElementById("submit");
+    var capToken = "";
+    function show(type, text) { msg.className = "msg " + type; msg.innerHTML = text; }
+    function stripHtml(s){ return (s||"").replace(/<[^>]+>/g,""); }
 
-    function show(type, text) { msg.className = "msg " + type; msg.textContent = text; }
+    function loadCaptcha(){
+      fetch("/api/method/stochops_nonprofit.signup.get_captcha").then(function(r){return r.json();}).then(function(j){
+        var m=j.message||{}; capToken=m.token||""; document.getElementById("cap_q").textContent=m.question||"";
+      });
+    }
+    document.getElementById("cap_refresh").addEventListener("click", function(){ document.getElementById("cap_ans").value=""; loadCaptcha(); });
+    loadCaptcha();
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var d = Object.fromEntries(new FormData(form).entries());
+      var capAns = document.getElementById("cap_ans").value.trim();
       if (d.password !== d.password2) { show("err", "كلمتا المرور غير متطابقتين."); return; }
       if (d.password.length < 8) { show("err", "كلمة المرور يجب ألا تقل عن 8 أحرف."); return; }
+      if (!capAns) { show("err", "أدخل ناتج التحقّق."); return; }
       btn.disabled = true; show("", ""); msg.className = "msg";
       fetch("/api/method/stochops_nonprofit.signup.register_charity", {
         method: "POST",
@@ -100,20 +111,20 @@
         body: JSON.stringify({
           charity_name: d.charity_name, admin_full_name: d.admin_full_name,
           admin_email: d.admin_email, password: d.password,
+          captcha_token: capToken, captcha_answer: capAns,
           admin_mobile: d.admin_mobile || null, registration_number: d.registration_number || null
         })
       }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
         .then(function (res) {
           if (res.ok && res.j.message) {
-            show("ok", "تم إنشاء حساب الجمعية بنجاح. سيتم تحويلك لتسجيل الدخول…");
-            setTimeout(function () { window.location.href = "/login"; }, 1800);
+            var m = res.j.message;
+            var html = "تم إنشاء حساب جمعيتك ✅ أرسلنا رابط تأكيد إلى بريدك — فعّله ثم <a href='/login'>سجّل الدخول</a>.";
+            if (m.verify_url) { html += "<br><small>للتجربة المحلية: <a href='" + m.verify_url + "'>رابط التأكيد</a></small>"; }
+            show("ok", html); form.style.display = "none";
           } else {
             var err = "تعذّر إنشاء الحساب.";
-            try {
-              var sm = JSON.parse(res.j._server_messages || "[]");
-              if (sm.length) err = JSON.parse(sm[0]).message || err;
-            } catch (x) {}
-            show("err", err); btn.disabled = false;
+            try { var sm = JSON.parse(res.j._server_messages || "[]"); if (sm.length) err = stripHtml(JSON.parse(sm[0]).message) || err; } catch (x) {}
+            show("err", err); btn.disabled = false; document.getElementById("cap_ans").value=""; loadCaptcha();
           }
         }).catch(function () { show("err", "خطأ في الاتصال، حاول مجدداً."); btn.disabled = false; });
     });
