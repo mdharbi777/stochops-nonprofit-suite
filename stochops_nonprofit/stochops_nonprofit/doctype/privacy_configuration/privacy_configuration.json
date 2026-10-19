@@ -16,6 +16,10 @@
   "default_privacy_officer",
   "platform_privacy_policy_version",
   "small_cell_threshold",
+  "sec_gates",
+  "dpa_signed_ack",
+  "dpia_approved_ack",
+  "security_controls_ack",
   "notes"
  ],
  "fields": [
@@ -30,6 +34,10 @@
   {"fieldname": "default_privacy_officer", "fieldtype": "Link", "label": "مسؤول الخصوصية (اتصال)", "options": "User"},
   {"fieldname": "platform_privacy_policy_version", "fieldtype": "Data", "label": "إصدار سياسة الخصوصية"},
   {"fieldname": "small_cell_threshold", "fieldtype": "Int", "label": "عتبة إخفاء الخلايا الصغيرة", "default": "5", "non_negative": 1, "description": "في التقارير المُجمّعة، تُحجب الخلايا التي يقل عدّها عن هذه العتبة لتفادي إعادة التعريف."},
+  {"fieldname": "sec_gates", "fieldtype": "Section Break", "label": "شروط فتح بوابة الإنتاج (كلها مطلوبة قبل أي بيانات حقيقية)"},
+  {"fieldname": "dpa_signed_ack", "fieldtype": "Check", "label": "تم توقيع اتفاقية معالجة البيانات (DPA)", "default": "0"},
+  {"fieldname": "dpia_approved_ack", "fieldtype": "Check", "label": "تم اعتماد تقييمات الأثر (DPIA) للأنشطة عالية المخاطر", "default": "0"},
+  {"fieldname": "security_controls_ack", "fieldtype": "Check", "label": "تم توثيق ضوابط الخصوصية والأمن (استضافة سعودية/HTTPS/نسخ/اختراق)", "default": "0"},
   {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"}
  ],
  "links": [],

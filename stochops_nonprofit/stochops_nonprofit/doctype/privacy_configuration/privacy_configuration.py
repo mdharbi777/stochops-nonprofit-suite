@@ -15,6 +15,11 @@ class PrivacyConfiguration(Document):
                 frappe.throw(
                     _("فتح بوابة الإنتاج يتطلّب تعيين مسؤول خصوصية وإصدار سياسة خصوصية معتمد أولاً.")
                 )
+            # لا يُفتح الإنتاج قبل توقيع الاتفاقيات واعتماد تقييمات الأثر وتوثيق الضوابط
+            if not (self.dpa_signed_ack and self.dpia_approved_ack and self.security_controls_ack):
+                frappe.throw(
+                    _("فتح بوابة الإنتاج يتطلّب إقرار: توقيع DPA + اعتماد DPIA + توثيق ضوابط الأمن. لا يُتجاوز أي شرط.")
+                )
             if self.has_value_changed("production_privacy_gate"):
                 self.gate_opened_on = now_datetime()
                 self.gate_opened_by = frappe.session.user

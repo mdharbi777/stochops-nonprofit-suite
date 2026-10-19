@@ -23,6 +23,8 @@ class TestPrivacyCore(FrappeTestCase):
     def tearDown(self):
         frappe.set_user("Administrator")
         frappe.db.set_single_value("Privacy Configuration", "production_privacy_gate", self.g_prev or 0)
+        for f in ("dpa_signed_ack", "dpia_approved_ack", "security_controls_ack"):
+            frappe.db.set_single_value("Privacy Configuration", f, 0)
         for dt in ("Sensitive Access Log", "Processing Activity Record", "Beneficiary"):
             for n in frappe.get_all(dt, filters={"charity": ["in", [self.ca, self.cb]]}, pluck="name"):
                 frappe.delete_doc(dt, n, force=1, ignore_permissions=True)
@@ -49,10 +51,23 @@ class TestPrivacyCore(FrappeTestCase):
         cfg.production_privacy_gate = 1
         with self.assertRaises(frappe.ValidationError):
             cfg.save(ignore_permissions=True)
-        # مع المتطلبات تُفتح وتُختم
+        # مع المسؤول والسياسة لكن بلا إقرارات DPA/DPIA/الضوابط → يبقى مُغلقاً
         cfg.reload()
         cfg.default_privacy_officer = "Administrator"
         cfg.platform_privacy_policy_version = "v1"
+        cfg.dpa_signed_ack = 0
+        cfg.dpia_approved_ack = 0
+        cfg.security_controls_ack = 0
+        cfg.production_privacy_gate = 1
+        with self.assertRaises(frappe.ValidationError):
+            cfg.save(ignore_permissions=True)
+        # باستيفاء كل الإقرارات تُفتح وتُختم
+        cfg.reload()
+        cfg.default_privacy_officer = "Administrator"
+        cfg.platform_privacy_policy_version = "v1"
+        cfg.dpa_signed_ack = 1
+        cfg.dpia_approved_ack = 1
+        cfg.security_controls_ack = 1
         cfg.production_privacy_gate = 1
         cfg.save(ignore_permissions=True)
         from stochops_nonprofit.privacy_core import is_gate_open
