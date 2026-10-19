@@ -1,10 +1,4 @@
 [
-  {
-    "url": "https://github.com/frappe/frappe",
-    "branch": "version-15"
-  },
-  {
-    "url": "https://github.com/mdharbi777/stochops-nonprofit-suite",
-    "branch": "main"
-  }
+  { "url": "https://github.com/frappe/frappe", "branch": "version-15" },
+  { "url": "https://github.com/mdharbi777/stochops-nonprofit-suite", "branch": "main" }
 ]
