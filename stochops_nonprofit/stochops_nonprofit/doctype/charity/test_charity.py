@@ -329,3 +329,68 @@ class TestSignupAccounts(FrappeTestCase):
                 create_account("y", f"y_{self.tok}@reg.local", "Executive Viewer", "password123")
         finally:
             frappe.set_user("Administrator")
+
+
+class TestAccountInvites(FrappeTestCase):
+    """وحدة P2: الحسابات بدعوات بريدية (لا كلمة مرور في البريد) + استعادة غير مُفشية."""
+
+    def setUp(self):
+        self.tok = frappe.generate_hash(length=6)
+        self.ca = make_charity(f"جمعية دعوة {self.tok}")
+        self.admin = make_charity_user(f"inv_admin_{self.tok}@t.local", self.ca, ["Nonprofit Admin"])
+        self.viewer = make_charity_user(f"inv_view_{self.tok}@t.local", self.ca, ["Executive Viewer"])
+        self.created = []
+
+    def tearDown(self):
+        frappe.set_user("Administrator")
+        for e in self.created + [self.admin, self.viewer]:
+            if frappe.db.exists("User", e):
+                frappe.delete_doc("User", e, force=1, ignore_permissions=True)
+        if frappe.db.exists("Charity", self.ca):
+            frappe.delete_doc("Charity", self.ca, force=1, ignore_permissions=True)
+        frappe.db.commit()
+
+    def test_invite_creates_disabled_then_accept_enables(self):
+        from stochops_nonprofit.accounts import accept_invite, invite_account
+
+        email = f"invitee_{self.tok}@t.local"
+        frappe.set_user(self.admin)
+        try:
+            res = invite_account("عضو مدعو", email, "Program Coordinator")
+        finally:
+            frappe.set_user("Administrator")
+        self.created.append(res["account"])
+        self.assertTrue(res.get("invited"))
+        # أُنشئ معطّلاً بلا تفعيل حتى يقبل الدعوة
+        self.assertEqual(frappe.db.get_value("User", email, "enabled"), 0)
+        self.assertIn("Program Coordinator", frappe.get_roles(email))
+        self.assertEqual(frappe.db.get_value("User", email, "charity"), self.ca)
+        # تُسجَّل كتغيير صلاحية
+        self.assertTrue(frappe.get_all("Sensitive Access Log",
+                        filters={"event_type": "permission_change", "reference_name": email}, limit=1))
+        # قبول الدعوة يفعّل الحساب
+        token = res["invite_url"].split("token=")[1]
+        accept_invite(token, "Invitee#2026")
+        self.assertEqual(frappe.db.get_value("User", email, "enabled"), 1)
+
+    def test_accept_invalid_token_rejected(self):
+        from stochops_nonprofit.accounts import accept_invite
+
+        with self.assertRaises(frappe.ValidationError):
+            accept_invite("not-a-valid-token", "Whatever#2026")
+
+    def test_non_admin_cannot_invite(self):
+        from stochops_nonprofit.accounts import invite_account
+
+        frappe.set_user(self.viewer)
+        try:
+            with self.assertRaises(frappe.PermissionError):
+                invite_account("x", f"x_{self.tok}@t.local", "Executive Viewer")
+        finally:
+            frappe.set_user("Administrator")
+
+    def test_password_reset_does_not_disclose(self):
+        from stochops_nonprofit.accounts import request_password_reset
+
+        res = request_password_reset(f"nobody_{self.tok}@nowhere.local")  # بريد غير موجود
+        self.assertTrue(res["ok"])  # رسالة عامة دون كشف وجود الحساب

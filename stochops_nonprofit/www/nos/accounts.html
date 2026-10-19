@@ -120,9 +120,9 @@
               '<option value="Program Coordinator">منسّق برامج</option>'+
               '<option value="Nonprofit Admin">مدير الجمعية</option>'+
             '</select></div>'+
-            '<div><label>كلمة المرور</label><input id="n_pass" type="password"></div>'+
           '</div>'+
-          '<div style="margin-top:16px"><button class="btn" id="addbtn" onclick="addAccount()">إضافة الحساب</button></div>')+
+          '<p class="muted" style="margin-top:10px;font-size:12px">يُرسَل للمدعو رابط أحادي ليضبط كلمة مروره بنفسه — لا تُرسَل كلمة مرور في البريد.</p>'+
+          '<div style="margin-top:12px"><button class="btn" id="addbtn" onclick="addAccount()">إرسال دعوة</button></div>')+
           '<div class="msg" id="msg"></div></div>';
       });
     }
@@ -133,12 +133,16 @@
       var name=document.getElementById("n_name").value.trim();
       var email=document.getElementById("n_email").value.trim();
       var role=document.getElementById("n_role").value;
-      var pass=document.getElementById("n_pass").value;
-      if(!name||!email||!pass){ show("err","الاسم والبريد وكلمة المرور مطلوبة."); return; }
-      if(pass.length<8){ show("err","كلمة المرور يجب ألا تقل عن 8 أحرف."); return; }
+      if(!name||!email){ show("err","الاسم والبريد مطلوبان."); return; }
       document.getElementById("addbtn").disabled=true;
-      api("stochops_nonprofit.accounts.create_account", {full_name:name, email:email, role:role, password:pass}, true)
-        .then(function(res){ if(res.ok && res.j.message){ render(); } else { show("err", errMsg(res)); document.getElementById("addbtn").disabled=false; } });
+      api("stochops_nonprofit.accounts.invite_account", {full_name:name, email:email, role:role}, true)
+        .then(function(res){
+          if(res.ok && res.j.message){
+            var m = res.j.message;
+            if(m.invite_url){ show("ok","تم إنشاء الدعوة. رابط التفعيل (تطوير): "+m.invite_url); setTimeout(render, 2500); }
+            else { show("ok","تم إرسال الدعوة إلى "+email+"."); setTimeout(render, 1500); }
+          } else { show("err", errMsg(res)); document.getElementById("addbtn").disabled=false; }
+        });
     };
 
     window.toggle = function(email, enabled){
