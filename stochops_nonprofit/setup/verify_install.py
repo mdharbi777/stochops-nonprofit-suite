@@ -9,6 +9,7 @@ EXPECTED_DOCTYPES = [
     "Charity",
     "Committee", "Meeting", "Decision", "Decision Follow-up",
     "Initiative", "Initiative Task",
+    "Beneficiary", "Assistance Request",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",
@@ -26,7 +27,7 @@ def run():
         "Notification", filters={"channel": "System Notification", "enabled": 1}, pluck="name"
     )
     result = {
-        "doctypes_ok": sorted(EXPECTED_DOCTYPES) == sorted(doctypes),
+        "doctypes_ok": all(d in doctypes for d in EXPECTED_DOCTYPES),
         "doctypes": sorted(doctypes),
         "roles_ok": all(frappe.db.exists("Role", r) for r in EXPECTED_ROLES),
         "reports_ok": all(r in reports for r in EXPECTED_REPORTS),

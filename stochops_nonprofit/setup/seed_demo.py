@@ -135,13 +135,56 @@ def run():
         tasks.append(d.name)
     out["tasks"] = tasks
 
+    # --- المستفيدون وطلبات المساعدة (الوحدة N2) — بيانات وهمية: أسماء عامة + أرقام هوية وهمية ---
+    ben_specs = [
+        {"beneficiary_name": f"أسرة أ {TAG}", "national_id": "1000000001", "gender": "أنثى", "social_category": "أرملة", "family_members_count": 5},
+        {"beneficiary_name": f"أسرة ب {TAG}", "national_id": "1000000002", "gender": "ذكر", "social_category": "دخل محدود", "family_members_count": 3},
+    ]
+    beneficiaries = []
+    for s in ben_specs:
+        existing = frappe.db.get_value("Beneficiary", {"beneficiary_name": s["beneficiary_name"]})
+        if existing:
+            beneficiaries.append(existing)
+            continue
+        beneficiaries.append(frappe.get_doc({"doctype": "Beneficiary", **s}).insert().name)
+    out["beneficiaries"] = beneficiaries
+
+    req_specs = [
+        {"beneficiary": beneficiaries[0], "request_type": "مالية", "amount": 1500, "priority": "عالية", "status": "معتمد", "note": "مستوفٍ للشروط (عيّنة)"},
+        {"beneficiary": beneficiaries[1], "request_type": "عينية", "amount": 0, "priority": "عادية", "status": "مقدم"},
+    ]
+    requests = []
+    for s in req_specs:
+        if frappe.db.exists("Assistance Request", {"beneficiary": s["beneficiary"], "request_type": s["request_type"]}):
+            continue
+        d = frappe.get_doc(
+            {
+                "doctype": "Assistance Request", "beneficiary": s["beneficiary"], "request_type": s["request_type"],
+                "amount": s["amount"], "priority": s["priority"], "description": f"طلب مساعدة {TAG}",
+            }
+        )
+        d.insert()
+        if s["status"] != "مقدم":
+            d.status = s["status"]
+            if s.get("note"):
+                d.decision_note = s["note"]
+            d.save()
+        requests.append(d.name)
+    out["requests"] = requests
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    deleted = {"requests": 0, "beneficiaries": 0, "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Assistance Request", filters=[["description", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Assistance Request", name, force=1)
+        deleted["requests"] += 1
+    for name in frappe.get_all("Beneficiary", filters=[["beneficiary_name", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Beneficiary", name, force=1)
+        deleted["beneficiaries"] += 1
     for name in frappe.get_all("Initiative Task", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Initiative Task", name, force=1)
         deleted["tasks"] += 1
