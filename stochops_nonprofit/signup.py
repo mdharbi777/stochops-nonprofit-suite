@@ -18,6 +18,9 @@ from frappe.utils import get_url, validate_email_address
 
 ADMIN_ROLE = "Nonprofit Admin"
 MIN_PASSWORD = 8
+# المُرسِل التشغيلي لرسائل النظام (بريد قائم عبر منتجات STOCHOPS). يحتاج حساب SMTP
+# مُعدّاً لهذا العنوان في الإنتاج (انظر deploy/README). محلياً يُعاد الرابط مباشرة.
+SENDER_EMAIL = "ops@stochops.com"
 
 
 # ---------- توقيع الرموز (HMAC، بلا حالة مخزّنة) ----------
@@ -73,15 +76,17 @@ def _send_verification(email, full_name):
     try:
         frappe.sendmail(
             recipients=[email],
-            subject=_("تأكيد تسجيل جمعيتك — STOCHOPS"),
+            sender=SENDER_EMAIL,
+            subject=_("تأكيد تسجيل جمعيتك — منصة الفاضل"),
             message=_(
-                "مرحباً {0}،<br><br>لتفعيل حساب جمعيتك اضغط الرابط التالي:<br>"
+                "مرحباً {0}،<br><br>شكراً لتسجيلك في «منصة الفاضل» لإدارة الجمعيات الخيرية.<br>"
+                "لتفعيل حساب جمعيتك اضغط الرابط التالي:<br>"
                 "<a href='{1}'>{1}</a><br><br>الرابط صالح لمدة 3 أيام."
             ).format(full_name, link),
             now=False,
         )
     except Exception:
-        frappe.log_error("فشل إرسال بريد التأكيد")  # الإرسال يحتاج SMTP مُعدّاً
+        frappe.log_error("فشل إرسال بريد التأكيد")  # الإرسال يحتاج SMTP مُعدّاً لـ ops@stochops.com
     return link
 
 
