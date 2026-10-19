@@ -108,7 +108,9 @@
               '<div><label>البريد الرسمي</label><input id="email" type="email" value="'+esc(d.contact_email||"")+'"></div>'+
               '<div><label>جوال التواصل</label><input id="mobile" value="'+esc(d.contact_mobile||"")+'"></div>'+
             '</div>'+
-            '<div class="hint">اترك الحقل فارغاً إن لم يكن متوفّراً — لا يُحتسب فراغاً كقيمة.</div>'+
+            '<label>حدّ اعتماد الصرف لمدير الجمعية (ريال)</label>'+
+            '<input id="exp_limit" type="number" min="0" value="'+esc(String(d.expense_approval_limit||0))+'">'+
+            '<div class="hint">أعلى مبلغ طلب صرف يعتمده مدير الجمعية؛ ما يتجاوزه يتطلّب تصعيداً لمشغّل المنصّة (حوكمة مالية).</div>'+
             '<button class="btn" id="savebtn" onclick="save()">حفظ التغييرات</button>'+
             '<div class="msg" id="msg"></div>'+
           '</div>';
@@ -121,9 +123,10 @@
       var reg=document.getElementById("reg").value.trim();
       var email=document.getElementById("email").value.trim();
       var mobile=document.getElementById("mobile").value.trim();
+      var lim=document.getElementById("exp_limit").value;
       document.getElementById("savebtn").disabled=true;
       api("stochops_nonprofit.accounts.update_charity_settings",
-          {registration_number:reg, contact_email:email, contact_mobile:mobile}, true)
+          {registration_number:reg, contact_email:email, contact_mobile:mobile, expense_approval_limit:lim}, true)
         .then(function(res){
           document.getElementById("savebtn").disabled=false;
           if (res.ok && res.j.message){ show("ok","تم حفظ التغييرات."); }

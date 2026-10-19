@@ -97,7 +97,8 @@ def get_charity_settings():
     data = frappe.db.get_value(
         "Charity",
         charity,
-        ["charity_name", "registration_number", "status", "contact_email", "contact_mobile", "max_accounts"],
+        ["charity_name", "registration_number", "status", "contact_email", "contact_mobile",
+         "max_accounts", "expense_approval_limit"],
         as_dict=True,
     )
     data["used"] = frappe.db.count("User", {"charity": charity})
@@ -105,7 +106,8 @@ def get_charity_settings():
 
 
 @frappe.whitelist()
-def update_charity_settings(registration_number=None, contact_email=None, contact_mobile=None):
+def update_charity_settings(registration_number=None, contact_email=None, contact_mobile=None,
+                            expense_approval_limit=None):
     """تحديث الحقول القابلة للتغيير في هوية الجمعية. مدير الجمعية فقط، على جمعيته فقط.
     الاسم/الحالة/حد الحسابات تُدار من منصّة STOCHOPS (غير قابلة للتعديل هنا)."""
     charity = _require_charity_admin()
@@ -119,6 +121,11 @@ def update_charity_settings(registration_number=None, contact_email=None, contac
         updates["contact_email"] = email
     if contact_mobile is not None:
         updates["contact_mobile"] = (contact_mobile or "").strip()
+    if expense_approval_limit is not None:
+        limit = float(expense_approval_limit or 0)
+        if limit < 0:
+            frappe.throw(_("حدّ الاعتماد لا يكون سالباً."))
+        updates["expense_approval_limit"] = limit
     if updates:
         frappe.db.set_value("Charity", charity, updates)
         frappe.db.commit()

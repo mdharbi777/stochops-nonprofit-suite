@@ -208,14 +208,36 @@ def run():
         grants.append(frappe.get_doc({"doctype": "Grant", **s}).insert().name)
     out["grants"] = grants
 
+    # --- المصروفات (الوحدة N4) — أرقام إدارية محوكمة، حالات قبل البتّ (بلا دفع) ---
+    exp_specs = [
+        {"title": f"إيجار المقر {TAG}", "category": "إيجار", "amount": 12000, "status": "مقدّم"},
+        {"title": f"مستلزمات برنامج {TAG}", "category": "برامج", "amount": 3500, "status": "قيد المراجعة"},
+    ]
+    expenses = []
+    for s in exp_specs:
+        if frappe.db.exists("Expense Request", {"title": s["title"]}):
+            continue
+        d = frappe.get_doc(
+            {
+                "doctype": "Expense Request", "request_date": today(), "title": s["title"],
+                "category": s["category"], "amount": s["amount"], "status": s["status"],
+            }
+        )
+        d.insert()
+        expenses.append(d.name)
+    out["expenses"] = expenses
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"grants": 0, "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0,
+    deleted = {"expenses": 0, "grants": 0, "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0,
                "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Expense Request", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Expense Request", name, force=1)
+        deleted["expenses"] += 1
     for name in frappe.get_all("Grant", filters=[["grant_title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Grant", name, force=1)
         deleted["grants"] += 1

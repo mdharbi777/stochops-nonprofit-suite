@@ -13,7 +13,8 @@
   "col_break_1",
   "contact_email",
   "contact_mobile",
-  "max_accounts"
+  "max_accounts",
+  "expense_approval_limit"
  ],
  "fields": [
   {"fieldname": "charity_name", "fieldtype": "Data", "label": "اسم الجمعية", "reqd": 1, "unique": 1, "in_list_view": 1},
@@ -22,7 +23,8 @@
   {"fieldname": "col_break_1", "fieldtype": "Column Break"},
   {"fieldname": "contact_email", "fieldtype": "Data", "label": "البريد الرسمي", "options": "Email"},
   {"fieldname": "contact_mobile", "fieldtype": "Data", "label": "جوال التواصل"},
-  {"fieldname": "max_accounts", "fieldtype": "Int", "label": "حد الحسابات", "default": "5", "non_negative": 1}
+  {"fieldname": "max_accounts", "fieldtype": "Int", "label": "حد الحسابات", "default": "5", "non_negative": 1},
+  {"fieldname": "expense_approval_limit", "fieldtype": "Currency", "label": "حدّ اعتماد الصرف لمدير الجمعية (ريال)", "default": "50000", "non_negative": 1, "description": "أعلى مبلغ صرف يعتمده مدير الجمعية؛ ما يتجاوزه يتطلّب تصعيداً لمشغّل المنصّة."}
  ],
  "index_web_pages_for_search": 1,
  "links": [],
