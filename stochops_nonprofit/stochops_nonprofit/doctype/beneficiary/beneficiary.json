@@ -15,6 +15,7 @@
   "family_members_count",
   "sec_status",
   "status",
+  "case_worker",
   "notes",
   "charity"
  ],
@@ -28,7 +29,7 @@
   {"fieldname": "family_members_count", "fieldtype": "Int", "label": "عدد أفراد الأسرة (إجمالي)", "non_negative": 1, "description": "عدد إجمالي فقط — لا تُخزَّن بيانات أفراد الأسرة."},
   {"fieldname": "sec_status", "fieldtype": "Section Break"},
   {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "نشط\nمؤرشف", "default": "نشط", "in_list_view": 1, "in_standard_filter": 1},
-  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"},
+  {"fieldname": "case_worker", "fieldtype": "Link", "label": "مسؤول الحالة", "options": "User", "read_only": 1, "description": "المخوّل بالاطّلاع على الحالة؛ يُضبط تلقائياً لمنشئ السجل من المنسّقين. المدير والمطّلع يريان كل حالات الجمعية."},
   {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
  ],
  "index_web_pages_for_search": 0,

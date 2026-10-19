@@ -68,12 +68,31 @@ def initiative_task_query(user):
     return _condition(user, "Initiative Task")
 
 
+# أدوار ترى كل حالات الجمعية؛ المنسّقون (غيرها) يرون حالاتهم المُسندة فقط (PDPL §7)
+CASE_FULL_ROLES = {"Nonprofit Admin", "Executive Viewer"}
+
+
+def _is_case_restricted(user):
+    if is_data_super(user):
+        return False
+    return not (set(frappe.get_roles(user)) & CASE_FULL_ROLES)
+
+
+def _case_condition(user, doctype):
+    base = _condition(user, doctype)
+    if base in ("", "1=0"):
+        return base
+    if _is_case_restricted(user):
+        return f"({base} and `tab{doctype}`.`case_worker` = {frappe.db.escape(user)})"
+    return base
+
+
 def beneficiary_query(user):
-    return _condition(user, "Beneficiary")
+    return _case_condition(user, "Beneficiary")
 
 
 def assistance_request_query(user):
-    return _condition(user, "Assistance Request")
+    return _case_condition(user, "Assistance Request")
 
 
 def donor_query(user):
@@ -120,6 +139,18 @@ def sensitive_access_log_query(user):
     return _condition(user, "Sensitive Access Log")
 
 
+def consent_record_query(user):
+    return _condition(user, "Consent Record")
+
+
+def privacy_rights_request_query(user):
+    return _condition(user, "Privacy Rights Request")
+
+
+def privacy_impact_assessment_query(user):
+    return _condition(user, "Privacy Impact Assessment")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):
@@ -163,12 +194,34 @@ def has_charity_doc_permission(doc, ptype=None, user=None, permission_type=None)
     return doc.name == get_user_charity(user)
 
 
+def has_case_permission(doc, ptype=None, user=None, permission_type=None):
+    """تحقّق على مستوى الحالة (مستفيد/طلب مساعدة): فوق عزل الجمعية، المنسّق يرى
+    حالاته المُسندة فقط؛ المدير والمطّلع وبريك-جلاس يرون كل حالات الجمعية (PDPL §7)."""
+    ptype = ptype or permission_type
+    user = user or frappe.session.user
+    if not has_charity_permission(doc, ptype=ptype, user=user):
+        return False
+    if ptype == "create" or _is_new(doc) or not _is_case_restricted(user):
+        return True
+    return (doc.get("case_worker") or None) == user
+
+
 def set_charity(doc, method=None):
     """يضبط حقل charity تلقائياً من جمعية المستخدم عند الإنشاء (إن لم يُحدَّد)."""
     if not doc.get("charity"):
         charity = get_user_charity()
         if charity:
             doc.charity = charity
+
+
+def set_charity_case(doc, method=None):
+    """للحالات (مستفيد/طلب مساعدة): يضبط الجمعية + مسؤول الحالة تلقائياً لمنشئ
+    السجل إن كان منسّقاً (دوراً مقيّداً)، ليحتفظ بوصوله لحالته."""
+    set_charity(doc, method)
+    if not doc.get("case_worker"):
+        user = frappe.session.user
+        if user not in ("Administrator", "Guest") and _is_case_restricted(user):
+            doc.case_worker = user
 
 
 def ensure_user_charity_field():

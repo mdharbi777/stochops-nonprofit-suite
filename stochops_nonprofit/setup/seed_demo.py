@@ -270,15 +270,44 @@ def run():
              "category": "أجهزة", "amount": 7000, "status": "مقدّم"}
         ).insert().name]
 
+    # --- خصوصية (P3) — عيّنات: مسودة DPIA + طلب حق + موافقة ---
+    if not frappe.db.exists("Privacy Impact Assessment", {"activity_name": f"إدارة المستفيدين {TAG}"}):
+        out["dpia"] = [frappe.get_doc(
+            {"doctype": "Privacy Impact Assessment", "activity_name": f"إدارة المستفيدين {TAG}",
+             "data_subjects": "مستفيدون وأسرهم", "residual_risk": "متوسط", "decision": "معلّق", "status": "مسودة",
+             "risks": "حساسية بيانات الحالات وإمكان إعادة التعريف",
+             "mitigations": "تشفير الهوية + ACL الحالة + أدنى بيانات + سجل اطّلاع"}
+        ).insert().name]
+    if not frappe.db.exists("Privacy Rights Request", {"subject_name": f"صاحب طلب {TAG}"}):
+        out["rights"] = [frappe.get_doc(
+            {"doctype": "Privacy Rights Request", "request_type": "وصول", "subject_name": f"صاحب طلب {TAG}",
+             "received_on": today(), "status": "مستلم"}
+        ).insert().name]
+    if not frappe.db.exists("Consent Record", {"subject_ref": f"مستفيد عيّنة {TAG}"}):
+        out["consents"] = [frappe.get_doc(
+            {"doctype": "Consent Record", "subject_type": "مستفيد", "subject_ref": f"مستفيد عيّنة {TAG}",
+             "purpose": "دراسة طلب المساعدة", "legal_basis": "تنفيذ أغراض الجمعية", "status": "ممنوحة", "granted_on": today()}
+        ).insert().name]
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"procurements": 0, "contracts": 0, "personnel": 0, "obligations": 0, "expenses": 0, "grants": 0,
+    deleted = {"dpia": 0, "rights": 0, "consents": 0,
+               "procurements": 0, "contracts": 0, "personnel": 0, "obligations": 0, "expenses": 0, "grants": 0,
                "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0, "tasks": 0, "initiatives": 0,
                "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Privacy Impact Assessment", filters=[["activity_name", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Privacy Impact Assessment", name, force=1)
+        deleted["dpia"] += 1
+    for name in frappe.get_all("Privacy Rights Request", filters=[["subject_name", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Privacy Rights Request", name, force=1)
+        deleted["rights"] += 1
+    for name in frappe.get_all("Consent Record", filters=[["subject_ref", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Consent Record", name, force=1)
+        deleted["consents"] += 1
     for name in frappe.get_all("Procurement Request", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Procurement Request", name, force=1)
         deleted["procurements"] += 1

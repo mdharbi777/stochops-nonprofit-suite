@@ -59,6 +59,12 @@ NOTIFICATIONS = [
         "subject": "عقد يقترب انتهاؤه: {{ doc.contract_title }}",
         "message": "تاريخ الانتهاء: {{ doc.end_date }}",
     },
+    {
+        "document_type": "Privacy Rights Request", "event": "Days Before", "date": "due_date", "days": 5,
+        "field": "assigned_to", "condition": "doc.status not in ['مكتمل', 'مرفوض جزئياً', 'مرفوض']",
+        "subject": "طلب حق يقترب موعده النظامي: {{ doc.name }}",
+        "message": "نوع الطلب: {{ doc.request_type }} — الاستحقاق: {{ doc.due_date }}",
+    },
 ]
 
 
