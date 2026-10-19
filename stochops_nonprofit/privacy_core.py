@@ -61,6 +61,14 @@ def assert_gate_open():
         frappe.throw(_("بوابة إنتاج البيانات الحقيقية مغلقة — تتطلّب اعتماد DPA وإشعار الخصوصية وDPIA."))
 
 
+def deployment_mode():
+    return frappe.db.get_single_value("Privacy Configuration", "deployment_mode") or "PILOT_SANDBOX"
+
+
+def is_pilot_sandbox():
+    return deployment_mode() == "PILOT_SANDBOX"
+
+
 def is_ai_external_enabled():
     return bool(frappe.db.get_single_value("Privacy Configuration", "ai_external_enabled"))
 

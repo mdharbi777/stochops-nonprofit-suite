@@ -192,6 +192,13 @@
 - **توثيق تعطيل المسارات الإنتاجية** (`docs/14_COMPLIANCE_CONTROLS_STATUS.md`): onboarding إنتاجي/استيراد فعلي/AI خارجي لبيانات شخصية/بريد للمستفيدين — كلها محظورة في وضع التطوير؛ بيانات مصطنعة فقط.
 - **غير هادم؛** الاختبارات **108/108** (حُدّث اختبار البوابة ليشمل الإقرارات الثلاثة). الوضع: DEVELOPMENT_ONLY · SYNTHETIC_DATA_ONLY · Production BLOCKED.
 
+### P6 Pilot (Sandbox مجاني + Resend + نسخ/أمن) — 2026-10-19
+- **وضع النشر `deployment_mode` على Privacy Configuration** (افتراضي `PILOT_SANDBOX`): **حظر خادمي** لفتح بوابة الإنتاج في وضع التجربة (`frappe.throw` في الكنترولر)؛ `privacy_core.deployment_mode()/is_pilot_sandbox()`. البوابة الآن تتطلّب PRODUCTION + مسؤول + سياسة + 3 إقرارات (DPA/DPIA/ضوابط).
+- **البريد عبر Resend** (لا Brevo): `docs/operations/resend_smtp.md` — إعداد Frappe SMTP (smtp.resend.com:465 SSL، user resend، From ops@stochops.com) + الرسائل الست + ضوابط أدنى-بيانات؛ المفتاح لا يُحفظ في git. تدفّقات الدعوة/التأكيد/الاستعادة/الإشعارات جاهزة من ops@stochops.com.
+- **الفحص الأمني:** `docs/operations/security_testing.md` (ZAP + تبعيات/أسرار + تغطية ضوابط التحكّم بالاختبارات) — **فحص أسرار نُفّذ: لا مفاتيح خاصة ولا ملفات حساسة متتبّعة**.
+- **اختبار نسخ/استعادة حقيقي + فصل بيئات:** `docs/operations/backup_restore_test.md` — نسخ (قاعدة 1.6MiB + ملفات) → استعادة على موقع نظيف `restore-test.localhost` (`all_ok: true`) + إنشاء **staging مستقل** (`all_ok: true`)؛ 3 مواقع بقواعد/ملفات منفصلة.
+- **غير هادم؛** الاختبارات **108/108** (حُدّث اختبار البوابة ليشمل PILOT_SANDBOX). الوضع: PILOT_SANDBOX · production_privacy_gate=false · بيانات مصطنعة فقط.
+
 ### الإصدارات المخطّطة
 - `v0.1.0`…`v0.3.0` — الوحدات الثلاث (منجزة). `v0.7.0` — منتج SaaS مبرند + تقوية الإطلاق.
 - `v0.8.0` (مقترح) — اعتماد نطاق v2.0 «منصة الفاضل» + تصميم PDPL (وثائق).

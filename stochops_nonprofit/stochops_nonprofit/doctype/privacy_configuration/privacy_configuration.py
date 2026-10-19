@@ -10,6 +10,11 @@ class PrivacyConfiguration(Document):
     اجتياز الكود ليس امتثالاً قانونياً (القسم 0-6 من وثيقة PDPL)."""
 
     def validate(self):
+        # وضع التجربة لا يسمح بفتح بوابة الإنتاج إطلاقاً (حظر خادمي)
+        if self.production_privacy_gate and (self.deployment_mode or "PILOT_SANDBOX") == "PILOT_SANDBOX":
+            frappe.throw(
+                _("وضع PILOT_SANDBOX لا يسمح بفتح بوابة الإنتاج. انتقل إلى PRODUCTION بعد استيفاء الاعتمادات.")
+            )
         if self.production_privacy_gate:
             if not self.default_privacy_officer or not (self.platform_privacy_policy_version or "").strip():
                 frappe.throw(

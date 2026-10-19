@@ -5,6 +5,7 @@
  "engine": "InnoDB",
  "issingle": 1,
  "field_order": [
+  "deployment_mode",
   "production_privacy_gate",
   "gate_opened_on",
   "gate_opened_by",
@@ -23,6 +24,7 @@
   "notes"
  ],
  "fields": [
+  {"fieldname": "deployment_mode", "fieldtype": "Select", "label": "وضع النشر", "options": "PILOT_SANDBOX\nPRODUCTION", "default": "PILOT_SANDBOX", "description": "PILOT_SANDBOX = تطوير/تجربة ببيانات مصطنعة فقط. PRODUCTION لا يُفعَّل إلا بفتح البوابة بعد الاعتمادات."},
   {"fieldname": "production_privacy_gate", "fieldtype": "Check", "label": "بوابة إنتاج البيانات الحقيقية مفتوحة", "default": "0", "description": "مغلقة افتراضياً. لا تُفتح إلا بعد اعتماد DPA وإشعار الخصوصية وDPIA وخطة الاستضافة. فتحها يتطلّب تعيين مسؤول خصوصية ونسخة سياسة."},
   {"fieldname": "gate_opened_on", "fieldtype": "Datetime", "label": "تاريخ فتح البوابة", "read_only": 1},
   {"fieldname": "gate_opened_by", "fieldtype": "Link", "label": "فُتحت بواسطة", "options": "User", "read_only": 1},
