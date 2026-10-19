@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "DNR-.YYYY.-.#####",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "donor_name",
+  "donor_type",
+  "col_break_1",
+  "phone",
+  "email",
+  "sec_more",
+  "status",
+  "notes",
+  "charity"
+ ],
+ "fields": [
+  {"fieldname": "donor_name", "fieldtype": "Data", "label": "اسم المتبرّع", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "donor_type", "fieldtype": "Select", "label": "النوع", "options": "فرد\nجهة", "default": "فرد", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "phone", "fieldtype": "Data", "label": "الجوال"},
+  {"fieldname": "email", "fieldtype": "Data", "label": "البريد", "options": "Email"},
+  {"fieldname": "sec_more", "fieldtype": "Section Break"},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "نشط\nمؤرشف", "default": "نشط", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"},
+  {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Donor",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Nonprofit Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "print": 1},
+  {"role": "Program Coordinator", "read": 1, "write": 1, "create": 1, "report": 1, "print": 1},
+  {"role": "Executive Viewer", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "donor_name",
+ "track_changes": 1
+}

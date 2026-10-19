@@ -172,13 +172,59 @@ def run():
         requests.append(d.name)
     out["requests"] = requests
 
+    # --- المتبرعون والتبرعات والمنح (الوحدة N3) — تسجيل وهمي فقط، بلا بوابة دفع ---
+    donor_specs = [
+        {"donor_name": f"متبرّع فرد {TAG}", "donor_type": "فرد", "phone": "0500000001"},
+        {"donor_name": f"جهة مانحة {TAG}", "donor_type": "جهة", "phone": "0500000002"},
+    ]
+    donors = []
+    for s in donor_specs:
+        existing = frappe.db.get_value("Donor", {"donor_name": s["donor_name"]})
+        donors.append(existing or frappe.get_doc({"doctype": "Donor", **s}).insert().name)
+    out["donors"] = donors
+
+    don_specs = [
+        {"donor": donors[0], "donation_type": "نقدي", "amount": 2000, "status": "مستلم", "reference": f"RCPT-001 {TAG}"},
+        {"donor": donors[1], "donation_type": "تعهّد", "amount": 10000, "status": "تعهّد", "reference": f"PLDG-001 {TAG}"},
+    ]
+    donations = []
+    for s in don_specs:
+        if frappe.db.exists("Donation", {"reference": s["reference"]}):
+            continue
+        donations.append(
+            frappe.get_doc({"doctype": "Donation", "donation_date": today(), "notes": TAG, **s}).insert().name
+        )
+    out["donations"] = donations
+
+    grant_specs = [
+        {"grant_title": f"منحة التشغيل {TAG}", "grantor_name": "مؤسسة مانحة (عيّنة)", "status": "معتمدة",
+         "amount": 80000, "amount_received": 40000, "conditions": "تقارير ربع سنوية (عيّنة)",
+         "start_date": add_days(today(), -30), "end_date": add_days(today(), 150)},
+    ]
+    grants = []
+    for s in grant_specs:
+        if frappe.db.exists("Grant", {"grant_title": s["grant_title"]}):
+            continue
+        grants.append(frappe.get_doc({"doctype": "Grant", **s}).insert().name)
+    out["grants"] = grants
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"requests": 0, "beneficiaries": 0, "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    deleted = {"grants": 0, "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0,
+               "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Grant", filters=[["grant_title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Grant", name, force=1)
+        deleted["grants"] += 1
+    for name in frappe.get_all("Donation", filters=[["notes", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Donation", name, force=1)
+        deleted["donations"] += 1
+    for name in frappe.get_all("Donor", filters=[["donor_name", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Donor", name, force=1)
+        deleted["donors"] += 1
     for name in frappe.get_all("Assistance Request", filters=[["description", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Assistance Request", name, force=1)
         deleted["requests"] += 1

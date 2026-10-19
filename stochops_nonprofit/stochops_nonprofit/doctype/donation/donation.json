@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "DON-.YYYY.-.#####",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "donor",
+  "donation_date",
+  "donation_type",
+  "col_break_1",
+  "amount",
+  "status",
+  "channel",
+  "sec_link",
+  "reference",
+  "initiative",
+  "notes",
+  "charity"
+ ],
+ "fields": [
+  {"fieldname": "donor", "fieldtype": "Link", "label": "المتبرّع", "options": "Donor", "reqd": 1, "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "donation_date", "fieldtype": "Date", "label": "التاريخ", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "donation_type", "fieldtype": "Select", "label": "نوع التبرّع", "options": "نقدي\nعيني\nتعهّد", "default": "نقدي", "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "amount", "fieldtype": "Currency", "label": "المبلغ/القيمة (ريال)", "non_negative": 1, "in_list_view": 1, "description": "قيمة مُسجّلة فقط — لا معالجة دفع ولا تحصيل إلكتروني."},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "تعهّد\nمستلم", "default": "مستلم", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "channel", "fieldtype": "Select", "label": "الوسيلة (وصف)", "options": "\nتحويل بنكي\nنقد\nعيني\nأخرى"},
+  {"fieldname": "sec_link", "fieldtype": "Section Break"},
+  {"fieldname": "reference", "fieldtype": "Data", "label": "مرجع/رقم إيصال"},
+  {"fieldname": "initiative", "fieldtype": "Link", "label": "تخصيص لمبادرة (اختياري)", "options": "Initiative"},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"},
+  {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Donation",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Nonprofit Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "print": 1},
+  {"role": "Program Coordinator", "read": 1, "write": 1, "create": 1, "report": 1, "print": 1},
+  {"role": "Executive Viewer", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

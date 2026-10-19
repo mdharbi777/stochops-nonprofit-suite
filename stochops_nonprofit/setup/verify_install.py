@@ -10,6 +10,7 @@ EXPECTED_DOCTYPES = [
     "Committee", "Meeting", "Decision", "Decision Follow-up",
     "Initiative", "Initiative Task",
     "Beneficiary", "Assistance Request",
+    "Donor", "Donation", "Grant",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",

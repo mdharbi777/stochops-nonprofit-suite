@@ -17,6 +17,9 @@ permission_query_conditions = {
     "Initiative Task": "stochops_nonprofit.multitenancy.initiative_task_query",
     "Beneficiary": "stochops_nonprofit.multitenancy.beneficiary_query",
     "Assistance Request": "stochops_nonprofit.multitenancy.assistance_request_query",
+    "Donor": "stochops_nonprofit.multitenancy.donor_query",
+    "Donation": "stochops_nonprofit.multitenancy.donation_query",
+    "Grant": "stochops_nonprofit.multitenancy.grant_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -28,6 +31,9 @@ has_permission = {
     "Initiative Task": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Beneficiary": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Assistance Request": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Donor": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Donation": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Grant": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -39,6 +45,9 @@ doc_events = {
     "Initiative Task": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Beneficiary": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Assistance Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Donor": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Donation": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Grant": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps

@@ -76,6 +76,18 @@ def assistance_request_query(user):
     return _condition(user, "Assistance Request")
 
 
+def donor_query(user):
+    return _condition(user, "Donor")
+
+
+def donation_query(user):
+    return _condition(user, "Donation")
+
+
+def grant_query(user):
+    return _condition(user, "Grant")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):
