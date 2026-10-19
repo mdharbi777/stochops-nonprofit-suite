@@ -45,6 +45,8 @@ def register_charity(charity_name, admin_full_name, admin_email, password, admin
             "email": admin_email,
             "first_name": admin_full_name,
             "mobile_no": admin_mobile,
+            "language": "ar",
+            "time_zone": "Asia/Riyadh",
             "send_welcome_email": 0,
             "new_password": password,
         }

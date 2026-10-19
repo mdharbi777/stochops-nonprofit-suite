@@ -77,6 +77,8 @@ def create_account(full_name, email, role, password, mobile=None):
             "email": email,
             "first_name": full_name,
             "mobile_no": mobile,
+            "language": "ar",
+            "time_zone": "Asia/Riyadh",
             "send_welcome_email": 0,
             "new_password": password,
         }
