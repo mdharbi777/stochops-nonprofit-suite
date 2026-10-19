@@ -61,6 +61,31 @@ def assert_gate_open():
         frappe.throw(_("بوابة إنتاج البيانات الحقيقية مغلقة — تتطلّب اعتماد DPA وإشعار الخصوصية وDPIA."))
 
 
+def is_ai_external_enabled():
+    return bool(frappe.db.get_single_value("Privacy Configuration", "ai_external_enabled"))
+
+
+def assert_ai_external_allowed():
+    """تُستدعى قبل أي استدعاء AI خارجي. معطّل افتراضياً (GATE AI) — المساعد محلي Mock."""
+    if not is_ai_external_enabled():
+        frappe.throw(_("مزوّد الذكاء الاصطناعي الخارجي معطّل — المساعد محلي (Mock) فقط."))
+
+
+def is_on_legal_hold(doctype, name):
+    """هل يوجد حجز قانوني نشط على هذا السجل؟ (يمنع الإتلاف — وثيقة PDPL §10)."""
+    return bool(frappe.get_all(
+        "Legal Hold",
+        filters={"status": "نشط", "reference_doctype": doctype, "reference_name": name},
+        limit=1,
+    ))
+
+
+def assert_no_legal_hold(doctype, name):
+    """تُستدعى قبل أي إتلاف/محو؛ تمنع الحذف أثناء حجز قانوني نشط."""
+    if is_on_legal_hold(doctype, name):
+        frappe.throw(_("لا يمكن الإتلاف: السجل تحت حجز قانوني نشط."))
+
+
 def log_sensitive_access(event_type, reference_doctype=None, reference_name=None, field=None, note=None, charity=None):
     """يسجّل حدث اطّلاع/كشف/تصدير على بيانات حسّاسة. بيانات وصفية فقط، بلا محتوى."""
     try:
@@ -87,6 +112,20 @@ def log_sensitive_access(event_type, reference_doctype=None, reference_name=None
 REPORT_TEMPLATE_SEED = [
     {"template_name": "التقرير السنوي للمركز الوطني", "authority": "المركز الوطني لتنمية القطاع غير الربحي"},
     {"template_name": "تقرير حملة جمع تبرعات", "authority": "الجهة المشرفة على جمع التبرعات"},
+]
+
+# جداول احتفاظ تبدأ PENDING_DEFINITION — المدد يحدّدها المختص (لا تُخترع)
+RETENTION_SEED = [
+    "قرارات اللجان", "المبادرات والمهام", "ملفات المستفيدين", "طلبات المساعدة",
+    "المتبرعون والتبرعات", "المنح", "المصروفات والمشتريات", "الموظفون والعقود",
+    "سجل أنشطة المعالجة", "سجلّات التدقيق",
+]
+
+# سجل المعالجين من الباطن — تبدأ «مقترح» حتى التقييم والعقد
+SUBPROCESSOR_SEED = [
+    {"provider_name": "بريد ops@stochops.com", "service": "بريد", "country": "يحدَّد وقت النشر"},
+    {"provider_name": "المساعد الذكي (محاكاة محلية)", "service": "ذكاء اصطناعي", "country": "محلي — بلا نقل"},
+    {"provider_name": "الاستضافة السعودية", "service": "استضافة", "country": "السعودية (يحدَّد المزوّد)"},
 ]
 
 
@@ -122,6 +161,20 @@ def ensure_privacy_core():
                      "authority": t["authority"], "status": "TEMPLATE_REVALIDATION_REQUIRED"}
                 ).insert(ignore_permissions=True)
                 created["templates"] = created.get("templates", 0) + 1
+
+    if frappe.db.exists("DocType", "Retention Schedule"):
+        for cat in RETENTION_SEED:
+            if not frappe.db.exists("Retention Schedule", cat):
+                frappe.get_doc(
+                    {"doctype": "Retention Schedule", "data_category": cat, "status": "PENDING_DEFINITION"}
+                ).insert(ignore_permissions=True)
+                created["retention"] = created.get("retention", 0) + 1
+
+    if frappe.db.exists("DocType", "Subprocessor Register"):
+        for s in SUBPROCESSOR_SEED:
+            if not frappe.db.exists("Subprocessor Register", s["provider_name"]):
+                frappe.get_doc({"doctype": "Subprocessor Register", "status": "مقترح", **s}).insert(ignore_permissions=True)
+                created["subprocessors"] = created.get("subprocessors", 0) + 1
 
     frappe.db.commit()
     return created

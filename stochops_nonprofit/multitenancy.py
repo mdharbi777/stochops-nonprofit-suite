@@ -155,6 +155,14 @@ def disclosure_request_query(user):
     return _condition(user, "Disclosure Request")
 
 
+def legal_hold_query(user):
+    return _condition(user, "Legal Hold")
+
+
+def security_incident_query(user):
+    return _condition(user, "Security Incident")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):

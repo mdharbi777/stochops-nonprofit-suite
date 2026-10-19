@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "LH-.YYYY.-.#####",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hold_title",
+  "status",
+  "col_break_1",
+  "reference_doctype",
+  "reference_name",
+  "sec_body",
+  "reason",
+  "placed_on",
+  "placed_by",
+  "released_on",
+  "release_reason",
+  "charity"
+ ],
+ "fields": [
+  {"fieldname": "hold_title", "fieldtype": "Data", "label": "عنوان الحجز", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "نشط\nمرفوع", "default": "نشط", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "reference_doctype", "fieldtype": "Data", "label": "النوع المستهدف (اختياري)"},
+  {"fieldname": "reference_name", "fieldtype": "Data", "label": "السجل المستهدف (اختياري)"},
+  {"fieldname": "sec_body", "fieldtype": "Section Break"},
+  {"fieldname": "reason", "fieldtype": "Small Text", "label": "سبب الحجز (نزاع/متطلب نظامي)", "reqd": 1},
+  {"fieldname": "placed_on", "fieldtype": "Date", "label": "تاريخ الحجز"},
+  {"fieldname": "placed_by", "fieldtype": "Link", "label": "بواسطة", "options": "User", "read_only": 1},
+  {"fieldname": "released_on", "fieldtype": "Date", "label": "تاريخ الرفع", "read_only": 1},
+  {"fieldname": "release_reason", "fieldtype": "Small Text", "label": "سبب الرفع"},
+  {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Legal Hold",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Nonprofit Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "print": 1},
+  {"role": "Executive Viewer", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "hold_title",
+ "track_changes": 1
+}

@@ -18,6 +18,7 @@ EXPECTED_DOCTYPES = [
     "Processing Activity Record", "Sensitive Access Log",
     "Consent Record", "Privacy Rights Request", "Privacy Impact Assessment",
     "Disclosure Request", "Report Template Registry",
+    "Retention Schedule", "Legal Hold", "Security Incident", "Subprocessor Register",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",

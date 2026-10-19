@@ -34,6 +34,8 @@ permission_query_conditions = {
     "Privacy Rights Request": "stochops_nonprofit.multitenancy.privacy_rights_request_query",
     "Privacy Impact Assessment": "stochops_nonprofit.multitenancy.privacy_impact_assessment_query",
     "Disclosure Request": "stochops_nonprofit.multitenancy.disclosure_request_query",
+    "Legal Hold": "stochops_nonprofit.multitenancy.legal_hold_query",
+    "Security Incident": "stochops_nonprofit.multitenancy.security_incident_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -60,6 +62,8 @@ has_permission = {
     "Privacy Rights Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Privacy Impact Assessment": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Disclosure Request": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Legal Hold": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Security Incident": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -86,6 +90,8 @@ doc_events = {
     "Privacy Rights Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Privacy Impact Assessment": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Disclosure Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Legal Hold": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Security Incident": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps
