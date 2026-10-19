@@ -14,6 +14,8 @@ EXPECTED_DOCTYPES = [
     "Expense Request", "Compliance Obligation",
     "Personnel", "Contract", "Procurement Request",
     "Nonprofit AI Settings", "AI Run Log",
+    "Privacy Configuration", "Regulatory Rule", "Data Field Catalog",
+    "Processing Activity Record", "Sensitive Access Log",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",

@@ -1,0 +1,44 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:entry_key",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "entry_key",
+  "doctype_name",
+  "fieldname",
+  "col_break_1",
+  "classification",
+  "purpose",
+  "legal_basis",
+  "retention_ref"
+ ],
+ "fields": [
+  {"fieldname": "entry_key", "fieldtype": "Data", "label": "المفتاح", "reqd": 1, "unique": 1, "in_list_view": 1, "description": "DocType.fieldname"},
+  {"fieldname": "doctype_name", "fieldtype": "Data", "label": "النوع", "in_standard_filter": 1},
+  {"fieldname": "fieldname", "fieldtype": "Data", "label": "الحقل"},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "classification", "fieldtype": "Select", "label": "التصنيف", "options": "تشغيلي\nشخصي\nحساس\nحساس جداً", "default": "شخصي", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "purpose", "fieldtype": "Small Text", "label": "الغرض"},
+  {"fieldname": "legal_basis", "fieldtype": "Data", "label": "الأساس النظامي"},
+  {"fieldname": "retention_ref", "fieldtype": "Data", "label": "مرجع الاحتفاظ"}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Data Field Catalog",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "print": 1},
+  {"role": "Nonprofit Admin", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

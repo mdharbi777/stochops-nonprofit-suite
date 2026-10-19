@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:rule_title",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "rule_title",
+  "status",
+  "col_break_1",
+  "source_url",
+  "version",
+  "effective_date",
+  "sec_review",
+  "verified_by",
+  "next_review_date",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname": "rule_title", "fieldtype": "Data", "label": "القاعدة/المرجع", "reqd": 1, "unique": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "LEGAL_REVIEW_REQUIRED\nVERIFIED\nNOT_APPLICABLE", "default": "LEGAL_REVIEW_REQUIRED", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "source_url", "fieldtype": "Data", "label": "رابط المصدر الرسمي", "options": "URL"},
+  {"fieldname": "version", "fieldtype": "Data", "label": "الإصدار"},
+  {"fieldname": "effective_date", "fieldtype": "Date", "label": "تاريخ النفاذ"},
+  {"fieldname": "sec_review", "fieldtype": "Section Break"},
+  {"fieldname": "verified_by", "fieldtype": "Data", "label": "مُتحقَّق بواسطة (مستشار/جهة)"},
+  {"fieldname": "next_review_date", "fieldtype": "Date", "label": "تاريخ المراجعة القادمة"},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Regulatory Rule",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "print": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

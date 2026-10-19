@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "production_privacy_gate",
+  "gate_opened_on",
+  "gate_opened_by",
+  "sec_flags",
+  "beneficiary_real_data_enabled",
+  "donor_real_data_enabled",
+  "ai_external_enabled",
+  "sec_officer",
+  "default_privacy_officer",
+  "platform_privacy_policy_version",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname": "production_privacy_gate", "fieldtype": "Check", "label": "بوابة إنتاج البيانات الحقيقية مفتوحة", "default": "0", "description": "مغلقة افتراضياً. لا تُفتح إلا بعد اعتماد DPA وإشعار الخصوصية وDPIA وخطة الاستضافة. فتحها يتطلّب تعيين مسؤول خصوصية ونسخة سياسة."},
+  {"fieldname": "gate_opened_on", "fieldtype": "Datetime", "label": "تاريخ فتح البوابة", "read_only": 1},
+  {"fieldname": "gate_opened_by", "fieldtype": "Link", "label": "فُتحت بواسطة", "options": "User", "read_only": 1},
+  {"fieldname": "sec_flags", "fieldtype": "Section Break", "label": "أعلام البيانات الحقيقية (مغلقة افتراضياً)"},
+  {"fieldname": "beneficiary_real_data_enabled", "fieldtype": "Check", "label": "تمكين بيانات مستفيدين حقيقية", "default": "0"},
+  {"fieldname": "donor_real_data_enabled", "fieldtype": "Check", "label": "تمكين بيانات متبرعين/مانحين حقيقية", "default": "0"},
+  {"fieldname": "ai_external_enabled", "fieldtype": "Check", "label": "تمكين مزوّد AI خارجي", "default": "0", "description": "يبقى معطّلاً (GATE AI) — المساعد محلي Mock فقط."},
+  {"fieldname": "sec_officer", "fieldtype": "Section Break", "label": "الحوكمة"},
+  {"fieldname": "default_privacy_officer", "fieldtype": "Link", "label": "مسؤول الخصوصية (اتصال)", "options": "User"},
+  {"fieldname": "platform_privacy_policy_version", "fieldtype": "Data", "label": "إصدار سياسة الخصوصية"},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"}
+ ],
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Privacy Configuration",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "print": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

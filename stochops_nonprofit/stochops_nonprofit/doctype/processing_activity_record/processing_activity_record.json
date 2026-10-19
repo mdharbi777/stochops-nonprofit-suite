@@ -1,0 +1,53 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "ROPA-.YYYY.-.#####",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "activity_name",
+  "purpose",
+  "col_break_1",
+  "legal_basis",
+  "data_categories",
+  "data_subjects",
+  "sec_more",
+  "recipients",
+  "retention",
+  "third_party_transfer",
+  "owner_contact",
+  "charity"
+ ],
+ "fields": [
+  {"fieldname": "activity_name", "fieldtype": "Data", "label": "نشاط المعالجة", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "purpose", "fieldtype": "Small Text", "label": "الغرض", "reqd": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "legal_basis", "fieldtype": "Data", "label": "الأساس النظامي", "in_list_view": 1},
+  {"fieldname": "data_categories", "fieldtype": "Small Text", "label": "فئات البيانات"},
+  {"fieldname": "data_subjects", "fieldtype": "Data", "label": "فئات أصحاب البيانات"},
+  {"fieldname": "sec_more", "fieldtype": "Section Break"},
+  {"fieldname": "recipients", "fieldtype": "Small Text", "label": "المستلمون"},
+  {"fieldname": "retention", "fieldtype": "Data", "label": "مدة الاحتفاظ"},
+  {"fieldname": "third_party_transfer", "fieldtype": "Check", "label": "نقل لطرف ثالث/خارج المملكة", "default": "0"},
+  {"fieldname": "owner_contact", "fieldtype": "Data", "label": "المالك/جهة الاتصال"},
+  {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Processing Activity Record",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Nonprofit Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "report": 1, "export": 1, "print": 1},
+  {"role": "Executive Viewer", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "activity_name",
+ "track_changes": 1
+}

@@ -28,6 +28,8 @@ permission_query_conditions = {
     "Contract": "stochops_nonprofit.multitenancy.contract_query",
     "Procurement Request": "stochops_nonprofit.multitenancy.procurement_request_query",
     "AI Run Log": "stochops_nonprofit.multitenancy.ai_run_log_query",
+    "Processing Activity Record": "stochops_nonprofit.multitenancy.processing_activity_record_query",
+    "Sensitive Access Log": "stochops_nonprofit.multitenancy.sensitive_access_log_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -48,6 +50,8 @@ has_permission = {
     "Contract": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Procurement Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "AI Run Log": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Processing Activity Record": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Sensitive Access Log": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -68,6 +72,8 @@ doc_events = {
     "Contract": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Procurement Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "AI Run Log": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Processing Activity Record": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Sensitive Access Log": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps

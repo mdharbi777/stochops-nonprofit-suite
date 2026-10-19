@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الخصوصية وحماية البيانات | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#fbbf24; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; overflow-x:auto; }
+    .panel h3 { color:#fff; font-size:16px; margin-bottom:6px; }
+    .status { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:6px 14px; font-size:13px; font-weight:500; }
+    .status.on { background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.35); color:var(--green); }
+    .status.off { background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.35); color:var(--amber); }
+    .kv { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px; }
+    .kv:last-child { border-bottom:none; } .kv .k { color:var(--muted); } .kv .v { color:#fff; font-weight:500; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:right; padding:10px; border-bottom:1px solid var(--border); font-size:13px; white-space:nowrap; }
+    th { color:var(--muted); font-weight:500; }
+    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
+    input, textarea { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
+    input:focus, textarea:focus { outline:none; border-color:var(--blue); }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
+    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
+    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    @media (max-width:640px){ .grid2{ grid-template-columns:1fr; } th,td{ white-space:normal; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التشغيل</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function api(method, args, isPost){
+      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
+      var url = "/api/method/" + method;
+      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
+      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>الخصوصية</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { render(); }
+
+    function render(){
+      Promise.all([
+        api("stochops_nonprofit.privacy_core.get_privacy_status"),
+        api("frappe.client.get_list", {doctype:"Sensitive Access Log", fields:JSON.stringify(["event_type","accessed_by","accessed_on","reference_doctype","reference_name","accessed_field"]), order_by:"creation desc", limit_page_length:15}),
+        api("frappe.client.get_list", {doctype:"Processing Activity Record", fields:JSON.stringify(["name","activity_name","legal_basis","retention"]), order_by:"creation desc", limit_page_length:0})
+      ]).then(function(r){
+        if(!r[0].ok){ app.innerHTML='<div class="center"><h1>الخصوصية</h1><p class="msg err" style="display:block">'+esc(errMsg(r[0]))+'</p></div>'; return; }
+        var s = r[0].j.message||{};
+        var gate = s.gate_open ? '<span class="status on">● بوابة الإنتاج مفتوحة</span>' : '<span class="status off">● بوابة الإنتاج مغلقة (بيانات مصطنعة فقط)</span>';
+        var logs = (r[1].ok?r[1].j.message:[]||[]).map(function(l){
+          return '<tr><td>'+esc(l.event_type)+'</td><td>'+esc(l.accessed_by||"")+'</td><td>'+esc(l.accessed_on||"")+'</td><td>'+esc((l.reference_doctype||"")+" "+(l.reference_name||""))+'</td><td>'+esc(l.accessed_field||"—")+'</td></tr>';
+        }).join("");
+        var acts = (r[2].ok?r[2].j.message:[]||[]).map(function(a){
+          return '<tr><td>'+esc(a.activity_name)+'</td><td>'+esc(a.legal_basis||"—")+'</td><td>'+esc(a.retention||"—")+'</td></tr>';
+        }).join("");
+        app.innerHTML =
+          '<h1>الخصوصية وحماية البيانات</h1>'+
+          '<p class="muted">حوكمة الخصوصية والامتثال لجمعيتك (PDPL).</p>'+
+          '<div class="note">اجتياز الكود ليس امتثالاً قانونياً. لا تُدخَل بيانات حقيقية قبل اعتماد DPA وإشعار الخصوصية وDPIA وفتح بوابة الإنتاج من مشغّل المنصّة.</div>'+
+          '<div style="margin:12px 0">'+gate+'</div>'+
+          '<div class="panel"><h3>الإعداد</h3>'+
+            '<div class="kv"><span class="k">مسؤول الخصوصية</span><span class="v">'+esc(s.privacy_officer||"غير معيّن")+'</span></div>'+
+            '<div class="kv"><span class="k">إصدار سياسة الخصوصية</span><span class="v">'+esc(s.policy_version||"غير محدّد")+'</span></div>'+
+            '<div class="kv"><span class="k">مزوّد AI خارجي</span><span class="v">'+(s.ai_external_enabled?"مُمكّن":"معطّل (محلي Mock)")+'</span></div>'+
+            '<p class="muted" style="margin-top:10px;font-size:12px">تُدار هذه الإعدادات والبوابة من مشغّل المنصّة (System Manager).</p></div>'+
+          '<div class="panel"><h3>سجل الاطّلاع الحسّاس (آخر 15)</h3><table><thead><tr><th>الحدث</th><th>المستخدم</th><th>الوقت</th><th>المرجع</th><th>الحقل</th></tr></thead><tbody>'+
+            (logs||'<tr><td colspan="5" class="muted" style="text-align:center;padding:18px">لا أحداث بعد.</td></tr>')+'</tbody></table></div>'+
+          '<div class="panel"><h3>سجل أنشطة المعالجة (RoPA)</h3><table><thead><tr><th>النشاط</th><th>الأساس النظامي</th><th>الاحتفاظ</th></tr></thead><tbody>'+
+            (acts||'<tr><td colspan="3" class="muted" style="text-align:center;padding:18px">لا أنشطة بعد.</td></tr>')+'</tbody></table>'+
+            '<div class="grid2" style="margin-top:14px">'+
+              '<div><label>اسم النشاط</label><input id="a_name"></div>'+
+              '<div><label>الأساس النظامي</label><input id="a_basis"></div>'+
+              '<div><label>الغرض</label><input id="a_purpose"></div>'+
+              '<div><label>مدة الاحتفاظ</label><input id="a_ret"></div>'+
+            '</div><div style="margin-top:12px"><button class="btn" id="abtn" onclick="addAct()">إضافة نشاط</button></div>'+
+            '<div class="msg" id="msg"></div></div>';
+      });
+    }
+
+    function show(type, text){ var m=document.getElementById("msg"); if(!m)return; m.className="msg "+type; m.textContent=text; }
+
+    window.addAct = function(){
+      var name=document.getElementById("a_name").value.trim();
+      var purpose=document.getElementById("a_purpose").value.trim();
+      if(!name||!purpose){ show("err","اسم النشاط والغرض مطلوبان."); return; }
+      var doc = { doctype:"Processing Activity Record", activity_name:name, purpose:purpose,
+        legal_basis:document.getElementById("a_basis").value.trim(), retention:document.getElementById("a_ret").value.trim() };
+      document.getElementById("abtn").disabled=true;
+      api("frappe.client.insert", {doc:doc}, true).then(function(res){
+        if(res.ok&&res.j.message){ render(); } else { show("err",errMsg(res)); document.getElementById("abtn").disabled=false; }
+      });
+    };
+  </script>
+</body>
+</html>

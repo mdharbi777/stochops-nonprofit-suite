@@ -23,4 +23,7 @@ def reveal_national_id(personnel):
     if "System Manager" not in frappe.get_roles(user) and charity != get_user_charity(user):
         frappe.throw(_("لا تملك صلاحية على هذا السجل."), frappe.PermissionError)
     nid = get_decrypted_password("Personnel", personnel, "national_id", raise_exception=False)
+    from stochops_nonprofit.privacy_core import log_sensitive_access
+
+    log_sensitive_access("reveal", "Personnel", personnel, field="national_id", charity=charity)
     return {"personnel": personnel, "national_id": nid or ""}
