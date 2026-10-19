@@ -4,27 +4,36 @@
 > **المفتاح لا يُحفظ في المستودع** — يُضبط عبر إعداد الموقع/حساب البريد فقط.
 
 ## 1. إعداد Frappe SMTP (Resend)
-الطريقة الموصى بها: **Email Account** في Frappe (Desk → Email Account) بالقيم:
+
+### الطريقة المعتمدة في هذه البيئة: إعداد الموقع عبر **المنفذ 587 (STARTTLS)**
+> **مهم:** مسار «إعداد الموقع» في Frappe (`mail_server`/`mail_port`/…) **لا يدعم المنفذ 465 (SSL الضمني)**؛
+> فدالة `get_account_details_from_site_config` تُطبّق `use_tls` فقط وتتجاهل `use_ssl`. لذلك يجب استخدام
+> **المنفذ 587 مع STARTTLS**، وإلا يفتح Frappe اتصال SMTP نصّيّاً على منفذ TLS ضمني فينتهي بمهلة
+> «Connection unexpectedly closed: timed out». (تأكّد عملياً — انظر §5.)
+
+```bash
+bench --site <site> set-config -g mail_server smtp.resend.com
+bench --site <site> set-config -g mail_port 587
+bench --site <site> set-config -g use_tls 1
+bench --site <site> set-config -g use_ssl 0
+bench --site <site> set-config -g mail_login resend
+bench --site <site> set-config mail_password "<RESEND_API_KEY>"   # سرّي — في site_config فقط، لا في git
+bench --site <site> set-config auto_email_id ops@stochops.com
+```
+
+### بديل للإنتاج: **Email Account** في الواجهة (يدعم 465 SSL)
+Desk → Email Account (مسار doctype يدعم `use_ssl_for_outgoing`، فيعمل المنفذ 465 الضمني):
 
 | الحقل | القيمة |
 |---|---|
 | Email Address / From | `ops@stochops.com` (بعد توثيق نطاق stochops.com والمرسِل في Resend) |
 | Outgoing (SMTP) | مفعّل |
 | SMTP Server | `smtp.resend.com` |
-| Port | `465` + **SSL مفعّل** (أو منفذ TLS وفق توثيق Resend) |
+| Port | `587` + **STARTTLS** (أو `465` + **Use SSL** عبر Email Account) |
 | Username | `resend` |
 | Password | **مفتاح Resend API للإرسال** (SMTP) — يُدخل في الواجهة فقط، لا في git |
 | Default Outgoing | نعم |
 
-بديل عبر ملف الموقع (لا يوضع في git):
-```bash
-bench --site <site> set-config -g mail_server smtp.resend.com
-bench --site <site> set-config -g mail_port 465
-bench --site <site> set-config -g use_ssl 1
-bench --site <site> set-config -g mail_login resend
-bench --site <site> set-config mail_password "<RESEND_API_KEY>"   # سرّي
-bench --site <site> set-config auto_email_id ops@stochops.com
-```
 > **SPF/DKIM:** اضبطها من لوحة Resend لنطاق stochops.com. Resend للإرسال فقط — إن لزمت الردود فصندوق `ops@stochops.com` يحتاج مزوّد بريد وارد منفصل.
 
 ## 2. الرسائل الست الواجب اختبارها (بعناوين الفريق)
@@ -44,5 +53,11 @@ bench --site <site> set-config auto_email_id ops@stochops.com
 
 ## 4. التحقّق في التطوير (بلا SMTP)
 بلا مفتاح Resend لا يُرسَل بريد فعلي؛ تُصفّ الرسائل في **Email Queue** ويُعاد رابط التحقّق في `developer_mode`. عند توفّر المفتاح، كرّر الرسائل الست لعناوين الفريق وسجّل النتائج.
+
+## 5. نتيجة التجربة الفعلية (2026-10-19 — `nonprofit.localhost`)
+- **اتصال الشبكة:** المنافذ 465/587/2587 مفتوحة من الحاوية، والمنفذ 25 محجوب.
+- **المنفذ 465 (SSL عبر إعداد الموقع):** **فشل** — `Invalid Outgoing Mail Server or Port: Connection unexpectedly closed: timed out` (مسار إعداد الموقع لا يستخدم `SMTP_SSL`).
+- **المنفذ 587 (STARTTLS):** **نجح** — سجلّ Email Queue بحالة **Sent** بلا أخطاء؛ وصلت رسالة اختبار تقنية (بلا بيانات شخصية) إلى عنوان الفريق.
+- `production_privacy_gate` لا يزال **false** و`deployment_mode = PILOT_SANDBOX` — لم يتغيّرا.
 
 > المرجع: https://resend.com/docs/send-with-smtp · https://resend.com/pricing
