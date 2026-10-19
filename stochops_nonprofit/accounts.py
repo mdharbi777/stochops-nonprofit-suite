@@ -91,6 +91,41 @@ def create_account(full_name, email, role, password, mobile=None):
 
 
 @frappe.whitelist()
+def get_charity_settings():
+    """هوية الجمعية وإعداداتها (للعرض في صفحة الإعدادات). مدير الجمعية فقط."""
+    charity = _require_charity_admin()
+    data = frappe.db.get_value(
+        "Charity",
+        charity,
+        ["charity_name", "registration_number", "status", "contact_email", "contact_mobile", "max_accounts"],
+        as_dict=True,
+    )
+    data["used"] = frappe.db.count("User", {"charity": charity})
+    return data
+
+
+@frappe.whitelist()
+def update_charity_settings(registration_number=None, contact_email=None, contact_mobile=None):
+    """تحديث الحقول القابلة للتغيير في هوية الجمعية. مدير الجمعية فقط، على جمعيته فقط.
+    الاسم/الحالة/حد الحسابات تُدار من منصّة STOCHOPS (غير قابلة للتعديل هنا)."""
+    charity = _require_charity_admin()
+    updates = {}
+    if registration_number is not None:
+        updates["registration_number"] = (registration_number or "").strip()
+    if contact_email is not None:
+        email = (contact_email or "").strip().lower()
+        if email:
+            validate_email_address(email, throw=True)
+        updates["contact_email"] = email
+    if contact_mobile is not None:
+        updates["contact_mobile"] = (contact_mobile or "").strip()
+    if updates:
+        frappe.db.set_value("Charity", charity, updates)
+        frappe.db.commit()
+    return {"charity": charity, "updated": list(updates.keys())}
+
+
+@frappe.whitelist()
 def set_account_enabled(email, enabled):
     charity = _require_charity_admin()
     email = (email or "").strip().lower()

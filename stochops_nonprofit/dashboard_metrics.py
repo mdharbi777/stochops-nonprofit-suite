@@ -77,3 +77,24 @@ def compute(from_date=None, to_date=None):
 @frappe.whitelist()
 def get_dashboard(from_date=None, to_date=None):
     return compute(from_date, to_date)
+
+
+@frappe.whitelist()
+def get_my_work():
+    """المهام المطلوبة مني: قراراتي ومهامي المفتوحة/قيد العمل (مُعزولة بالجمعية)."""
+    user = frappe.session.user
+    decisions = frappe.get_list(
+        "Decision",
+        filters={"decision_owner": user, "status": ["in", ["Open", "In Progress"]]},
+        fields=["name", "title", "committee", "due_date", "status"],
+        order_by="due_date asc",
+        limit_page_length=20,
+    )
+    tasks = frappe.get_list(
+        "Initiative Task",
+        filters={"assigned_to": user, "status": ["in", ["Open", "In Progress"]]},
+        fields=["name", "title", "initiative", "due_date", "status"],
+        order_by="due_date asc",
+        limit_page_length=20,
+    )
+    return {"decisions": decisions, "tasks": tasks, "today": str(getdate(today()))}

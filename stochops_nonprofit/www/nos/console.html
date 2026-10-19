@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <style>
     :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
-      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; }
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; }
     * { box-sizing:border-box; margin:0; padding:0; }
     body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
       background-image: radial-gradient(1100px 520px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
@@ -38,14 +38,29 @@
     .soon { font-size:11px; background:rgba(148,163,184,.15); color:var(--muted); border-radius:999px; padding:2px 9px; margin-inline-start:6px; }
     .center { text-align:center; padding:60px 0; }
     .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:11px 22px; font-weight:700; font-family:inherit; cursor:pointer; }
-    @media (max-width:860px){ .cards{ grid-template-columns:repeat(2,1fr);} .nav{ grid-template-columns:1fr; } }
+    .qa { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 4px; }
+    .qa a { background:var(--blue); color:#fff; border-radius:999px; padding:9px 18px; font-size:14px; font-weight:700; }
+    .qa a.ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+    .qa a.ghost:hover { border-color:var(--cyan); }
+    .mywork { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px; }
+    .wcol { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+    .wcol h3 { color:#fff; font-size:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .wcol h3 .c { font-size:12px; color:var(--muted); font-weight:500; }
+    .witem { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px; }
+    .witem:last-child { border-bottom:none; }
+    .witem a { color:var(--text); } .witem a:hover { color:var(--cyan); }
+    .witem .due { color:var(--muted); font-size:12px; white-space:nowrap; }
+    .witem .due.od { color:var(--red); font-weight:700; }
+    .wempty { color:var(--muted); font-size:13px; padding:10px 0; }
+    .sec { color:#fff; font-size:18px; font-weight:800; margin:26px 0 2px; }
+    @media (max-width:860px){ .cards{ grid-template-columns:repeat(2,1fr);} .nav{ grid-template-columns:1fr; } .mywork{ grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="topbar">
       <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
-      <div class="right"><span id="whoami"></span><a href="/nos/guide">الدليل</a><a href="/app">واجهة Frappe</a><a href="/api/method/logout">خروج</a></div>
+      <div class="right"><span id="whoami"></span><a href="/nos/reports">التقارير</a><a href="/nos/settings">الإعدادات</a><a href="/nos/guide">الدليل</a><a href="/api/method/logout">خروج</a></div>
     </div>
     <div id="app"></div>
   </div>
@@ -53,7 +68,9 @@
   <script>
     var USER = "{{ frappe.session.user }}";
     var CHARITY = "{{ frappe.db.get_value('User', frappe.session.user, 'charity') or '' }}";
+    var TODAY = "";
     var app = document.getElementById("app");
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
     document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
 
     if (!USER || USER==="Guest"){
@@ -81,15 +98,49 @@
           app.innerHTML =
             '<h1>لوحة تشغيل الجمعية</h1>'+
             '<p class="muted">'+(CHARITY||"")+'</p>'+
+            '<div class="qa">'+
+              '<a href="/nos/decisions">+ قرار جديد</a>'+
+              '<a href="/nos/initiatives">+ مبادرة جديدة</a>'+
+              '<a class="ghost" href="/nos/reports">التقارير</a>'+
+            '</div>'+
+            '<div class="sec">المهام المطلوبة مني</div>'+
+            '<div class="mywork" id="mywork"><div class="wcol"><div class="wempty">…جارِ التحميل</div></div></div>'+
+            '<div class="sec">مؤشرات الجمعية</div>'+
             '<div class="note">أرقام الميزانية تشغيلية مُدخلة يدوياً — ليست بديلاً عن النظام المالي. النِّسب كمّية وليست قياس أثر. الملغاة مستبعدة.</div>'+
             '<div class="cards">'+cards+'</div>'+
             '<div class="nav">'+
               tile("/nos/committees","القرارات واللجان","اللجان والاجتماعات والقرارات ومتابعتها")+
               tile("/nos/initiatives","البرامج والمبادرات","المبادرات والمهام والميزانية الإدارية")+
-              tile("/app/query-report/Executive Summary","التقارير","الملخص التنفيذي والقرارات المتأخرة")+
+              tile("/nos/reports","التقارير","الملخص التنفيذي والقرارات المتأخرة وتقارير اللجان والمبادرات")+
               tile("/nos/accounts","إدارة الحسابات","حسابات فريق الجمعية (حتى 5) وصلاحياتهم")+
+              tile("/nos/settings","إعدادات الجمعية","هوية الجمعية ورقم التسجيل وبيانات التواصل")+
             '</div>';
+          loadMyWork();
         });
+    }
+
+    function workItem(it, label){
+      var od = it.due_date && it.due_date < TODAY;
+      var due = it.due_date ? ('استحقاق: '+it.due_date) : 'بلا موعد';
+      return '<div class="witem"><a href="'+esc(label)+'">'+esc(it.title||it.name)+'</a>'+
+        '<span class="due'+(od?' od':'')+'">'+esc(due)+(od?' · متأخر':'')+'</span></div>';
+    }
+
+    function loadMyWork(){
+      fetch("/api/method/stochops_nonprofit.dashboard_metrics.get_my_work")
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          var d = j.message || {decisions:[], tasks:[]};
+          TODAY = d.today || TODAY;
+          var decs = (d.decisions||[]).map(function(x){ return workItem(x, "/nos/decisions"); }).join("")
+            || '<div class="wempty">لا قرارات مُسندة إليك حالياً.</div>';
+          var tsks = (d.tasks||[]).map(function(x){ return workItem(x, "/nos/tasks"); }).join("")
+            || '<div class="wempty">لا مهام مُسندة إليك حالياً.</div>';
+          document.getElementById("mywork").innerHTML =
+            '<div class="wcol"><h3>قراراتي المفتوحة <span class="c">'+(d.decisions||[]).length+'</span></h3>'+decs+'</div>'+
+            '<div class="wcol"><h3>مهامي المفتوحة <span class="c">'+(d.tasks||[]).length+'</span></h3>'+tsks+'</div>';
+        })
+        .catch(function(){ document.getElementById("mywork").innerHTML = '<div class="wcol"><div class="wempty">تعذّر تحميل المهام.</div></div>'; });
     }
   </script>
 </body>

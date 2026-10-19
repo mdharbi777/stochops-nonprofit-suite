@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>التقارير | STOCHOPS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+      font-size:12px; color:var(--muted); margin:16px 0; }
+    .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+    .tab { background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:999px;
+      padding:9px 18px; font-size:14px; font-family:inherit; cursor:pointer; }
+    .tab:hover { border-color:var(--cyan); } .tab.active { background:var(--blue); border-color:var(--blue); color:#fff; font-weight:700; }
+    .filters { display:flex; flex-wrap:wrap; align-items:flex-end; gap:12px; margin-top:16px; }
+    .filters .f { display:flex; flex-direction:column; gap:6px; }
+    label { font-size:13px; color:var(--muted); }
+    input[type=date] { background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:9px 12px;
+      color:#fff; font-family:inherit; font-size:14px; }
+    input:focus { outline:none; border-color:var(--blue); }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700;
+      font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; }
+    .btn-sm { background:transparent; border:1px solid var(--border); color:var(--text); border-radius:999px;
+      padding:9px 16px; font-size:13px; font-family:inherit; cursor:pointer; } .btn-sm:hover{ border-color:var(--cyan); }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:8px 18px 18px; margin-top:16px; overflow-x:auto; }
+    .rtitle { color:#fff; font-size:17px; font-weight:700; margin:14px 4px 2px; }
+    .rdesc { color:var(--muted); font-size:13px; margin:0 4px 10px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:13.5px; white-space:nowrap; }
+    th { color:var(--muted); font-weight:500; }
+    tbody tr:hover { background:rgba(37,99,235,.06); }
+    .num { font-variant-numeric:tabular-nums; }
+    .empty { text-align:center; color:var(--muted); padding:36px 0; font-size:14px; }
+    .center { text-align:center; padding:60px 0; }
+    .count { font-size:12px; color:var(--muted); margin:6px 4px; }
+    @media (max-width:640px){ th,td{ white-space:normal; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التشغيل</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var CHARITY = "{{ frappe.db.get_value('User', frappe.session.user, 'charity') or '' }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    var REPORTS = [
+      {name:"Executive Summary", label:"الملخص التنفيذي", desc:"مؤشرات الفترة من الوحدتين (قرارات ومبادرات)، مع أساس كل رقم.", dated:true},
+      {name:"Overdue Decisions", label:"القرارات المتأخرة", desc:"قرارات تجاوزت تاريخ الاستحقاق وليست مكتملة/ملغاة.", dated:false},
+      {name:"Decisions by Committee", label:"القرارات حسب اللجنة", desc:"توزيع القرارات وحالاتها على اللجان.", dated:false},
+      {name:"Initiatives Overview", label:"نظرة على المبادرات", desc:"المبادرات وحالتها والميزانية الإدارية وإنجاز المهام.", dated:false}
+    ];
+    var current = 0;
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function firstDay(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-01"; }
+    function todayStr(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>التقارير</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { shell(); run(); }
+
+    function shell(){
+      var tabs = REPORTS.map(function(r,i){
+        return '<button class="tab'+(i===current?' active':'')+'" onclick="pick('+i+')">'+esc(r.label)+'</button>';
+      }).join("");
+      app.innerHTML =
+        '<h1>التقارير</h1>'+
+        '<p class="muted">'+esc(CHARITY||"")+'</p>'+
+        '<div class="note">كل الأرقام من قواعد البيانات مباشرة وتحترم صلاحياتك — لا تُعرض بيانات جمعية أخرى. التأخير محسوب لحظياً بتوقيت الرياض.</div>'+
+        '<div class="tabs">'+tabs+'</div>'+
+        '<div class="filters" id="filters"></div>'+
+        '<div id="out"></div>';
+      drawFilters();
+    }
+
+    function drawFilters(){
+      var r = REPORTS[current];
+      var f = document.getElementById("filters");
+      if (r.dated){
+        f.innerHTML =
+          '<div class="f"><label>من تاريخ</label><input type="date" id="from" value="'+firstDay()+'"></div>'+
+          '<div class="f"><label>إلى تاريخ</label><input type="date" id="to" value="'+todayStr()+'"></div>'+
+          '<button class="btn" onclick="run()">عرض</button>';
+      } else {
+        f.innerHTML = '<button class="btn-sm" onclick="run()">تحديث</button>';
+      }
+    }
+
+    window.pick = function(i){ current=i; shell(); run(); };
+
+    function run(){
+      var r = REPORTS[current];
+      var filters = {};
+      if (r.dated){
+        var fe=document.getElementById("from"), te=document.getElementById("to");
+        if (fe && te){ filters.from_date=fe.value; filters.to_date=te.value; }
+      }
+      var out = document.getElementById("out");
+      out.innerHTML = '<div class="panel"><div class="empty">…جارِ التحميل</div></div>';
+      fetch("/api/method/frappe.desk.query_report.run", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "X-Frappe-CSRF-Token":CSRF },
+        body: JSON.stringify({ report_name:r.name, filters:filters })
+      }).then(function(resp){ return resp.json().then(function(j){ return {ok:resp.ok, j:j}; }); })
+        .then(function(res){ renderReport(res); })
+        .catch(function(){ out.innerHTML = '<div class="panel"><div class="empty">تعذّر تحميل التقرير.</div></div>'; });
+    }
+
+    function fmtCell(val, col){
+      if (val==null || val==="") return '<span class="muted">—</span>';
+      var ft = col.fieldtype;
+      if (ft==="Int" || ft==="Float" || ft==="Currency"){
+        var n = Number(val);
+        if (!isNaN(n)) return '<span class="num">'+n.toLocaleString("en-US")+'</span>';
+      }
+      return esc(val);
+    }
+
+    function renderReport(res){
+      var r = REPORTS[current];
+      var out = document.getElementById("out");
+      var m = (res.j && res.j.message) || {};
+      var cols = (m.columns||[]).filter(function(c){ return !c.hidden; });
+      var rows = m.result || [];
+      // طبّع الأعمدة (قد تأتي كنص "label:fieldtype:width")
+      cols = cols.map(function(c){
+        if (typeof c === "string"){ var p=c.split(":"); return {label:p[0], fieldname:p[0], fieldtype:p[1]||"Data"}; }
+        return c;
+      });
+      var head = cols.map(function(c){ return '<th>'+esc(c.label||c.fieldname)+'</th>'; }).join("");
+      var body = rows.map(function(row){
+        var tds = cols.map(function(c){
+          var v = Array.isArray(row) ? row[cols.indexOf(c)] : row[c.fieldname];
+          return '<td>'+fmtCell(v, c)+'</td>';
+        }).join("");
+        return '<tr>'+tds+'</tr>';
+      }).join("");
+      out.innerHTML =
+        '<div class="panel">'+
+          '<div class="rtitle">'+esc(r.label)+'</div>'+
+          '<div class="rdesc">'+esc(r.desc)+'</div>'+
+          (rows.length ? '<table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table>'+
+            '<div class="count">عدد الصفوف: '+rows.length+'</div>'
+            : '<div class="empty">لا توجد بيانات لعرضها.</div>')+
+        '</div>';
+    }
+  </script>
+</body>
+</html>
