@@ -65,6 +65,35 @@ NOTIFICATIONS = [
         "subject": "طلب حق يقترب موعده النظامي: {{ doc.name }}",
         "message": "نوع الطلب: {{ doc.request_type }} — الاستحقاق: {{ doc.due_date }}",
     },
+    # --- تنبيهات بريدية مختصرة للطاقم (P6.3) — معرّف السجل ورابط الدخول فقط، بلا بيانات مستفيد/مبالغ/أسماء ---
+    {
+        "channel": "Email", "document_type": "Decision", "event": "New", "field": "decision_owner",
+        "subject": "منصة الفاضل: عنصر مُسند إليك",
+        "message": "أُسند إليك عنصر ({{ doc.name }}). ادخل منصّة الفاضل للتفاصيل: {{ frappe.utils.get_url() }}/nos",
+    },
+    {
+        "channel": "Email", "document_type": "Initiative Task", "event": "New", "field": "assigned_to",
+        "subject": "منصة الفاضل: مهمة مُسندة إليك",
+        "message": "أُسندت إليك مهمة ({{ doc.name }}). ادخل منصّة الفاضل للتفاصيل: {{ frappe.utils.get_url() }}/nos",
+    },
+    {
+        "channel": "Email", "document_type": "Decision", "event": "Days Before", "date": "due_date", "days": 2,
+        "field": "decision_owner", "condition": "doc.status not in ['Completed', 'Cancelled']",
+        "subject": "منصة الفاضل: موعد عنصر يقترب",
+        "message": "لديك عنصر يقترب موعده ({{ doc.name }}). ادخل للمتابعة: {{ frappe.utils.get_url() }}/nos",
+    },
+    {
+        "channel": "Email", "document_type": "Initiative Task", "event": "Days Before", "date": "due_date", "days": 2,
+        "field": "assigned_to", "condition": "doc.status not in ['Completed', 'Cancelled']",
+        "subject": "منصة الفاضل: موعد مهمة يقترب",
+        "message": "لديك مهمة يقترب موعدها ({{ doc.name }}). ادخل للمتابعة: {{ frappe.utils.get_url() }}/nos",
+    },
+    {
+        "channel": "Email", "document_type": "Expense Request", "event": "Value Change", "value_changed": "status",
+        "field": "requested_by", "condition": "doc.status in ['معتمد', 'مرفوض']",
+        "subject": "منصة الفاضل: تم البتّ في طلبك",
+        "message": "تم البتّ في طلبك ({{ doc.name }}). ادخل للتفاصيل: {{ frappe.utils.get_url() }}/nos",
+    },
 ]
 
 
@@ -79,7 +108,7 @@ def ensure_notifications():
             {
                 "doctype": "Notification",
                 "enabled": 1,
-                "channel": "System Notification",
+                "channel": n.get("channel", "System Notification"),
                 "document_type": n["document_type"],
                 "event": n["event"],
                 "subject": n["subject"],
@@ -90,6 +119,8 @@ def ensure_notifications():
         if n.get("date"):
             doc.date_changed = n["date"]
             doc.days_in_advance = n["days"]
+        if n.get("value_changed"):
+            doc.value_changed = n["value_changed"]
         if n.get("condition"):
             doc.condition = n["condition"]
         doc.insert(ignore_permissions=True)

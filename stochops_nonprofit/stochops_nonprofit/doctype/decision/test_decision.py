@@ -230,9 +230,10 @@ class TestDashboardMetrics(FrappeTestCase):
 
 
 class TestNotifications(FrappeTestCase):
-    """إعداد الإشعارات داخل التطبيق موجود ومفعّل (قناة System Notification، بلا قنوات مدفوعة)."""
+    """الإشعارات موجودة ومفعّلة: داخل التطبيق (System Notification) + تنبيهات بريد
+    مختصرة للطاقم عبر Resend (P6). لا قنوات SMS/واتساب مدفوعة."""
 
-    def test_system_notifications_present_and_enabled(self):
+    def test_notifications_present_and_enabled(self):
         from stochops_nonprofit.setup.notifications import NOTIFICATIONS
 
         for n in NOTIFICATIONS:
@@ -241,17 +242,29 @@ class TestNotifications(FrappeTestCase):
                 {
                     "subject": n["subject"],
                     "document_type": n["document_type"],
-                    "channel": "System Notification",
+                    "channel": n.get("channel", "System Notification"),
                     "enabled": 1,
                 },
             )
             self.assertTrue(exists, f"إشعار مفقود/معطّل: {n['subject']}")
 
-    def test_no_paid_channels(self):
-        # لا إشعارات SMS/بريد في MVP — كلها System Notification فقط
+    def test_no_sms_channels(self):
+        # البريد مسموح (Resend، محتوى أدنى للطاقم)؛ لا SMS/واتساب مدفوعة
         paid = frappe.get_all(
             "Notification",
-            filters={"channel": ["in", ["SMS", "Email"]], "document_type": ["in", ["Decision", "Initiative Task"]]},
+            filters={"channel": ["in", ["SMS", "WhatsApp"]], "document_type": ["like", "%"]},
             pluck="name",
         )
         self.assertEqual(paid, [])
+
+    def test_staff_email_alerts_minimal_no_pii(self):
+        # تنبيهات البريد للطاقم لا تحتوي حقولاً شخصية (اسم/هوية/مبلغ) في المتن
+        from stochops_nonprofit.setup.notifications import NOTIFICATIONS
+
+        forbidden = ["beneficiary_name", "national_id", "donor_name", "full_name", "amount", "title"]
+        email_specs = [n for n in NOTIFICATIONS if n.get("channel") == "Email"]
+        self.assertTrue(email_specs)
+        for n in email_specs:
+            body = n["message"] + n["subject"]
+            for token in forbidden:
+                self.assertNotIn(token, body, f"تسريب محتمل في تنبيه البريد: {n['subject']}")
