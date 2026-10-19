@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منصّة الجمعيات | STOCHOPS</title>
+  <meta name="description" content="منصّة متابعة القرارات والمبادرات والمؤشرات للجمعيات الخيرية — منتج من STOCHOPS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0b1220; --navy2: #101b2b; --blue: #2563eb; --cyan: #06b6d4;
+      --text: #e2e8f0; --muted: #94a3b8; --card: #111a2e; --border: #1e293b; --green: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Tajawal", sans-serif; color: var(--text); background: var(--navy);
+      background-image: radial-gradient(1200px 600px at 80% -10%, #1b2a4a 0%, transparent 60%),
+                        radial-gradient(900px 500px at 0% 0%, #0e1b33 0%, transparent 55%);
+      line-height: 1.7; -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    /* nav */
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; direction: ltr; }
+    .logo .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--navy2);
+      display: inline-grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 6px; align-items: end; }
+    .logo .mark i { display: block; background: var(--blue); border-radius: 1px; }
+    .logo .mark i:nth-child(2) { background: var(--cyan); height: 70%; }
+    .logo .mark i:nth-child(1) { height: 45%; } .logo .mark i:nth-child(3) { height: 100%; }
+    .logo b { color: #fff; } .logo span { color: var(--cyan); }
+    .nav-links { display: flex; align-items: center; gap: 18px; font-size: 15px; color: var(--muted); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 11px 22px;
+      font-weight: 700; font-size: 15px; cursor: pointer; border: 1px solid transparent; transition: .15s; font-family: inherit; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn-ghost:hover { border-color: var(--cyan); color: #fff; }
+    /* hero */
+    .hero { padding: 60px 0 40px; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(6,182,212,.1);
+      border: 1px solid rgba(6,182,212,.35); color: var(--cyan); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500; }
+    .hero h1 { font-size: 46px; font-weight: 800; color: #fff; margin: 22px 0 16px; line-height: 1.25; }
+    .hero p.lead { font-size: 19px; color: var(--muted); max-width: 640px; }
+    .cta { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
+    /* features */
+    .section-title { text-align: center; margin: 60px 0 10px; }
+    .section-title h2 { color: #fff; font-size: 30px; font-weight: 800; }
+    .section-title p { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 30px 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 26px; }
+    .card .ic { width: 46px; height: 46px; border-radius: 12px; background: rgba(37,99,235,.15);
+      display: grid; place-items: center; margin-bottom: 14px; color: var(--cyan); }
+    .card h3 { color: #fff; font-size: 19px; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 15px; }
+    /* steps */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 24px 0 10px; }
+    .step { display: flex; gap: 14px; align-items: flex-start; }
+    .step .n { flex: none; width: 34px; height: 34px; border-radius: 999px; background: var(--blue);
+      color: #fff; font-weight: 800; display: grid; place-items: center; }
+    .step h4 { color: #fff; font-size: 16px; } .step p { color: var(--muted); font-size: 14px; }
+    /* footer */
+    footer { border-top: 1px solid var(--border); margin-top: 60px; padding: 26px 0; color: var(--muted); font-size: 14px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .dots { color: var(--muted); font-size: 13px; }
+    .dots b { color: var(--cyan); }
+    @media (max-width: 820px) {
+      .hero h1 { font-size: 34px; } .grid, .steps { grid-template-columns: 1fr; }
+      .nav-links a:not(.btn) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="nav-links">
+        <a href="#features">المزايا</a>
+        <a href="#how">كيف تبدأ</a>
+        <a href="/login">تسجيل الدخول</a>
+        <a class="btn btn-primary" href="/nos/register">سجّل جمعيتك</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <span class="badge">● منتج من STOCHOPS — للجمعيات الخيرية</span>
+      <h1>منصّة متابعة القرارات والمبادرات لجمعيتك</h1>
+      <p class="lead">نظّم قرارات لجانك، تابع مبادراتك ومهامك، واطّلع على مؤشرات أداء جمعيتك — في منصّة واحدة بسيطة وآمنة، عربية بالكامل.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="/nos/register">سجّل جمعيتك مجاناً</a>
+        <a class="btn btn-ghost" href="/login">لديّ حساب — دخول</a>
+      </div>
+    </section>
+
+    <div id="features" class="section-title"><h2>ثلاث وحدات متكاملة</h2><p>كل ما تحتاجه جمعيتك لإدارة العمليات</p></div>
+    <section class="grid">
+      <div class="card">
+        <div class="ic">◆</div>
+        <h3>القرارات واللجان</h3>
+        <p>سجّل اللجان والاجتماعات ومحاضرها، وأسنِد القرارات بمسؤول وموعد، وتابع تنفيذها خطوة بخطوة.</p>
+      </div>
+      <div class="card">
+        <div class="ic">◆</div>
+        <h3>البرامج والمبادرات</h3>
+        <p>تتبّع المبادرات ومهامها وميزانيتها الإدارية ومخرجاتها الكمّية — دون بيانات مستفيدين.</p>
+      </div>
+      <div class="card">
+        <div class="ic">◆</div>
+        <h3>المؤشرات والتقارير</h3>
+        <p>لوحة مؤشرات وملخص تنفيذي وتقارير جاهزة للطباعة والتصدير — أرقام من بياناتك مباشرة.</p>
+      </div>
+    </section>
+
+    <div id="how" class="section-title"><h2>كيف تبدأ؟</h2></div>
+    <section class="steps">
+      <div class="step"><div class="n">١</div><div><h4>سجّل جمعيتك</h4><p>أنشئ حساب الجمعية وأول حساب مدير في دقيقة.</p></div></div>
+      <div class="step"><div class="n">٢</div><div><h4>أضف فريقك</h4><p>حتى 5 حسابات بصلاحيات مختلفة (مدير، تنفيذي، منسقون).</p></div></div>
+      <div class="step"><div class="n">٣</div><div><h4>ابدأ التشغيل</h4><p>سجّل قراراتك ومبادراتك وتابع المؤشرات فوراً.</p></div></div>
+    </section>
+
+    <footer>
+      <div>© {{ frappe.utils.now_datetime().year if frappe else "2026" }} STOCHOPS — جميع الحقوق محفوظة</div>
+      <div class="dots"><b>●</b> نظّم &nbsp; <b>●</b> تابِع &nbsp; <b>●</b> قِس</div>
+    </footer>
+  </div>
+</body>
+</html>
