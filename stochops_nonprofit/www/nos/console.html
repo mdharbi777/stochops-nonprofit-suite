@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة التشغيل | STOCHOPS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1100px 520px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1060px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px;
+      font-size:12px; color:var(--muted); margin:16px 0; }
+    .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:8px; }
+    .kpi { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+    .kpi .t { font-size:12.5px; color:var(--muted); } .kpi .v { font-size:28px; font-weight:800; color:#fff; margin-top:6px; }
+    .kpi .s { font-size:11px; color:var(--muted); margin-top:4px; }
+    .nav { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:24px 0; }
+    .tile { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:block; transition:.15s; }
+    .tile:hover { border-color:var(--cyan); transform:translateY(-1px); }
+    .tile h3 { color:#fff; font-size:17px; margin-bottom:4px; } .tile p { color:var(--muted); font-size:13px; }
+    .soon { font-size:11px; background:rgba(148,163,184,.15); color:var(--muted); border-radius:999px; padding:2px 9px; margin-inline-start:6px; }
+    .center { text-align:center; padding:60px 0; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:11px 22px; font-weight:700; font-family:inherit; cursor:pointer; }
+    @media (max-width:860px){ .cards{ grid-template-columns:repeat(2,1fr);} .nav{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><span id="whoami"></span><a href="/app">واجهة Frappe</a><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var USER = "{{ frappe.session.user }}";
+    var CHARITY = "{{ frappe.db.get_value('User', frappe.session.user, 'charity') or '' }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>لوحة التشغيل</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { load(); }
+
+    function kpi(t,v,s){ return '<div class="kpi"><div class="t">'+t+'</div><div class="v">'+v+'</div><div class="s">'+(s||"")+'</div></div>'; }
+    function tile(href,title,desc,soon){ return '<a class="tile" href="'+(soon?'javascript:void(0)':href)+'"><h3>'+title+(soon?'<span class="soon">قريباً</span>':'')+'</h3><p>'+desc+'</p></a>'; }
+
+    function load(){
+      fetch("/api/method/stochops_nonprofit.dashboard_metrics.get_dashboard")
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          var d = j.message || {};
+          var cards = [
+            kpi("القرارات غير الملغاة", d.decisions_non_cancelled, "إجمالي حالي"),
+            kpi("مفتوحة وقيد العمل", d.decisions_open_inprogress, ""),
+            kpi("القرارات المتأخرة", d.decisions_overdue, "الاستحقاق < اليوم"),
+            kpi("مكتملة خلال الشهر", d.decisions_completed_in_period, (d.from_date||"")+" → "+(d.to_date||"")),
+            kpi("المبادرات النشطة", d.initiatives_active, ""),
+            kpi("المهام المتأخرة", d.tasks_overdue, ""),
+            kpi("إجمالي المخطط (ريال)", Number(d.total_planned_budget||0).toLocaleString("en-US"), "لـ "+(d.initiatives_counted_planned||0)+" مبادرة"),
+            kpi("إجمالي الصرف (ريال)", Number(d.total_actual_spend||0).toLocaleString("en-US"), "لـ "+(d.initiatives_counted_actual||0)+" مبادرة")
+          ].join("");
+          app.innerHTML =
+            '<h1>لوحة تشغيل الجمعية</h1>'+
+            '<p class="muted">'+(CHARITY||"")+'</p>'+
+            '<div class="note">أرقام الميزانية تشغيلية مُدخلة يدوياً — ليست بديلاً عن النظام المالي. النِّسب كمّية وليست قياس أثر. الملغاة مستبعدة.</div>'+
+            '<div class="cards">'+cards+'</div>'+
+            '<div class="nav">'+
+              tile("/nos/committees","القرارات واللجان","اللجان والاجتماعات والقرارات ومتابعتها")+
+              tile("/nos/initiatives","البرامج والمبادرات","المبادرات والمهام والميزانية الإدارية", true)+
+              tile("/app/query-report/Executive Summary","التقارير","الملخص التنفيذي والقرارات المتأخرة")+
+              tile("/nos/accounts","إدارة الحسابات","حسابات فريق الجمعية (حتى 5) وصلاحياتهم")+
+            '</div>';
+        });
+    }
+  </script>
+</body>
+</html>
