@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المهام | STOCHOPS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#0b1220;--navy2:#101b2b;--blue:#2563eb;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--card:#111a2e;--border:#1e293b;--green:#22c55e;--red:#f87171;}
+    *{box-sizing:border-box;margin:0;padding:0;} body{font-family:"Tajawal",sans-serif;color:var(--text);background:var(--navy);background-image:radial-gradient(1000px 500px at 85% -10%,#16233f 0%,transparent 60%);min-height:100vh;}
+    a{color:var(--cyan);text-decoration:none;} .wrap{max-width:1020px;margin:0 auto;padding:0 20px;}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;direction:ltr;}
+    .logo .mark{width:26px;height:26px;border-radius:7px;background:var(--navy2);display:inline-grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:5px;align-items:end;}
+    .logo .mark i{display:block;background:var(--blue);border-radius:1px;} .logo .mark i:nth-child(2){background:var(--cyan);height:70%;} .logo .mark i:nth-child(1){height:45%;} .logo .mark i:nth-child(3){height:100%;}
+    .logo b{color:#fff;} .logo span{color:var(--cyan);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+    .topbar .right{display:flex;align-items:center;gap:16px;font-size:14px;color:var(--muted);flex-wrap:wrap;}
+    h1{color:#fff;font-size:25px;font-weight:800;margin:24px 0 2px;} .muted{color:var(--muted);font-size:14px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:18px;}
+    table{width:100%;border-collapse:collapse;} th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--border);font-size:14px;} th{color:var(--muted);font-weight:500;}
+    .late{color:var(--red);font-weight:700;}
+    label{display:block;font-size:13px;color:var(--text);margin:12px 0 6px;font-weight:500;}
+    input,select{width:100%;background:#0c1424;border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:#fff;font-family:inherit;font-size:14px;}
+    td select{padding:6px 8px;font-size:13px;} input:focus,select:focus{outline:none;border-color:var(--blue);} .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .btn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:10px 22px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;} .btn:hover{background:#1d4ed8;} .btn:disabled{opacity:.6;}
+    .msg{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:14px;display:none;} .msg.err{display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--red);}
+    .center{text-align:center;padding:60px 0;} .empty{color:var(--muted);text-align:center;padding:24px;}
+    @media(max-width:640px){.row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><a href="/nos/console">اللوحة</a><a href="/nos/initiatives">المبادرات</a><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+  <script>
+    var CSRF="{{ frappe.session.csrf_token or '' }}", USER="{{ frappe.session.user }}", TODAY="{{ frappe.utils.today() }}";
+    var ST={Open:"مفتوح","In Progress":"قيد العمل",Completed:"مكتمل",Cancelled:"ملغى"};
+    var app=document.getElementById("app");
+    function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML;}
+    function errMsg(res){try{var sm=JSON.parse(res.j._server_messages||"[]");if(sm.length)return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,"");}catch(e){}return "حدث خطأ.";}
+    function getList(dt,fields){return fetch("/api/method/frappe.client.get_list?doctype="+dt+"&fields="+encodeURIComponent(JSON.stringify(fields))+"&limit_page_length=0&order_by=creation desc").then(function(r){return r.json();});}
+    function post(method,body){return fetch("/api/method/"+method,{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});});}
+    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>المهام</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';}else{render();}
+    function statusSel(name,cur){var o=Object.keys(ST).map(function(k){return '<option value="'+k+'"'+(k===cur?" selected":"")+'>'+ST[k]+'</option>';}).join("");return '<select onchange="setStatus(\''+esc(name)+'\',this.value)">'+o+'</select>';}
+    function render(){
+      Promise.all([getList("Initiative Task",["name","title","initiative","assigned_to","due_date","status"]), getList("Initiative",["name","title"])]).then(function(r){
+        var list=r[0].message||[], inits=(r[1].message||[]);
+        var rows=list.length?list.map(function(t){
+          var late=t.due_date && t.status!=="Completed" && t.status!=="Cancelled" && t.due_date<TODAY;
+          return '<tr><td>'+esc(t.title||"")+'</td><td>'+esc(t.initiative||"")+'</td><td>'+esc(t.assigned_to||"")+'</td><td><span class="'+(late?"late":"")+'">'+esc(t.due_date||"")+(late?" ⚠":"")+'</span></td><td>'+statusSel(t.name,t.status)+'</td></tr>';
+        }).join(""):'<tr><td colspan="5" class="empty">لا توجد مهام بعد.</td></tr>';
+        var iopts=inits.map(function(i){return '<option value="'+esc(i.name)+'">'+esc((i.title?i.title+" — ":"")+i.name)+'</option>';}).join("");
+        app.innerHTML='<h1>المهام</h1><p class="muted">مهام مبادرات جمعيتك</p>'+
+          '<div class="panel"><table><thead><tr><th>المهمة</th><th>المبادرة</th><th>المكلّف</th><th>الاستحقاق</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+          '<div class="panel"><h3 style="color:#fff;margin-bottom:6px">إضافة مهمة</h3>'+
+          (inits.length? ('<div class="row"><div><label>المبادرة</label><select id="t_init">'+iopts+'</select></div><div><label>عنوان المهمة</label><input id="t_title"></div></div>'+
+          '<div class="row"><div><label>المكلّف (بريد)</label><input id="t_asg" value="'+esc(USER)+'"></div><div><label>تاريخ الاستحقاق</label><input id="t_due" type="date"></div></div>'+
+          '<div style="margin-top:16px"><button class="btn" id="addbtn" onclick="addTask()">إضافة المهمة</button></div>') : '<p class="muted">أضف مبادرة أولاً من <a href="/nos/initiatives">صفحة المبادرات</a>.</p>')+
+          '<div class="msg" id="msg"></div></div>';
+      });
+    }
+    function show(t,x){var m=document.getElementById("msg");if(m){m.className="msg "+t;m.textContent=x;}}
+    window.addTask=function(){
+      var init=document.getElementById("t_init").value,title=document.getElementById("t_title").value.trim(),
+          asg=document.getElementById("t_asg").value.trim(),due=document.getElementById("t_due").value;
+      if(!init||!title||!asg||!due){show("err","المبادرة والعنوان والمكلّف والاستحقاق مطلوبة.");return;}
+      document.getElementById("addbtn").disabled=true;
+      post("frappe.client.insert",{doc:{doctype:"Initiative Task",initiative:init,title:title,assigned_to:asg,due_date:due}}).then(function(res){if(res.ok&&res.j.message){render();}else{show("err",errMsg(res));document.getElementById("addbtn").disabled=false;}});
+    };
+    window.setStatus=function(name,status){
+      var fields={status:status};
+      if(status==="Completed"){var note=prompt("ملاحظة الإكمال (مطلوبة):");if(!note){render();return;}fields.completion_note=note;}
+      post("frappe.client.set_value",{doctype:"Initiative Task",name:name,fieldname:fields}).then(function(res){if(res.ok){render();}else{alert(errMsg(res));render();}});
+    };
+  </script>
+</body>
+</html>

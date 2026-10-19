@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المبادرات | STOCHOPS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#0b1220;--navy2:#101b2b;--blue:#2563eb;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--card:#111a2e;--border:#1e293b;--green:#22c55e;--red:#f87171;}
+    *{box-sizing:border-box;margin:0;padding:0;} body{font-family:"Tajawal",sans-serif;color:var(--text);background:var(--navy);background-image:radial-gradient(1000px 500px at 85% -10%,#16233f 0%,transparent 60%);min-height:100vh;}
+    a{color:var(--cyan);text-decoration:none;} .wrap{max-width:1020px;margin:0 auto;padding:0 20px;}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;direction:ltr;}
+    .logo .mark{width:26px;height:26px;border-radius:7px;background:var(--navy2);display:inline-grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:5px;align-items:end;}
+    .logo .mark i{display:block;background:var(--blue);border-radius:1px;} .logo .mark i:nth-child(2){background:var(--cyan);height:70%;} .logo .mark i:nth-child(1){height:45%;} .logo .mark i:nth-child(3){height:100%;}
+    .logo b{color:#fff;} .logo span{color:var(--cyan);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+    .topbar .right{display:flex;align-items:center;gap:16px;font-size:14px;color:var(--muted);flex-wrap:wrap;}
+    h1{color:#fff;font-size:25px;font-weight:800;margin:24px 0 2px;} .muted{color:var(--muted);font-size:14px;}
+    .note{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:12px;color:var(--muted);margin-top:10px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-top:18px;}
+    table{width:100%;border-collapse:collapse;} th,td{text-align:right;padding:11px 10px;border-bottom:1px solid var(--border);font-size:14px;} th{color:var(--muted);font-weight:500;}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;background:rgba(6,182,212,.12);color:var(--cyan);}
+    label{display:block;font-size:13px;color:var(--text);margin:12px 0 6px;font-weight:500;}
+    input,select,textarea{width:100%;background:#0c1424;border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:#fff;font-family:inherit;font-size:14px;}
+    input:focus,select:focus{outline:none;border-color:var(--blue);} .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;} .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+    .btn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:10px 22px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;} .btn:hover{background:#1d4ed8;} .btn:disabled{opacity:.6;}
+    .msg{margin-top:14px;padding:11px 14px;border-radius:10px;font-size:14px;display:none;} .msg.err{display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--red);}
+    .center{text-align:center;padding:60px 0;} .empty{color:var(--muted);text-align:center;padding:24px;}
+    @media(max-width:640px){.row,.row3{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><a href="/nos/console">اللوحة</a><a href="/nos/tasks">المهام</a><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+  <script>
+    var CSRF="{{ frappe.session.csrf_token or '' }}", USER="{{ frappe.session.user }}";
+    var UNITS=["نشاط","مستفيد (عدد إجمالي فقط)","مخرج","أخرى"];
+    var app=document.getElementById("app");
+    function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML;}
+    function errMsg(res){try{var sm=JSON.parse(res.j._server_messages||"[]");if(sm.length)return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,"");}catch(e){}return "حدث خطأ.";}
+    function getList(dt,fields){return fetch("/api/method/frappe.client.get_list?doctype="+dt+"&fields="+encodeURIComponent(JSON.stringify(fields))+"&limit_page_length=0&order_by=creation desc").then(function(r){return r.json();});}
+    function insert(doc){return fetch("/api/method/frappe.client.insert",{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify({doc:doc})}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});});}
+    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>المبادرات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';}else{render();}
+    function render(){
+      getList("Initiative",["name","title","status","initiative_owner","start_date","end_date","planned_budget_sar","actual_spend_sar"]).then(function(r){
+        var list=r.message||[];
+        var rows=list.length?list.map(function(i){
+          return '<tr><td>'+esc(i.name)+'</td><td>'+esc(i.title||"")+'</td><td><span class="pill">'+esc(i.status||"")+'</span></td><td>'+esc(i.initiative_owner||"")+'</td><td>'+esc(i.start_date||"")+' → '+esc(i.end_date||"")+'</td><td>'+Number(i.planned_budget_sar||0).toLocaleString("en-US")+'</td><td>'+Number(i.actual_spend_sar||0).toLocaleString("en-US")+'</td></tr>';
+        }).join(""):'<tr><td colspan="7" class="empty">لا توجد مبادرات بعد.</td></tr>';
+        var uopts=UNITS.map(function(u){return '<option value="'+esc(u)+'">'+esc(u)+'</option>';}).join("");
+        app.innerHTML='<h1>المبادرات</h1><p class="muted">مبادرات جمعيتك وميزانيتها الإدارية ومخرجاتها</p>'+
+          '<div class="note">أرقام الميزانية تشغيلية مُدخلة يدوياً — ليست محاسبة. المستهدف كمّي وليس قياس أثر.</div>'+
+          '<div class="panel" style="overflow-x:auto"><table><thead><tr><th>الرقم</th><th>العنوان</th><th>الحالة</th><th>المسؤول</th><th>الفترة</th><th>المخطط</th><th>المصروف</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+          '<div class="panel"><h3 style="color:#fff;margin-bottom:6px">إضافة مبادرة</h3>'+
+          '<div class="row"><div><label>عنوان المبادرة</label><input id="i_title"></div><div><label>المسؤول (بريد)</label><input id="i_owner" value="'+esc(USER)+'"></div></div>'+
+          '<label>الهدف</label><textarea id="i_obj" rows="2"></textarea>'+
+          '<div class="row"><div><label>تاريخ البداية</label><input id="i_start" type="date"></div><div><label>تاريخ النهاية</label><input id="i_end" type="date"></div></div>'+
+          '<div class="row"><div><label>الميزانية المخططة (ريال)</label><input id="i_plan" type="number" min="0"></div><div><label>الصرف الإداري (ريال)</label><input id="i_spend" type="number" min="0"></div></div>'+
+          '<div class="row3"><div><label>المستهدف</label><input id="i_tc" type="number" min="0"></div><div><label>المنجز</label><input id="i_ac" type="number" min="0"></div><div><label>وحدة المستهدف</label><select id="i_unit">'+uopts+'</select></div></div>'+
+          '<div style="margin-top:16px"><button class="btn" id="addbtn" onclick="addInitiative()">إضافة المبادرة</button></div>'+
+          '<div class="msg" id="msg"></div></div>';
+      });
+    }
+    function show(t,x){var m=document.getElementById("msg");if(m){m.className="msg "+t;m.textContent=x;}}
+    function num(id){var v=document.getElementById(id).value;return v===""?null:Number(v);}
+    window.addInitiative=function(){
+      var title=document.getElementById("i_title").value.trim(),owner=document.getElementById("i_owner").value.trim(),
+          obj=document.getElementById("i_obj").value.trim(),s=document.getElementById("i_start").value,e=document.getElementById("i_end").value;
+      if(!title||!owner||!obj||!s||!e){show("err","العنوان والمسؤول والهدف والتواريخ مطلوبة.");return;}
+      document.getElementById("addbtn").disabled=true;
+      insert({doctype:"Initiative",title:title,initiative_owner:owner,objective:obj,start_date:s,end_date:e,
+        planned_budget_sar:num("i_plan"),actual_spend_sar:num("i_spend"),target_count:num("i_tc"),actual_count:num("i_ac"),target_unit:document.getElementById("i_unit").value})
+        .then(function(res){if(res.ok&&res.j.message){render();}else{show("err",errMsg(res));document.getElementById("addbtn").disabled=false;}});
+    };
+  </script>
+</body>
+</html>
