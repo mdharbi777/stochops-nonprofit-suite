@@ -11,7 +11,7 @@ EXPECTED_DOCTYPES = [
     "Initiative", "Initiative Task",
     "Beneficiary", "Assistance Request",
     "Donor", "Donation", "Grant",
-    "Expense Request",
+    "Expense Request", "Compliance Obligation",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",
@@ -19,6 +19,7 @@ EXPECTED_ROLES = [
 ]
 EXPECTED_REPORTS = [
     "Overdue Decisions", "Decisions by Committee", "Initiatives Overview", "Executive Summary",
+    "Compliance Obligations",
 ]
 
 

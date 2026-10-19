@@ -227,14 +227,36 @@ def run():
         expenses.append(d.name)
     out["expenses"] = expenses
 
+    # --- الالتزامات الحكومية/التنظيمية (الوحدة N5) — متابعة داخل النظام، بلا تكامل حكومي ---
+    obl_specs = [
+        {"title": f"التقرير السنوي للجهة المشرفة {TAG}", "obligation_type": "تقرير سنوي",
+         "authority": "الجهة المشرفة (عيّنة)", "due": add_days(today(), 20), "status": "قيد الإعداد"},
+        {"title": f"تجديد الترخيص {TAG}", "obligation_type": "تجديد ترخيص",
+         "authority": "جهة الترخيص (عيّنة)", "due": add_days(today(), -3), "status": "قادم"},
+    ]
+    obligations = []
+    for s in obl_specs:
+        if frappe.db.exists("Compliance Obligation", {"title": s["title"]}):
+            continue
+        obligations.append(
+            frappe.get_doc(
+                {"doctype": "Compliance Obligation", "title": s["title"], "obligation_type": s["obligation_type"],
+                 "authority": s["authority"], "due_date": s["due"], "status": s["status"]}
+            ).insert().name
+        )
+    out["obligations"] = obligations
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"expenses": 0, "grants": 0, "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0,
-               "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    deleted = {"obligations": 0, "expenses": 0, "grants": 0, "donations": 0, "donors": 0, "requests": 0,
+               "beneficiaries": 0, "tasks": 0, "initiatives": 0, "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Compliance Obligation", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Compliance Obligation", name, force=1)
+        deleted["obligations"] += 1
     for name in frappe.get_all("Expense Request", filters=[["title", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Expense Request", name, force=1)
         deleted["expenses"] += 1

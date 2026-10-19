@@ -41,6 +41,18 @@ NOTIFICATIONS = [
         "subject": "مهمة متأخرة: {{ doc.title }}",
         "message": "تجاوز تاريخ الاستحقاق: {{ doc.due_date }}",
     },
+    {
+        "document_type": "Compliance Obligation", "event": "Days Before", "date": "due_date", "days": 7,
+        "field": "responsible", "condition": "doc.status not in ['مكتمل', 'ملغى']",
+        "subject": "التزام يقترب موعده: {{ doc.title }}",
+        "message": "الجهة: {{ doc.authority }} — الاستحقاق: {{ doc.due_date }}",
+    },
+    {
+        "document_type": "Compliance Obligation", "event": "Days After", "date": "due_date", "days": 1,
+        "field": "responsible", "condition": "doc.status not in ['مكتمل', 'ملغى']",
+        "subject": "التزام متأخر: {{ doc.title }}",
+        "message": "تجاوز تاريخ الاستحقاق: {{ doc.due_date }} — الجهة: {{ doc.authority }}",
+    },
 ]
 
 

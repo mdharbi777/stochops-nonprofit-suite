@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الالتزامات الحكومية | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#fbbf24; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; overflow-x:auto; }
+    .panel h3 { color:#fff; font-size:16px; margin-bottom:6px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:13.5px; white-space:nowrap; }
+    th { color:var(--muted); font-weight:500; }
+    .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; background:rgba(148,163,184,.15); color:var(--muted); }
+    .pill.ok { background:rgba(34,197,94,.14); color:var(--green); } .pill.od { background:rgba(248,113,113,.14); color:var(--red); }
+    .pill.soon { background:rgba(251,191,36,.15); color:var(--amber); }
+    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
+    input, select, textarea { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--blue); }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
+    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
+    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    @media (max-width:720px){ .grid3{ grid-template-columns:1fr; } th,td{ white-space:normal; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التشغيل</a>
+        <a href="/nos/reports">التقارير</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var TODAY = "{{ frappe.utils.today() }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function today(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+    function api(method, args, isPost){
+      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
+      var url = "/api/method/" + method;
+      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
+      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+    var CLOSED = ["مكتمل","ملغى"];
+    function dueCell(due, status){
+      if(!due) return '<span class="muted">—</span>';
+      var overdue = due < TODAY && CLOSED.indexOf(status)<0;
+      var cls = overdue ? 'od' : '';
+      return '<span>'+esc(due)+'</span>'+(overdue?' <span class="pill od">متأخر</span>':'');
+    }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>الالتزامات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { render(); }
+
+    function render(){
+      api("frappe.client.get_list", {doctype:"Compliance Obligation",
+        fields:JSON.stringify(["name","title","obligation_type","authority","due_date","status"]),
+        order_by:"due_date asc", limit_page_length:0}).then(function(res){
+        if(!res.ok){ app.innerHTML='<div class="center"><h1>الالتزامات</h1><p class="msg err" style="display:block">'+esc(errMsg(res))+'</p></div>'; return; }
+        var rows = (res.j.message||[]).map(function(o){
+          var sel = ['قادم','قيد الإعداد','مقدّم','مكتمل','ملغى'].map(function(s){ return '<option'+(s===o.status?' selected':'')+'>'+esc(s)+'</option>'; }).join("");
+          return '<tr><td>'+esc(o.title)+'</td><td>'+esc(o.obligation_type||"")+'</td><td>'+esc(o.authority||"—")+'</td>'+
+            '<td>'+dueCell(o.due_date,o.status)+'</td><td>'+esc(o.status)+'</td>'+
+            '<td><select class="st" data-name="'+esc(o.name)+'" onchange="chg(this)">'+sel+'</select></td></tr>';
+        }).join("");
+        app.innerHTML =
+          '<h1>الالتزامات الحكومية والتنظيمية</h1>'+
+          '<p class="muted">متابعة التزامات الجمعية ومواعيدها، معزولة بجمعيتك.</p>'+
+          '<div class="note">متابعة وتذكير <b>داخل النظام</b> فقط (تنبيه قبل الموعد وعند التأخّر) — <b>لا تكامل حكومي مباشر</b>. التأخير محسوب لحظياً بتوقيت الرياض.</div>'+
+          '<div class="panel"><table><thead><tr><th>الالتزام</th><th>النوع</th><th>الجهة</th><th>الاستحقاق</th><th>الحالة</th><th>تغيير الحالة</th></tr></thead><tbody>'+
+            (rows||'<tr><td colspan="6" class="muted" style="text-align:center;padding:20px">لا التزامات بعد.</td></tr>')+'</tbody></table></div>'+
+          '<div class="panel"><h3>التزام جديد</h3>'+
+            '<div class="grid3">'+
+              '<div><label>العنوان</label><input id="o_title"></div>'+
+              '<div><label>النوع</label><select id="o_type"><option>تقرير سنوي</option><option>تقرير ربع سنوي</option><option>تجديد ترخيص</option><option>إفصاح</option><option>اجتماع جمعية عمومية</option><option>أخرى</option></select></div>'+
+              '<div><label>الجهة المشرفة</label><input id="o_auth"></div>'+
+              '<div><label>تاريخ الاستحقاق</label><input id="o_due" type="date" value="'+today()+'"></div>'+
+              '<div><label>تذكير قبل (أيام)</label><input id="o_rem" type="number" min="0" value="14"></div>'+
+            '</div>'+
+            '<div style="margin-top:12px"><button class="btn" id="obtn" onclick="addObl()">إضافة الالتزام</button></div>'+
+            '<div class="msg" id="msg"></div></div>';
+      });
+    }
+
+    function show(type, text){ var m=document.getElementById("msg"); if(!m)return; m.className="msg "+type; m.textContent=text; }
+
+    window.addObl = function(){
+      var title=document.getElementById("o_title").value.trim();
+      var due=document.getElementById("o_due").value;
+      if(!title||!due){ show("err","العنوان وتاريخ الاستحقاق مطلوبان."); return; }
+      var doc = { doctype:"Compliance Obligation", title:title, obligation_type:document.getElementById("o_type").value,
+        authority:document.getElementById("o_auth").value.trim(), due_date:due,
+        reminder_days_before:parseInt(document.getElementById("o_rem").value||"14",10), status:"قادم" };
+      document.getElementById("obtn").disabled=true;
+      api("frappe.client.insert", {doc:doc}, true).then(function(res){
+        if(res.ok&&res.j.message){ render(); } else { show("err",errMsg(res)); document.getElementById("obtn").disabled=false; }
+      });
+    };
+
+    window.chg = function(sel){
+      api("frappe.client.set_value", {doctype:"Compliance Obligation", name:sel.getAttribute("data-name"), fieldname:"status", value:sel.value}, true)
+        .then(function(res){ if(res.ok){ render(); } else { alert(errMsg(res)); render(); } });
+    };
+  </script>
+</body>
+</html>

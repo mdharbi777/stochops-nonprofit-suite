@@ -92,6 +92,10 @@ def expense_request_query(user):
     return _condition(user, "Expense Request")
 
 
+def compliance_obligation_query(user):
+    return _condition(user, "Compliance Obligation")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):

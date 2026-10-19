@@ -7,6 +7,8 @@ app_license = "Proprietary"  # الرخصة معلّقة — ليست مفتوح
 
 # خطوات ما بعد التثبيت: الأدوار + الإشعارات + حقل الجمعية على المستخدم (idempotent)
 after_install = "stochops_nonprofit.setup.install.after_install"
+# يُعاد تشغيلها بعد كل ترقية (migrate) فتُنشأ الأدوار/الإشعارات الجديدة تلقائياً (idempotent)
+after_migrate = "stochops_nonprofit.setup.install.after_install"
 
 # ===== عزل متعدّد الجمعيات (multi-tenancy) =====
 permission_query_conditions = {
@@ -21,6 +23,7 @@ permission_query_conditions = {
     "Donation": "stochops_nonprofit.multitenancy.donation_query",
     "Grant": "stochops_nonprofit.multitenancy.grant_query",
     "Expense Request": "stochops_nonprofit.multitenancy.expense_request_query",
+    "Compliance Obligation": "stochops_nonprofit.multitenancy.compliance_obligation_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -36,6 +39,7 @@ has_permission = {
     "Donation": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Grant": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Expense Request": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Compliance Obligation": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -51,6 +55,7 @@ doc_events = {
     "Donation": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Grant": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Expense Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Compliance Obligation": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps
