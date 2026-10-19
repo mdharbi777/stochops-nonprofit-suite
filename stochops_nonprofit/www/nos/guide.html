@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>دليل الاستخدام | STOCHOPS</title>
+  <meta name="description" content="دليل تفصيلي لاستخدام وتشغيل منصّة متابعة القرارات والمبادرات للجمعيات." />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{--navy:#0b1220;--navy2:#101b2b;--blue:#2563eb;--cyan:#06b6d4;--text:#e2e8f0;--muted:#94a3b8;--card:#111a2e;--border:#1e293b;--green:#22c55e;}
+    *{box-sizing:border-box;margin:0;padding:0;} body{font-family:"Tajawal",sans-serif;color:var(--text);background:var(--navy);background-image:radial-gradient(1100px 520px at 85% -10%,#16233f 0%,transparent 60%);line-height:1.9;}
+    a{color:var(--cyan);text-decoration:none;} .wrap{max-width:900px;margin:0 auto;padding:0 20px 60px;}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;direction:ltr;}
+    .logo .mark{width:26px;height:26px;border-radius:7px;background:var(--navy2);display:inline-grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:5px;align-items:end;}
+    .logo .mark i{display:block;background:var(--blue);border-radius:1px;} .logo .mark i:nth-child(2){background:var(--cyan);height:70%;} .logo .mark i:nth-child(1){height:45%;} .logo .mark i:nth-child(3){height:100%;}
+    .logo b{color:#fff;} .logo span{color:var(--cyan);}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+    .topbar .right{display:flex;gap:16px;font-size:14px;color:var(--muted);}
+    h1{color:#fff;font-size:30px;font-weight:800;margin:26px 0 6px;} .lead{color:var(--muted);font-size:17px;margin-bottom:10px;}
+    .toc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin:20px 0;}
+    .toc h4{color:#fff;font-size:14px;margin-bottom:8px;} .toc a{display:inline-block;margin:3px 0;margin-inline-end:16px;font-size:14px;}
+    section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:18px;}
+    section h2{color:#fff;font-size:22px;font-weight:800;margin-bottom:10px;}
+    section h3{color:var(--cyan);font-size:16px;margin:16px 0 6px;} p{color:var(--text);font-size:15.5px;}
+    ul,ol{margin:8px 24px;color:var(--text);font-size:15.5px;} li{margin:5px 0;}
+    .step{display:flex;gap:12px;align-items:flex-start;margin:10px 0;}
+    .step .n{flex:none;width:30px;height:30px;border-radius:999px;background:var(--blue);color:#fff;font-weight:800;display:grid;place-items:center;}
+    table{width:100%;border-collapse:collapse;margin:12px 0;} th,td{text-align:right;padding:10px;border-bottom:1px solid var(--border);font-size:14.5px;} th{color:var(--muted);font-weight:500;}
+    .callout{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:12px 0;font-size:14px;color:var(--muted);}
+    .callout b{color:var(--cyan);}
+    .btn{display:inline-block;background:var(--blue);color:#fff;border-radius:999px;padding:11px 22px;font-weight:700;margin-top:10px;}
+    .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:30px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><a href="/nos">الرئيسية</a><a href="/nos/console">لوحة التشغيل</a><a href="/login">دخول</a></div>
+    </div>
+
+    <h1>دليل استخدام المنصّة</h1>
+    <p class="lead">كل ما تحتاجه جمعيتك لبدء التشغيل والاستفادة من النظام — خطوة بخطوة.</p>
+
+    <div class="toc">
+      <h4>المحتويات</h4>
+      <a href="#about">ما هو النظام؟</a><a href="#start">البدء السريع</a><a href="#roles">الحسابات والأدوار</a>
+      <a href="#m1">القرارات واللجان</a><a href="#m2">البرامج والمبادرات</a><a href="#m3">المؤشرات والتقارير</a>
+      <a href="#principles">مفاهيم مهمة</a><a href="#faq">أسئلة شائعة</a>
+    </div>
+
+    <section id="about">
+      <h2>ما هو النظام؟</h2>
+      <p>منصّة داخلية لإدارة عمليات الجمعيات الخيرية، تساعدك على: تنظيم قرارات اللجان ومتابعة تنفيذها، تتبّع البرامج والمبادرات ومهامها وميزانيتها الإدارية، والاطّلاع على مؤشرات أداء جمعيتك وتقاريرها — في مكان واحد، عربي بالكامل وآمن.</p>
+      <p>النظام مكوّن من <b>ثلاث وحدات</b>: القرارات واللجان · البرامج والمبادرات · المؤشرات والتقارير. كل جمعية معزولة تماماً عن غيرها.</p>
+      <div class="callout"><b>ملاحظة:</b> النظام لا يشمل أنظمة تبرعات أو مستفيدين أو محاسبة أو رواتب أو تكاملات حكومية/بنكية.</div>
+    </section>
+
+    <section id="start">
+      <h2>البدء السريع</h2>
+      <div class="step"><div class="n">١</div><div><h3>سجّل جمعيتك</h3><p>من صفحة <a href="/nos/register">التسجيل</a>، أدخل اسم الجمعية وبيانات المدير وكلمة مرور قوية (٨ أحرف فأكثر، غير شائعة). يُنشأ حساب الجمعية وأول حساب مدير.</p></div></div>
+      <div class="step"><div class="n">٢</div><div><h3>أضف فريقك</h3><p>من <a href="/nos/accounts">إدارة الحسابات</a>، أضِف حتى <b>٥ حسابات</b> بأدوار مختلفة لأعضاء فريقك.</p></div></div>
+      <div class="step"><div class="n">٣</div><div><h3>ابدأ التشغيل</h3><p>من <a href="/nos/console">لوحة التشغيل</a>، أنشئ اللجان والاجتماعات والقرارات، وتابع المبادرات والمهام، واطّلع على المؤشرات.</p></div></div>
+    </section>
+
+    <section id="roles">
+      <h2>الحسابات والأدوار</h2>
+      <p>لكل جمعية <b>حتى ٥ حسابات</b>. يختار مدير الجمعية دوراً لكل حساب:</p>
+      <table>
+        <thead><tr><th>الدور</th><th>الصلاحيات</th></tr></thead>
+        <tbody>
+          <tr><td>مدير الجمعية</td><td>إعداد كل شيء، إدارة الحسابات، والاطّلاع على كل بيانات الجمعية.</td></tr>
+          <tr><td>مطّلع تنفيذي</td><td>قراءة التقارير والمؤشرات والقرارات والمبادرات — دون تعديل.</td></tr>
+          <tr><td>منسّق لجان</td><td>إنشاء الاجتماعات والقرارات وتعديل سجلات اللجان وإسناد المهام.</td></tr>
+          <tr><td>منسّق برامج</td><td>إنشاء المبادرات وتحديث المهام والمخرجات والميزانيات الإدارية.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">لإضافة/تعطيل حساب: <a href="/nos/accounts">إدارة الحسابات</a>. لا يمكن تجاوز ٥ حسابات.</div>
+    </section>
+
+    <section id="m1">
+      <h2>الوحدة الأولى — القرارات واللجان</h2>
+      <ol>
+        <li><b>أنشئ لجنة</b> من <a href="/nos/committees">صفحة اللجان</a> (اسم + نوع).</li>
+        <li><b>سجّل اجتماعاً</b> من <a href="/nos/meetings">الاجتماعات</a> (اللجنة + العنوان + التاريخ)، واعتمده عند الجاهزية.</li>
+        <li><b>أضف قراراً</b> من <a href="/nos/decisions">القرارات</a> (الاجتماع + العنوان + المسؤول + تاريخ الاستحقاق).</li>
+        <li><b>تابِع الحالة</b>: مفتوح ← قيد العمل ← مكتمل/ملغى. عند الإكمال يلزم إدخال ملاحظة إكمال.</li>
+      </ol>
+      <div class="callout"><b>التأخير</b> يظهر تلقائياً عند تجاوز تاريخ الاستحقاق دون إكمال — ولا يُدخل يدوياً.</div>
+    </section>
+
+    <section id="m2">
+      <h2>الوحدة الثانية — البرامج والمبادرات</h2>
+      <ol>
+        <li><b>أنشئ مبادرة</b> من <a href="/nos/initiatives">المبادرات</a> (العنوان + المسؤول + الهدف + الفترة). اختيارياً: الميزانية المخططة/المصروفة والمستهدف الكمّي.</li>
+        <li><b>أضف مهاماً</b> من <a href="/nos/tasks">المهام</a> وأسندها وتابع حالتها.</li>
+        <li><b>أغلِق المبادرة</b> عند الانتهاء بملاحظة إغلاق.</li>
+      </ol>
+      <div class="callout"><b>الميزانية</b> أرقام تشغيلية إجمالية تُدخل يدوياً — <b>ليست محاسبة</b> ولا دفتر حسابات. <b>لا تُدخل أسماء مستفيدين أو هويات</b> — أعداد إجمالية فقط.</div>
+    </section>
+
+    <section id="m3">
+      <h2>الوحدة الثالثة — المؤشرات والتقارير</h2>
+      <p><b>لوحة التشغيل</b> (<a href="/nos/console">console</a>) تعرض ٨ مؤشرات لجمعيتك: القرارات (غير الملغاة/المفتوحة/المتأخرة/المكتملة بالفترة)، المبادرات النشطة، المهام المتأخرة، وإجمالي الميزانيات والصرف.</p>
+      <p><b>الملخص التنفيذي</b> وتقارير القرارات المتأخرة والمبادرات — قابلة للطباعة وتصدير CSV/PDF.</p>
+    </section>
+
+    <section id="principles">
+      <h2>مفاهيم ومبادئ مهمة</h2>
+      <ul>
+        <li><b>الخصوصية والعزل:</b> بيانات كل جمعية معزولة تماماً — لا ترى أي جمعية بيانات غيرها.</li>
+        <li><b>التأخير محسوب</b> لا مخزّن (حسب تاريخ الاستحقاق والحالة).</li>
+        <li><b>النِّسب كمّية</b> (إنجاز المهام/تحقيق المستهدف) وليست قياس أثر.</li>
+        <li><b>«غير متوفّر» لا صفر:</b> عند غياب قيمة لا تُحتسب صفراً.</li>
+        <li><b>الإشعارات داخل التطبيق</b> (جرس Frappe): عند إسناد قرار/مهمة، وقبل الموعد، وبعد التأخير.</li>
+        <li><b>لا بيانات مستفيدين</b> (أسماء/هويات/أسر) في أي مكان.</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>أسئلة شائعة</h2>
+      <h3>كم حساباً لكل جمعية؟</h3><p>حتى ٥ حسابات بأدوار مختلفة.</p>
+      <h3>نسيت كلمة المرور؟</h3><p>من صفحة <a href="/login">الدخول</a> اضغط «Forgot Password».</p>
+      <h3>هل بياناتنا آمنة؟</h3><p>نعم — كل جمعية معزولة بالكامل، والصلاحيات مفروضة على مستوى الخادم.</p>
+      <p style="margin-top:14px"><a class="btn" href="/nos/register">سجّل جمعيتك الآن</a></p>
+    </section>
+
+    <p class="foot">© STOCHOPS — دليل الاستخدام</p>
+  </div>
+</body>
+</html>
