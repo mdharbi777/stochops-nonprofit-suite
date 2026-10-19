@@ -1,0 +1,41 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "task_type",
+  "provider",
+  "status",
+  "ai_user",
+  "run_on",
+  "context_ref",
+  "charity"
+ ],
+ "fields": [
+  {"fieldname": "task_type", "fieldtype": "Data", "label": "نوع المهمة", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "provider", "fieldtype": "Data", "label": "المزوّد", "read_only": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "Success\nError", "read_only": 1, "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "ai_user", "fieldtype": "Link", "label": "المستخدم", "options": "User", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "run_on", "fieldtype": "Datetime", "label": "وقت التشغيل", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "context_ref", "fieldtype": "Data", "label": "مرجع السياق (بلا محتوى)", "read_only": 1},
+  {"fieldname": "charity", "fieldtype": "Link", "label": "الجمعية", "options": "Charity", "read_only": 1, "in_standard_filter": 1}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "AI Run Log",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "Nonprofit Admin", "read": 1, "report": 1, "export": 1},
+  {"role": "System Manager", "read": 1, "report": 1, "export": 1, "delete": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

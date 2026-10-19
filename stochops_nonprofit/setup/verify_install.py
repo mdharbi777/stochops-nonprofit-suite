@@ -13,6 +13,7 @@ EXPECTED_DOCTYPES = [
     "Donor", "Donation", "Grant",
     "Expense Request", "Compliance Obligation",
     "Personnel", "Contract", "Procurement Request",
+    "Nonprofit AI Settings", "AI Run Log",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",

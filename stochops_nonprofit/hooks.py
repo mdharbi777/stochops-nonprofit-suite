@@ -27,6 +27,7 @@ permission_query_conditions = {
     "Personnel": "stochops_nonprofit.multitenancy.personnel_query",
     "Contract": "stochops_nonprofit.multitenancy.contract_query",
     "Procurement Request": "stochops_nonprofit.multitenancy.procurement_request_query",
+    "AI Run Log": "stochops_nonprofit.multitenancy.ai_run_log_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -46,6 +47,7 @@ has_permission = {
     "Personnel": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Contract": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Procurement Request": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "AI Run Log": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -65,6 +67,7 @@ doc_events = {
     "Personnel": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Contract": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Procurement Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "AI Run Log": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps

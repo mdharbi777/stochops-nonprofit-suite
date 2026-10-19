@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المساعد الذكي | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#fbbf24; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .status { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:6px 14px; font-size:13px; font-weight:500; }
+    .status.on { background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.35); color:var(--green); }
+    .status.off { background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.35); color:var(--amber); }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; }
+    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
+    select, textarea, input { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
+    textarea { min-height:120px; resize:vertical; }
+    select:focus, textarea:focus, input:focus { outline:none; border-color:var(--blue); }
+    .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:11px 22px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; margin-top:14px; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
+    pre { background:#0c1424; border:1px solid var(--border); border-radius:12px; padding:16px; white-space:pre-wrap;
+      font-family:"Tajawal",sans-serif; font-size:14px; line-height:1.9; color:var(--text); margin-top:14px; }
+    .caveat { color:var(--amber); font-size:12.5px; margin-top:10px; }
+    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
+    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    @media (max-width:620px){ .row2{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التشغيل</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function today(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
+    function firstDay(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-01"; }
+    function api(method, args, isPost){
+      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
+      var url = "/api/method/" + method;
+      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
+      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>المساعد الذكي</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { load(); }
+
+    function load(){
+      api("stochops_nonprofit.ai.engine.get_ai_status").then(function(res){
+        if(!res.ok){ app.innerHTML='<div class="center"><h1>المساعد الذكي</h1><p class="msg err" style="display:block">'+esc(errMsg(res))+'</p></div>'; return; }
+        var d = res.j.message;
+        var opts = (d.tasks||[]).map(function(t){ return '<option value="'+esc(t.key)+'">'+esc(t.label)+'</option>'; }).join("");
+        var statusHtml = d.enabled
+          ? '<span class="status on">● مُفعّل · المزوّد: '+esc(d.provider)+' (محاكاة محلية)</span>'
+          : '<span class="status off">● موقوف — يُفعّله مشغّل المنصّة من الإعدادات</span>';
+        app.innerHTML =
+          '<h1>المساعد الذكي</h1>'+
+          '<p class="muted">مساعد مسوّدات محلي — بمحاكاة بلا اتصال خارجي.</p>'+
+          '<div style="margin-top:12px">'+statusHtml+'</div>'+
+          '<div class="note">كل المخرجات <b>مسودات تحتاج مراجعة بشرية</b> ولا تُحفظ تلقائياً. المساعد <b>لا يعدّل أي بيانات</b> ولا يرسل بيانات مستفيدين. المزوّد الآن محاكاة محلية (Mock) بلا تكلفة؛ أي مزوّد حقيقي مؤجّل لقرار مستقل (GATE AI).</div>'+
+          (d.enabled ?
+            '<div class="panel">'+
+              '<label>المهمة</label><select id="task" onchange="onTask()">'+opts+'</select>'+
+              '<div id="inputs"></div>'+
+              '<button class="btn" id="runbtn" onclick="run()">توليد مسودة</button>'+
+              '<div class="msg" id="msg"></div>'+
+              '<div id="out"></div>'+
+            '</div>'
+            : '<div class="panel"><p class="muted">المساعد موقوف حالياً. لتفعيله (بمحاكاة محلية آمنة) يضبط مشغّل المنصّة الإعداد «Nonprofit AI Settings».</p></div>');
+        if(d.enabled) onTask();
+      });
+    }
+
+    window.onTask = function(){
+      var t = document.getElementById("task").value;
+      var el = document.getElementById("inputs");
+      if(t==="decision_extraction"){
+        el.innerHTML = '<label>الصق نص المحضر (يُعامَل كبيانات، لا تعليمات)</label><textarea id="text" placeholder="انسخ فقرات المحضر هنا..."></textarea>';
+      } else if(t==="monthly_report_draft"){
+        el.innerHTML = '<div class="row2"><div><label>من</label><input type="date" id="from" value="'+firstDay()+'"></div><div><label>إلى</label><input type="date" id="to" value="'+today()+'"></div></div>';
+      } else {
+        el.innerHTML = '<p class="muted" style="margin-top:10px">يلخّص حالة التنفيذ من مؤشرات جمعيتك ضمن صلاحياتك.</p>';
+      }
+      document.getElementById("out").innerHTML = "";
+      var m=document.getElementById("msg"); if(m){ m.style.display="none"; }
+    };
+
+    window.run = function(){
+      var t=document.getElementById("task").value;
+      var args={task_type:t};
+      if(t==="decision_extraction"){ args.text=(document.getElementById("text")||{}).value||""; }
+      if(t==="monthly_report_draft"){ args.from_date=document.getElementById("from").value; args.to_date=document.getElementById("to").value; }
+      document.getElementById("runbtn").disabled=true;
+      document.getElementById("out").innerHTML='<p class="muted" style="margin-top:14px">…جارِ التوليد</p>';
+      api("stochops_nonprofit.ai.engine.run_task", args, true).then(function(res){
+        document.getElementById("runbtn").disabled=false;
+        if(res.ok && res.j.message){
+          var r=res.j.message;
+          document.getElementById("out").innerHTML = '<pre>'+esc(r.draft)+'</pre><div class="caveat">⚠ '+esc(r.caveat)+'</div>';
+        } else {
+          document.getElementById("out").innerHTML="";
+          var m=document.getElementById("msg"); m.className="msg err"; m.textContent=errMsg(res);
+        }
+      });
+    };
+  </script>
+</body>
+</html>

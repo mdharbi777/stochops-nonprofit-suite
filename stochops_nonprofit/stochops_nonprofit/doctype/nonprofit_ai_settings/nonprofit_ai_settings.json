@@ -1,0 +1,37 @@
+{
+ "actions": [],
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "ai_enabled",
+  "provider",
+  "sec_gate",
+  "data_processing_ack",
+  "processing_region",
+  "notes"
+ ],
+ "fields": [
+  {"fieldname": "ai_enabled", "fieldtype": "Check", "label": "تفعيل المساعد الذكي", "default": "0", "description": "موقوف افتراضياً. Mock محاكاة محلية آمنة بلا تكلفة. لا يُفعَّل مزوّد حقيقي إلا بموافقة مكتوبة على البيانات والتكلفة (GATE AI)."},
+  {"fieldname": "provider", "fieldtype": "Select", "label": "المزوّد", "options": "Mock", "default": "Mock", "description": "Mock = محاكاة محلية بلا اتصال خارجي. المزوّدات الحقيقية مؤجّلة (GATE AI)."},
+  {"fieldname": "sec_gate", "fieldtype": "Section Break", "label": "ضوابط تفعيل مزوّد حقيقي (مؤجّل)"},
+  {"fieldname": "data_processing_ack", "fieldtype": "Check", "label": "إقرار اتفاق معالجة البيانات قبل أي مزوّد حقيقي", "default": "0"},
+  {"fieldname": "processing_region", "fieldtype": "Data", "label": "منطقة المعالجة المصرّح بها"},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"}
+ ],
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Nonprofit AI Settings",
+ "naming_rule": "",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "print": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

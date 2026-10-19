@@ -108,6 +108,10 @@ def procurement_request_query(user):
     return _condition(user, "Procurement Request")
 
 
+def ai_run_log_query(user):
+    return _condition(user, "AI Run Log")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):
