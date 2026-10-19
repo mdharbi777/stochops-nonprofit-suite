@@ -15,6 +15,7 @@
   "sec_officer",
   "default_privacy_officer",
   "platform_privacy_policy_version",
+  "small_cell_threshold",
   "notes"
  ],
  "fields": [
@@ -28,6 +29,7 @@
   {"fieldname": "sec_officer", "fieldtype": "Section Break", "label": "الحوكمة"},
   {"fieldname": "default_privacy_officer", "fieldtype": "Link", "label": "مسؤول الخصوصية (اتصال)", "options": "User"},
   {"fieldname": "platform_privacy_policy_version", "fieldtype": "Data", "label": "إصدار سياسة الخصوصية"},
+  {"fieldname": "small_cell_threshold", "fieldtype": "Int", "label": "عتبة إخفاء الخلايا الصغيرة", "default": "5", "non_negative": 1, "description": "في التقارير المُجمّعة، تُحجب الخلايا التي يقل عدّها عن هذه العتبة لتفادي إعادة التعريف."},
   {"fieldname": "notes", "fieldtype": "Small Text", "label": "ملاحظات"}
  ],
  "links": [],

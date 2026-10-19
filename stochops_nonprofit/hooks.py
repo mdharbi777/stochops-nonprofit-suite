@@ -33,6 +33,7 @@ permission_query_conditions = {
     "Consent Record": "stochops_nonprofit.multitenancy.consent_record_query",
     "Privacy Rights Request": "stochops_nonprofit.multitenancy.privacy_rights_request_query",
     "Privacy Impact Assessment": "stochops_nonprofit.multitenancy.privacy_impact_assessment_query",
+    "Disclosure Request": "stochops_nonprofit.multitenancy.disclosure_request_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
 }
 
@@ -58,6 +59,7 @@ has_permission = {
     "Consent Record": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Privacy Rights Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Privacy Impact Assessment": "stochops_nonprofit.multitenancy.has_charity_permission",
+    "Disclosure Request": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
 }
 
@@ -83,6 +85,7 @@ doc_events = {
     "Consent Record": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Privacy Rights Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Privacy Impact Assessment": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    "Disclosure Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
 }
 
 # Apps

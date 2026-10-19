@@ -84,8 +84,14 @@ def log_sensitive_access(event_type, reference_doctype=None, reference_name=None
         frappe.log_error("sensitive access log failed", "stochops_nonprofit.privacy_core")
 
 
+REPORT_TEMPLATE_SEED = [
+    {"template_name": "التقرير السنوي للمركز الوطني", "authority": "المركز الوطني لتنمية القطاع غير الربحي"},
+    {"template_name": "تقرير حملة جمع تبرعات", "authority": "الجهة المشرفة على جمع التبرعات"},
+]
+
+
 def ensure_privacy_core():
-    """تهيئة idempotent: إعدادات الخصوصية + المرجعية + كتالوج الحقول. تُستدعى بعد التثبيت/الترحيل."""
+    """تهيئة idempotent: إعدادات الخصوصية + المرجعية + كتالوج الحقول + قوالب التقارير. تُستدعى بعد التثبيت/الترحيل."""
     # الإعدادات المفردة (البوابة مغلقة افتراضياً عبر default الحقل)
     if frappe.db.exists("DocType", "Privacy Configuration"):
         frappe.get_single("Privacy Configuration")  # يضمن وجود السجل المفرد
@@ -107,6 +113,15 @@ def ensure_privacy_core():
                  "fieldname": fn, "classification": cls}
             ).insert(ignore_permissions=True)
             created["catalog"] += 1
+
+    if frappe.db.exists("DocType", "Report Template Registry"):
+        for t in REPORT_TEMPLATE_SEED:
+            if not frappe.db.exists("Report Template Registry", t["template_name"]):
+                frappe.get_doc(
+                    {"doctype": "Report Template Registry", "template_name": t["template_name"],
+                     "authority": t["authority"], "status": "TEMPLATE_REVALIDATION_REQUIRED"}
+                ).insert(ignore_permissions=True)
+                created["templates"] = created.get("templates", 0) + 1
 
     frappe.db.commit()
     return created

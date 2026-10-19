@@ -289,16 +289,27 @@ def run():
              "purpose": "دراسة طلب المساعدة", "legal_basis": "تنفيذ أغراض الجمعية", "status": "ممنوحة", "granted_on": today()}
         ).insert().name]
 
+    # --- إفصاح (P4) — عيّنة طلب إفصاح معلّق (deny-by-default) ---
+    if not frappe.db.exists("Disclosure Request", {"recipient": f"جهة مشرفة {TAG}"}):
+        out["disclosures"] = [frappe.get_doc(
+            {"doctype": "Disclosure Request", "purpose": "تقرير حوكمي دوري (عيّنة)", "recipient": f"جهة مشرفة {TAG}",
+             "recipient_country": "السعودية", "legal_basis": "التزام نظامي", "data_category": "بيانات مجمّعة",
+             "fields_shared": "إجماليات بلا معرّفات", "status": "مطلوب"}
+        ).insert().name]
+
     frappe.db.commit()
     return out
 
 
 def clear():
     frappe.set_user("Administrator")
-    deleted = {"dpia": 0, "rights": 0, "consents": 0,
+    deleted = {"disclosures": 0, "dpia": 0, "rights": 0, "consents": 0,
                "procurements": 0, "contracts": 0, "personnel": 0, "obligations": 0, "expenses": 0, "grants": 0,
                "donations": 0, "donors": 0, "requests": 0, "beneficiaries": 0, "tasks": 0, "initiatives": 0,
                "decisions": 0, "meetings": 0, "committees": 0}
+    for name in frappe.get_all("Disclosure Request", filters=[["recipient", "like", f"%{TAG}%"]], pluck="name"):
+        frappe.delete_doc("Disclosure Request", name, force=1)
+        deleted["disclosures"] += 1
     for name in frappe.get_all("Privacy Impact Assessment", filters=[["activity_name", "like", f"%{TAG}%"]], pluck="name"):
         frappe.delete_doc("Privacy Impact Assessment", name, force=1)
         deleted["dpia"] += 1

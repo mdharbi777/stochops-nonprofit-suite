@@ -17,6 +17,7 @@ EXPECTED_DOCTYPES = [
     "Privacy Configuration", "Regulatory Rule", "Data Field Catalog",
     "Processing Activity Record", "Sensitive Access Log",
     "Consent Record", "Privacy Rights Request", "Privacy Impact Assessment",
+    "Disclosure Request", "Report Template Registry",
 ]
 EXPECTED_ROLES = [
     "Stochops Admin",
@@ -24,7 +25,7 @@ EXPECTED_ROLES = [
 ]
 EXPECTED_REPORTS = [
     "Overdue Decisions", "Decisions by Committee", "Initiatives Overview", "Executive Summary",
-    "Compliance Obligations",
+    "Compliance Obligations", "Beneficiary Categories",
 ]
 
 

@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:template_name",
+ "creation": "2026-10-19 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "template_name",
+  "status",
+  "col_break_1",
+  "authority",
+  "official_reference",
+  "version",
+  "effective_date",
+  "sec_review",
+  "fields_note",
+  "verified_by",
+  "next_review_date"
+ ],
+ "fields": [
+  {"fieldname": "template_name", "fieldtype": "Data", "label": "اسم القالب", "reqd": 1, "unique": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "الحالة", "options": "TEMPLATE_REVALIDATION_REQUIRED\nVALIDATED", "default": "TEMPLATE_REVALIDATION_REQUIRED", "in_list_view": 1, "in_standard_filter": 1},
+  {"fieldname": "col_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "authority", "fieldtype": "Data", "label": "الجهة الطالبة"},
+  {"fieldname": "official_reference", "fieldtype": "Data", "label": "المرجع الرسمي"},
+  {"fieldname": "version", "fieldtype": "Data", "label": "الإصدار"},
+  {"fieldname": "effective_date", "fieldtype": "Date", "label": "تاريخ النفاذ"},
+  {"fieldname": "sec_review", "fieldtype": "Section Break"},
+  {"fieldname": "fields_note", "fieldtype": "Small Text", "label": "الحقول/التعريفات"},
+  {"fieldname": "verified_by", "fieldtype": "Data", "label": "تحقّق بواسطة"},
+  {"fieldname": "next_review_date", "fieldtype": "Date", "label": "المراجعة القادمة"}
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Stochops Nonprofit",
+ "name": "Report Template Registry",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "print": 1},
+  {"role": "Nonprofit Admin", "read": 1, "report": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

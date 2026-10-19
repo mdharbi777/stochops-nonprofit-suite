@@ -151,6 +151,10 @@ def privacy_impact_assessment_query(user):
     return _condition(user, "Privacy Impact Assessment")
 
 
+def disclosure_request_query(user):
+    return _condition(user, "Disclosure Request")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):

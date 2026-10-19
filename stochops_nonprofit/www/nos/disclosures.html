@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الإفصاح والمشاركة | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#fbbf24; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; overflow-x:auto; }
+    .panel h3 { color:#fff; font-size:16px; margin-bottom:6px; }
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    th, td { text-align:right; padding:10px; border-bottom:1px solid var(--border); font-size:13px; white-space:nowrap; }
+    th { color:var(--muted); font-weight:500; }
+    .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; background:rgba(148,163,184,.15); color:var(--muted); }
+    .pill.ok { background:rgba(34,197,94,.14); color:var(--green); } .pill.no { background:rgba(248,113,113,.14); color:var(--red); }
+    .pill.rev { background:rgba(251,191,36,.15); color:var(--amber); }
+    label { display:block; font-size:13px; color:var(--text); margin:10px 0 6px; font-weight:500; }
+    input, select, textarea { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
+    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
+    .msg { margin-top:12px; padding:10px 13px; border-radius:10px; font-size:13.5px; display:none; }
+    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    @media (max-width:720px){ .grid3{ grid-template-columns:1fr; } th,td{ white-space:normal; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><a href="/nos/console">لوحة التشغيل</a><a href="/nos/reports">التقارير</a><span id="whoami"></span><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function api(method, args, isPost){
+      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
+      var url = "/api/method/" + method;
+      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
+      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+    function sp(s){ var c=s==="معتمد"?"ok":(s==="مرفوض"?"no":""); return '<span class="pill '+c+'">'+esc(s)+'</span>'; }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>الإفصاح والمشاركة</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+    } else { render(); }
+
+    function render(){
+      Promise.all([
+        api("frappe.client.get_list", {doctype:"Disclosure Request", fields:JSON.stringify(["name","recipient","recipient_country","cross_border","data_category","status"]), order_by:"creation desc", limit_page_length:0}),
+        api("frappe.client.get_list", {doctype:"Report Template Registry", fields:JSON.stringify(["name","authority","version","status"]), order_by:"template_name asc", limit_page_length:0})
+      ]).then(function(r){
+        if(!r[0].ok){ app.innerHTML='<div class="center"><h1>الإفصاح</h1><p class="msg err" style="display:block">'+esc(errMsg(r[0]))+'</p></div>'; return; }
+        var rows=(r[0].j.message||[]).map(function(x){
+          var sel=['مطلوب','معتمد','مرفوض','منتهٍ'].map(function(s){ return '<option'+(s===x.status?' selected':'')+'>'+esc(s)+'</option>'; }).join("");
+          var cb = x.cross_border ? ' <span class="pill no">خارج المملكة</span>' : '';
+          return '<tr><td>'+esc(x.name)+'</td><td>'+esc(x.recipient)+'</td><td>'+esc(x.recipient_country||"")+cb+'</td><td>'+esc(x.data_category||"—")+'</td><td>'+sp(x.status)+'</td>'+
+            '<td><select class="st" data-name="'+esc(x.name)+'" onchange="chg(this)">'+sel+'</select></td></tr>';
+        }).join("");
+        var tmpl=(r[1].ok?r[1].j.message:[]||[]).map(function(t){
+          var st = t.status==="VALIDATED" ? '<span class="pill ok">مُعتمد</span>' : '<span class="pill rev">يحتاج تحقّقاً</span>';
+          return '<tr><td>'+esc(t.name)+'</td><td>'+esc(t.authority||"—")+'</td><td>'+esc(t.version||"—")+'</td><td>'+st+'</td></tr>';
+        }).join("");
+        app.innerHTML =
+          '<h1>الإفصاح والمشاركة</h1>'+
+          '<p class="muted">طلبات مشاركة البيانات خارج حدود الجمعية — معزولة بجمعيتك.</p>'+
+          '<div class="note">deny-by-default: لا إفصاح ما لم يُعتمد صراحةً بملاحظة قرار وصلاحية مدير الجمعية. الإفصاح المعرَّف يحتاج أساساً وضرورة؛ تقارير المانحين تستخدم بيانات مُجمّعة مُجهّلة.</div>'+
+          '<div class="panel"><h3>طلبات الإفصاح</h3><table><thead><tr><th>الطلب</th><th>الجهة المستلمة</th><th>الدولة</th><th>فئة البيانات</th><th>الحالة</th><th>القرار</th></tr></thead><tbody>'+
+            (rows||'<tr><td colspan="6" class="muted" style="text-align:center;padding:16px">لا طلبات.</td></tr>')+'</tbody></table>'+
+            '<div class="grid3" style="margin-top:12px">'+
+              '<div><label>الجهة المستلمة</label><input id="d_recipient"></div>'+
+              '<div><label>فئة البيانات</label><input id="d_cat"></div>'+
+              '<div><label>الغرض</label><input id="d_purpose"></div>'+
+            '</div><div style="margin-top:10px"><button class="btn" id="dbtn" onclick="addDisc()">تسجيل طلب إفصاح</button></div><div class="msg" id="msg"></div></div>'+
+          '<div class="panel"><h3>سجل قوالب التقارير الرسمية</h3><table><thead><tr><th>القالب</th><th>الجهة</th><th>الإصدار</th><th>الحالة</th></tr></thead><tbody>'+
+            (tmpl||'<tr><td colspan="4" class="muted" style="text-align:center;padding:16px">لا قوالب.</td></tr>')+'</tbody></table>'+
+            '<p class="muted" style="margin-top:10px;font-size:12px">لا يُوصف قالب بأنه «مطابق للجهة» قبل التحقّق من الإصدار الرسمي الساري. تُدار القوالب من مشغّل المنصّة.</p></div>';
+      });
+    }
+
+    function show(type,text){ var m=document.getElementById("msg"); if(!m)return; m.className="msg "+type; m.textContent=text; }
+
+    window.addDisc = function(){
+      var rec=document.getElementById("d_recipient").value.trim();
+      var purpose=document.getElementById("d_purpose").value.trim();
+      if(!rec||!purpose){ show("err","الجهة المستلمة والغرض مطلوبان."); return; }
+      document.getElementById("dbtn").disabled=true;
+      api("frappe.client.insert", {doc:{doctype:"Disclosure Request", recipient:rec, purpose:purpose, data_category:document.getElementById("d_cat").value.trim(), status:"مطلوب"}}, true)
+        .then(function(res){ if(res.ok&&res.j.message){ render(); } else { show("err",errMsg(res)); document.getElementById("dbtn").disabled=false; } });
+    };
+
+    window.chg = function(sel){
+      var name=sel.getAttribute("data-name"), status=sel.value, fields={status:status};
+      if(status==="معتمد"||status==="مرفوض"){
+        var note=prompt("ملاحظة القرار ("+status+") — مطلوبة:");
+        if(!note){ render(); return; }
+        fields.decision_note=note;
+      }
+      api("frappe.client.set_value", {doctype:"Disclosure Request", name:name, fieldname:fields}, true)
+        .then(function(res){ if(res.ok){ render(); } else { alert(errMsg(res)); render(); } });
+    };
+  </script>
+</body>
+</html>
