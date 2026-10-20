@@ -153,6 +153,9 @@ doc_events = {
 # 	"Role": "home_page"
 # }
 
+# بعد الدخول: وجّه مستخدمي الجمعية إلى الواجهة المحوكمة /nos بدل /app
+on_session_creation = "stochops_nonprofit.session.route_charity_users_to_nos"
+
 # Generators
 # ----------
 
