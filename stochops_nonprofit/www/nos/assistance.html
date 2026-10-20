@@ -85,7 +85,7 @@
     function pill(st){ var k=(st||"").replace(/ .*/,""); return '<span class="pill s-'+esc(k)+'">'+esc(st)+'</span>'; }
 
     if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>طلبات المساعدة</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML = '<div class="center"><h1>طلبات المساعدة</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { loadBens().then(render); }
 
     function loadBens(){

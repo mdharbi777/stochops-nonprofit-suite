@@ -90,7 +90,7 @@
     function todayStr(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
 
     if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>التقارير</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML = '<div class="center"><h1>التقارير</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { shell(); run(); }
 
     function shell(){

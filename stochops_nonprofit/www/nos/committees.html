@@ -62,7 +62,7 @@
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); }); }
 
     if(!USER || USER==="Guest"){
-      app.innerHTML='<div class="center"><h1>اللجان</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML='<div class="center"><h1>اللجان</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { render(); }
 
     function render(){

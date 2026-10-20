@@ -33,7 +33,7 @@
       fetch("/api/method/stochops_nonprofit.signup.confirm_email",{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify({token:token})})
         .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
         .then(function(res){
-          if(res.ok && res.j.message){ app.innerHTML='<div class="icon ok">✓</div><h1>تم تفعيل حسابك</h1><p>يمكنك الآن تسجيل الدخول والبدء.</p><a class="btn" href="/login">تسجيل الدخول</a>'; }
+          if(res.ok && res.j.message){ app.innerHTML='<div class="icon ok">✓</div><h1>تم تفعيل حسابك</h1><p>يمكنك الآن تسجيل الدخول والبدء.</p><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a>'; }
           else{ app.innerHTML='<div class="icon err">⚠</div><h1>تعذّر التأكيد</h1><p>'+errMsg(res.j)+'</p><a class="btn" href="/nos/register">إعادة التسجيل</a>'; }
         }).catch(function(){ app.innerHTML='<div class="icon err">⚠</div><h1>خطأ في الاتصال</h1><p>حاول مجدداً.</p>'; });
     }

@@ -42,7 +42,7 @@
     function errMsg(res){try{var sm=JSON.parse(res.j._server_messages||"[]");if(sm.length)return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,"");}catch(e){}return "حدث خطأ.";}
     function getList(dt,fields){return fetch("/api/method/frappe.client.get_list?doctype="+dt+"&fields="+encodeURIComponent(JSON.stringify(fields))+"&limit_page_length=0&order_by=creation desc").then(function(r){return r.json();});}
     function insert(doc){return fetch("/api/method/frappe.client.insert",{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify({doc:doc})}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});});}
-    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>الاجتماعات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';}else{render();}
+    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>الاجتماعات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';}else{render();}
     function render(){
       Promise.all([getList("Meeting",["name","committee","title","meeting_date","status"]), getList("Committee",["name"])]).then(function(r){
         var list=r[0].message||[], comms=(r[1].message||[]);

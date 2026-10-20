@@ -43,7 +43,7 @@
     function errMsg(res){try{var sm=JSON.parse(res.j._server_messages||"[]");if(sm.length)return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,"");}catch(e){}return "حدث خطأ.";}
     function getList(dt,fields){return fetch("/api/method/frappe.client.get_list?doctype="+dt+"&fields="+encodeURIComponent(JSON.stringify(fields))+"&limit_page_length=0&order_by=creation desc").then(function(r){return r.json();});}
     function post(method,body){return fetch("/api/method/"+method,{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify(body)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});});}
-    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>المهام</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';}else{render();}
+    if(!USER||USER==="Guest"){app.innerHTML='<div class="center"><h1>المهام</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';}else{render();}
     function statusSel(name,cur){var o=Object.keys(ST).map(function(k){return '<option value="'+k+'"'+(k===cur?" selected":"")+'>'+ST[k]+'</option>';}).join("");return '<select onchange="setStatus(\''+esc(name)+'\',this.value)">'+o+'</select>';}
     function render(){
       Promise.all([getList("Initiative Task",["name","title","initiative","assigned_to","due_date","status"]), getList("Initiative",["name","title"])]).then(function(r){

@@ -81,7 +81,7 @@
     function pill(s){ var c=s==="معتمد"||s==="مُنفّذ"?"ok":(s==="مرفوض"||s==="ملغى"?"no":""); return '<span class="pill '+c+'">'+esc(s)+'</span>'; }
 
     if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>المشتريات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML = '<div class="center"><h1>المشتريات</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { render(); }
 
     function render(){

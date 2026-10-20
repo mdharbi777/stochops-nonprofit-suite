@@ -70,7 +70,7 @@
           if(res.ok && res.j.message && res.j.message.activated){
             document.getElementById("form").style.display="none";
             show("ok","تم تفعيل حسابك. يمكنك الآن تسجيل الدخول.");
-            setTimeout(function(){ location.href="/login"; }, 2000);
+            setTimeout(function(){ location.href="/login?redirect-to=/nos/console"; }, 2000);
           } else { show("err", errMsg(res.j)); document.getElementById("btn").disabled=false; }
         }).catch(function(){ show("err","تعذّر الاتصال."); document.getElementById("btn").disabled=false; });
     };

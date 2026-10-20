@@ -74,7 +74,7 @@
     document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
 
     if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>لوحة التشغيل</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML = '<div class="center"><h1>لوحة التشغيل</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { load(); }
 
     function kpi(t,v,s){ return '<div class="kpi"><div class="t">'+t+'</div><div class="v">'+v+'</div><div class="s">'+(s||"")+'</div></div>'; }

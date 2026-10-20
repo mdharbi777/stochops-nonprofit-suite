@@ -80,7 +80,7 @@
     }
 
     if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>المساعد الذكي</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login">تسجيل الدخول</a></p></div>';
+      app.innerHTML = '<div class="center"><h1>المساعد الذكي</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
     } else { load(); }
 
     function load(){
