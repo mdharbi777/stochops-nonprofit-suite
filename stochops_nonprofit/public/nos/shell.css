@@ -1,0 +1,57 @@
+/* هيكل تطبيق منصة الفاضل الموحّد — قائمة جانبية ثابتة + شريط علوي + تنقّل.
+   يُضمَّن في كل صفحات الوحدات داخل /nos. متوافق مع ألوان المنصة (navy/blue/cyan، Tajawal، RTL). */
+:root{
+  --nos-navy:#0b1220; --nos-navy2:#101b2b; --nos-blue:#2563eb; --nos-cyan:#06b6d4;
+  --nos-text:#e2e8f0; --nos-muted:#94a3b8; --nos-card:#111a2e; --nos-border:#1e293b;
+  --nos-sidebar-w:248px;
+}
+body.nos-app{ margin:0; }
+/* إفساح مكان القائمة الجانبية (RTL: يمين) */
+@media (min-width:981px){
+  body.nos-app{ padding-inline-start:0; padding-inline-end:var(--nos-sidebar-w); }
+  body.nos-app > .wrap{ max-width:none !important; padding-inline:28px !important; }
+}
+
+/* ===== القائمة الجانبية ===== */
+.nos-sidebar{
+  position:fixed; top:0; inset-inline-end:0; height:100vh; width:var(--nos-sidebar-w);
+  background:var(--nos-navy2); border-inline-start:1px solid var(--nos-border);
+  display:flex; flex-direction:column; z-index:50; overflow-y:auto; font-family:"Tajawal",sans-serif;
+}
+.nos-sidebar::-webkit-scrollbar{ width:7px; } .nos-sidebar::-webkit-scrollbar-thumb{ background:#22304a; border-radius:4px; }
+.nos-sb-brand{ display:flex; align-items:center; gap:9px; padding:18px 18px 14px; font-weight:800; font-size:18px; direction:ltr; border-bottom:1px solid var(--nos-border); }
+.nos-sb-brand .mk{ width:24px; height:24px; border-radius:7px; background:var(--nos-navy); display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+.nos-sb-brand .mk i{ display:block; background:var(--nos-blue); border-radius:1px; }
+.nos-sb-brand .mk i:nth-child(1){height:45%} .nos-sb-brand .mk i:nth-child(2){height:70%; background:var(--nos-cyan)} .nos-sb-brand .mk i:nth-child(3){height:100%}
+.nos-sb-brand b{ color:#fff; } .nos-sb-brand span{ color:var(--nos-cyan); }
+.nos-sb-nav{ flex:1; padding:10px 10px 20px; }
+.nos-sb-sec{ font-size:11px; color:#64748b; font-weight:700; padding:14px 10px 6px; letter-spacing:.3px; }
+.nos-sb-link{ display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; color:var(--nos-text);
+  font-size:14px; font-weight:500; text-decoration:none; margin-bottom:2px; transition:.12s; }
+.nos-sb-link:hover{ background:#16233f; color:#fff; }
+.nos-sb-link.active{ background:var(--nos-blue); color:#fff; font-weight:700; }
+.nos-sb-link .ic{ width:18px; text-align:center; opacity:.85; font-size:15px; }
+.nos-sb-foot{ padding:12px 14px; border-top:1px solid var(--nos-border); font-size:12px; color:var(--nos-muted); }
+.nos-sb-foot .pill{ display:inline-block; background:rgba(34,197,94,.12); color:#4ade80; border-radius:999px; padding:2px 9px; font-size:10.5px; }
+
+/* ===== الشريط العلوي الموحّد ===== */
+.nos-top{ position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:12px 18px; background:rgba(11,18,32,.88); backdrop-filter:blur(6px); border-bottom:1px solid var(--nos-border); }
+.nos-top .cr{ display:flex; align-items:center; gap:10px; min-width:0; }
+.nos-top .cr .nm{ color:#fff; font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nos-top .cr .bc{ color:var(--nos-muted); font-size:12.5px; white-space:nowrap; }
+.nos-top .cr .bc b{ color:var(--nos-cyan); font-weight:600; }
+.nos-top .ac{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--nos-muted); white-space:nowrap; }
+.nos-top .ac a{ color:var(--nos-muted); text-decoration:none; } .nos-top .ac a:hover{ color:var(--nos-cyan); }
+.nos-top .ac .u{ color:var(--nos-text); }
+.nos-burger{ display:none; background:none; border:1px solid var(--nos-border); color:var(--nos-text); border-radius:8px; padding:6px 10px; cursor:pointer; font-size:16px; }
+
+/* ===== الجوال ===== */
+.nos-scrim{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:45; }
+@media (max-width:980px){
+  .nos-sidebar{ transform:translateX(100%); transition:transform .2s; box-shadow:-8px 0 30px rgba(0,0,0,.4); }
+  body.nos-sb-open .nos-sidebar{ transform:translateX(0); }
+  body.nos-sb-open .nos-scrim{ display:block; }
+  .nos-burger{ display:inline-block; }
+  body.nos-app{ padding-inline-end:0; }
+}
