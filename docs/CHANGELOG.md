@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### نشر تجريبي حيّ على AWS + تصحيح سكربت البناء — 2026-10-20
+- **تشغيل حيّ ناجح:** منصة الفاضل على AWS EC2 (Ubuntu 24.04، 2GB+Swap) بـHTTPS صالح من Let's Encrypt؛ `verify_install=all_ok`، بيانات مصطنعة ظاهرة، `production_privacy_gate` مغلقة، `PILOT_SANDBOX`.
+- **أربعة إصلاحات مثبّتة لبناء frappe_docker** (في [`deploy/`](../deploy/) و[15_TRIAL_DEPLOY_ORACLE](15_TRIAL_DEPLOY_ORACLE.md)):
+  1. `apps.json` يُمرَّر كـ**سِرّ بناء** (`--secret id=apps_json`) لا عبر `APPS_JSON_BASE64` المُهمَل (وإلا يُبنى frappe فقط صامتاً).
+  2. `apps.json` يحوي **تطبيقنا فقط**؛ frappe يأتي من `--frappe-path` (تكراره يوقف `bench init` بسؤال overwrite).
+  3. `--build-arg CACHE_BUST` يكسر كاش طبقة تثبيت التطبيقات.
+  4. `.env` يحتاج **`SITES_RULE=Host(...)`** لإعداد HTTPS (Traefik) وإلا يفشل التشغيل.
+- أُضيف **تحقّق آلي أن التطبيق داخل الصورة** قبل المتابعة (يمنع الفشل الصامت).
+
 ### البريد التشغيلي + النشر التجريبي — 2026-10-19
 - **تشغيل Resend فعلياً (P6.3):** تصحيح النقل من 465/SSL إلى **587/STARTTLS** — مسار إعداد الموقع في Frappe يتجاهل `use_ssl` ويطبّق `use_tls` فقط، فالمنفذ 465 يفشل بمهلة اتصال.
 - **تجربة بريد حقيقية:** 3 مسارات أُرسلت بحالة **Sent** عبر Resend (نقل مباشر + دعوة حساب + تنبيه إسناد مدفوع بالحدث) لعنوان الفريق، ببيانات أدنى بلا PII؛ `production_privacy_gate` بقيت **مغلقة** و`deployment_mode = PILOT_SANDBOX`.

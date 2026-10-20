@@ -47,25 +47,35 @@ if [ ! -d "$FD_DIR" ]; then
 fi
 cd "$FD_DIR"
 
-# ---- 3) بناء الصورة المخصّصة (التوكن يُحقن وقت البناء فقط ثم يُمحى) ----
-say "بناء الصورة (Frappe v15 + منصة الفاضل) — قد يستغرق 15–30 دقيقة على ARM"
-TMP_APPS="$(mktemp)"
-cat > "$TMP_APPS" <<EOF
+# ---- 3) بناء الصورة المخصّصة ----
+# إصلاحات مثبّتة عملياً (frappe_docker الحالي):
+#   (1) apps.json يُمرَّر كـ«سِرّ بناء» (--secret) لا عبر APPS_JSON_BASE64 (المُهمَل) — وإلا يُبنى frappe فقط.
+#   (2) apps.json يحوي «تطبيقنا فقط»؛ frappe يأتي من --frappe-path (إدراجه مرتين يوقف bench init بسؤال overwrite).
+#   (3) CACHE_BUST يجبر إعادة تثبيت التطبيقات (السِّر وحده لا يكسر كاش الطبقة).
+#   (4) التوكن للمستودع الخاص يبقى داخل الملف السِّر فقط (لا يدخل طبقات الصورة)، ويُمحى بعد البناء.
+say "بناء الصورة (Frappe v15 + منصة الفاضل) — قد يستغرق 15–30 دقيقة"
+APPS_JSON="$FD_DIR/apps.json"
+cat > "$APPS_JSON" <<EOF
 [
-  { "url": "https://github.com/frappe/frappe", "branch": "version-15" },
   { "url": "https://${GH_TOKEN}@${REPO}", "branch": "main" }
 ]
 EOF
-APPS_JSON_BASE64="$(base64 -w 0 "$TMP_APPS")"
-shred -u "$TMP_APPS" 2>/dev/null || rm -f "$TMP_APPS"   # امحُ الملف الحاوي للتوكن فوراً
 
 docker build \
+  --secret id=apps_json,src="$APPS_JSON" \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
   --build-arg=FRAPPE_BRANCH=version-15 \
-  --build-arg=APPS_JSON_BASE64="$APPS_JSON_BASE64" \
+  --build-arg=CACHE_BUST="$(date +%s)" \
   --tag="${IMAGE}:${TAG}" \
   --file=images/layered/Containerfile .
-unset GH_TOKEN APPS_JSON_BASE64   # لا تُبقِ التوكن في الذاكرة البيئية
+shred -u "$APPS_JSON" 2>/dev/null || rm -f "$APPS_JSON"   # امحُ الملف الحاوي للتوكن فوراً
+unset GH_TOKEN
+
+# تحقّق أن التطبيق فعلاً داخل الصورة قبل المتابعة (يمنع الفشل الصامت)
+if ! docker run --rm --entrypoint ls "${IMAGE}:${TAG}" apps 2>/dev/null | grep -qw stochops_nonprofit; then
+  die "التطبيق stochops_nonprofit غير موجود في الصورة — راجع سجل البناء."
+fi
+say "تأكّد وجود التطبيق داخل الصورة ✅"
 
 # ---- 4) ملف البيئة ----
 say "كتابة .env"
@@ -74,6 +84,7 @@ CUSTOM_IMAGE=${IMAGE}
 CUSTOM_TAG=${TAG}
 PULL_POLICY=never
 SITES=\`${SITE}\`
+SITES_RULE=Host(\`${SITE}\`)
 DB_PASSWORD=${DB_PASSWORD}
 LETSENCRYPT_EMAIL=ops@stochops.com
 EOF

@@ -51,24 +51,26 @@ docker version && docker compose version
 ```bash
 git clone https://github.com/frappe/frappe_docker ~/frappe_docker
 cd ~/frappe_docker
-# ملف apps.json من حزمة النشر (Frappe version-15 + مستودعنا)
+# apps.json: «تطبيقنا فقط» — frappe يأتي من --frappe-path. للمستودع الخاص أدرج التوكن في الرابط.
 cat > apps.json <<'EOF'
 [
-  { "url": "https://github.com/frappe/frappe", "branch": "version-15" },
-  { "url": "https://github.com/mdharbi777/stochops-nonprofit-suite", "branch": "main" }
+  { "url": "https://<GH_TOKEN>@github.com/mdharbi777/stochops-nonprofit-suite", "branch": "main" }
 ]
 EOF
-# للمستودع الخاص: أدرج التوكن في رابط مستودعنا داخل apps.json وقت البناء فقط
-#   "url": "https://<GH_TOKEN>@github.com/mdharbi777/stochops-nonprofit-suite"
-export APPS_JSON_BASE64=$(base64 -w 0 apps.json)
+# frappe_docker الحالي يقرأ apps.json كـ«سِرّ بناء» (--secret) لا عبر APPS_JSON_BASE64 (المُهمَل)،
+# و CACHE_BUST يجبر إعادة تثبيت التطبيقات.
 docker build \
+  --secret id=apps_json,src=apps.json \
   --build-arg=FRAPPE_PATH=https://github.com/frappe/frappe \
   --build-arg=FRAPPE_BRANCH=version-15 \
-  --build-arg=APPS_JSON_BASE64=$APPS_JSON_BASE64 \
+  --build-arg=CACHE_BUST="$(date +%s)" \
   --tag=alfadil/trial:latest \
   --file=images/layered/Containerfile .
+shred -u apps.json   # امحُ الملف الحاوي للتوكن فوراً بعد البناء
+# تحقّق أن التطبيق فعلاً داخل الصورة (يمنع فشلاً صامتاً):
+docker run --rm --entrypoint ls alfadil/trial:latest apps | grep -qw stochops_nonprofit && echo "APP_OK"
 ```
-> البناء على ARM قد يأخذ 15–30 دقيقة. بعده احذف `apps.json` الذي يحوي التوكن: `shred -u apps.json`.
+> **دروس مثبّتة:** (1) apps.json سِرّ لا APPS_JSON_BASE64؛ (2) «تطبيقنا فقط» بلا frappe (تكراره يوقف `bench init` بسؤال overwrite)؛ (3) `CACHE_BUST` يكسر الكاش؛ (4) البناء 15–30 دقيقة.
 
 ## 5. تشغيل الإنتاج مع HTTPS
 احصل على hostname مجاني: `SERVER_IP.sslip.io` (مثلاً `1.2.3.4.sslip.io`). ثم:
@@ -78,6 +80,7 @@ cp example.env .env
 # عدّل .env:
 #   CUSTOM_IMAGE=alfadil/trial ; CUSTOM_TAG=latest ; PULL_POLICY=never
 #   DB_PASSWORD=<كلمة قوية> ; SITES=`SERVER_IP.sslip.io`
+#   SITES_RULE=Host(`SERVER_IP.sslip.io`)   # إلزامي لـHTTPS، وإلا يفشل التشغيل بـ"SITES_RULE not set"
 #   LETSENCRYPT_EMAIL=ops@stochops.com
 docker compose \
   -f compose.yaml \
