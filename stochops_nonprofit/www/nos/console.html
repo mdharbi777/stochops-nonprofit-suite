@@ -54,6 +54,10 @@
     .witem .due.od { color:var(--red); font-weight:700; }
     .wempty { color:var(--muted); font-size:13px; padding:10px 0; }
     .sec { color:#fff; font-size:18px; font-weight:800; margin:26px 0 2px; }
+    .ob { background:linear-gradient(90deg,#15233f,#101b2b); border:1px solid var(--blue); border-radius:14px;
+      padding:14px 18px; margin:18px 0 0; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .ob .t { color:#fff; font-weight:700; font-size:15px; } .ob .s { color:var(--muted); font-size:13px; margin-top:3px; }
+    .ob a { background:var(--blue); color:#fff; border-radius:999px; padding:9px 18px; font-size:14px; font-weight:700; white-space:nowrap; }
     @media (max-width:860px){ .cards{ grid-template-columns:repeat(2,1fr);} .nav{ grid-template-columns:1fr; } .mywork{ grid-template-columns:1fr; } }
   </style>
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
@@ -79,7 +83,24 @@
 
     if (!USER || USER==="Guest"){
       app.innerHTML = '<div class="center"><h1>لوحة التشغيل</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
-    } else { load(); }
+    } else { load(); checkOnboarding(); }
+
+    function checkOnboarding(){
+      fetch("/api/method/stochops_nonprofit.accounts.onboarding_status")
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if (!j || !j.message || j.message.complete) return;
+          var m = j.message;
+          var b = document.createElement("div"); b.className = "ob";
+          b.innerHTML =
+            '<div><div class="t">أكمل تهيئة جمعيتك</div>'+
+            '<div class="s">أنجزت '+m.steps_done+' من '+m.steps_total+' خطوات: الهوية، حدّ الاعتماد المالي، دعوة الفريق.</div></div>'+
+            '<a href="/nos/onboarding">متابعة التهيئة</a>';
+          var wrap = document.querySelector(".wrap");
+          wrap.insertBefore(b, document.getElementById("app"));
+        })
+        .catch(function(){});
+    }
 
     function kpi(t,v,s){ return '<div class="kpi"><div class="t">'+t+'</div><div class="v">'+v+'</div><div class="s">'+(s||"")+'</div></div>'; }
     function tile(href,title,desc,soon){ return '<a class="tile" href="'+(soon?'javascript:void(0)':href)+'"><h3>'+title+(soon?'<span class="soon">قريباً</span>':'')+'</h3><p>'+desc+'</p></a>'; }

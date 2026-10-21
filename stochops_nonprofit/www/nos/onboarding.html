@@ -1,0 +1,35 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تهيئة الجمعية | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <style>
+    .ob-prog { height:8px; background:var(--nc-navy2,#101b2b); border:1px solid var(--nc-border,#1e293b); border-radius:999px; overflow:hidden; margin:14px 0 4px; }
+    .ob-prog i { display:block; height:100%; background:#2563eb; transition:width .3s; }
+    .ob-step { display:flex; align-items:center; gap:10px; }
+    .ob-step .n { width:26px; height:26px; border-radius:50%; background:#1e293b; color:#cbd5e1; display:inline-grid; place-items:center; font-weight:700; font-size:13px; flex:none; }
+    .ob-step .n.done { background:#16351f; color:#22c55e; border:1px solid #22c55e; }
+    .ob-hd { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+    .ob-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; }
+    .ob-full { grid-column:1 / -1; }
+    .ob-acc { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--nc-border,#1e293b); font-size:13.5px; }
+    .ob-acc:last-child { border-bottom:none; }
+    @media (max-width:640px){ .ob-grid{ grid-template-columns:1fr; } }
+  </style>
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/onboarding.js?v=1" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
+</html>

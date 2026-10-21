@@ -228,6 +228,58 @@ def update_charity_settings(registration_number=None, contact_email=None, contac
 
 
 @frappe.whitelist()
+def onboarding_status():
+    """حالة رحلة التهيئة للجمعية (مدير الجمعية فقط، معزولة). تُحتسب من البيانات دون حقل مخزّن:
+    - الهوية: رقم التسجيل + بريد التواصل.
+    - حدّ الاعتماد المالي: expense_approval_limit > 0.
+    - الفريق: دعوة عضو واحد على الأقل (اختياري، لا يمنع الاكتمال).
+    «مكتملة» = الهوية + حدّ الاعتماد (الأساسيان)."""
+    charity = _require_charity_admin()
+    data = frappe.db.get_value(
+        "Charity",
+        charity,
+        ["charity_name", "registration_number", "contact_email", "contact_mobile",
+         "expense_approval_limit", "max_accounts", "onboarding_completed"],
+        as_dict=True,
+    )
+    used = frappe.db.count("User", {"charity": charity})
+    identity_done = bool((data.get("registration_number") or "").strip() and (data.get("contact_email") or "").strip())
+    limit_done = float(data.get("expense_approval_limit") or 0) > 0
+    team_done = used > 1
+    steps_done = sum([identity_done, limit_done, team_done])
+    return {
+        "charity": charity,
+        "charity_name": data.get("charity_name"),
+        "registration_number": data.get("registration_number") or "",
+        "contact_email": data.get("contact_email") or "",
+        "contact_mobile": data.get("contact_mobile") or "",
+        "expense_approval_limit": data.get("expense_approval_limit") or 0,
+        "accounts_used": used,
+        "max_accounts": data.get("max_accounts") or 5,
+        "identity_done": identity_done,
+        "limit_done": limit_done,
+        "team_done": team_done,
+        "steps_done": steps_done,
+        "steps_total": 3,
+        "can_finish": identity_done,
+        "complete": bool(data.get("onboarding_completed")),
+    }
+
+
+@frappe.whitelist()
+def complete_onboarding():
+    """يُنهي رحلة التهيئة (مدير الجمعية فقط). يشترط ضبط هوية الجمعية أولاً.
+    حدّ الاعتماد له قيمة افتراضية معقولة يراجعها المدير في الرحلة."""
+    charity = _require_charity_admin()
+    reg, email = frappe.db.get_value("Charity", charity, ["registration_number", "contact_email"])
+    if not ((reg or "").strip() and (email or "").strip()):
+        frappe.throw(_("أكمل هوية الجمعية (رقم التسجيل وبريد التواصل) قبل إنهاء التهيئة."))
+    frappe.db.set_value("Charity", charity, "onboarding_completed", 1)
+    frappe.db.commit()
+    return {"charity": charity, "complete": True}
+
+
+@frappe.whitelist()
 def set_account_enabled(email, enabled):
     charity = _require_charity_admin()
     email = (email or "").strip().lower()
