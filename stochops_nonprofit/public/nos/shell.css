@@ -8,14 +8,14 @@
 body.nos-app{ margin:0; }
 /* إفساح مكان القائمة الجانبية (RTL: يمين) */
 @media (min-width:981px){
-  body.nos-app{ padding-inline-start:0; padding-inline-end:var(--nos-sidebar-w); }
-  body.nos-app > .wrap{ max-width:none !important; padding-inline:28px !important; }
+  body.nos-app{ padding-right:var(--nos-sidebar-w); padding-left:0; }
+  body.nos-app > .wrap{ max-width:none !important; padding-right:28px !important; padding-left:28px !important; }
 }
 
-/* ===== القائمة الجانبية ===== */
+/* ===== القائمة الجانبية (يمين الشاشة في RTL) ===== */
 .nos-sidebar{
-  position:fixed; top:0; inset-inline-end:0; height:100vh; width:var(--nos-sidebar-w);
-  background:var(--nos-navy2); border-inline-start:1px solid var(--nos-border);
+  position:fixed; top:0; right:0; height:100vh; width:var(--nos-sidebar-w);
+  background:var(--nos-navy2); border-left:1px solid var(--nos-border);
   display:flex; flex-direction:column; z-index:50; overflow-y:auto; font-family:"Tajawal",sans-serif;
 }
 .nos-sidebar::-webkit-scrollbar{ width:7px; } .nos-sidebar::-webkit-scrollbar-thumb{ background:#22304a; border-radius:4px; }
@@ -53,5 +53,5 @@ body.nos-app{ margin:0; }
   body.nos-sb-open .nos-sidebar{ transform:translateX(0); }
   body.nos-sb-open .nos-scrim{ display:block; }
   .nos-burger{ display:inline-block; }
-  body.nos-app{ padding-inline-end:0; }
+  body.nos-app{ padding-right:0; padding-left:0; }
 }
