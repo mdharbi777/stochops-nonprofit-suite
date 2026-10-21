@@ -163,6 +163,10 @@ def security_incident_query(user):
     return _condition(user, "Security Incident")
 
 
+def legal_acceptance_query(user):
+    return _condition(user, "Legal Acceptance")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):

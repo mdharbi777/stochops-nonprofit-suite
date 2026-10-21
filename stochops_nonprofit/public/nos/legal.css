@@ -1,0 +1,27 @@
+/* المركز القانوني العام (P1) — صفحات عامة مستقلة عن AppShell. بلا رموز تعبيرية. */
+:root{ --lg-navy:#0b1220; --lg-navy2:#101b2b; --lg-blue:#2563eb; --lg-cyan:#06b6d4;
+  --lg-text:#e2e8f0; --lg-muted:#94a3b8; --lg-card:#111a2e; --lg-border:#1e293b; }
+*{ box-sizing:border-box; margin:0; padding:0; }
+body{ font-family:"Tajawal",sans-serif; color:var(--lg-text); background:var(--lg-navy);
+  background-image:radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+a{ color:var(--lg-cyan); text-decoration:none; } a:hover{ text-decoration:underline; }
+.wrap{ max-width:820px; margin:0 auto; padding:0 20px 48px; }
+.topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--lg-border); flex-wrap:wrap; gap:10px; }
+.logo{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+.logo .mark{ width:26px; height:26px; border-radius:7px; background:var(--lg-navy2);
+  display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+.logo .mark i{ display:block; background:var(--lg-blue); border-radius:1px; }
+.logo .mark i:nth-child(2){ background:var(--lg-cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+.logo b{ color:#fff; } .logo span{ color:var(--lg-cyan); }
+.topbar .nav{ display:flex; gap:16px; font-size:14px; }
+h1{ color:#fff; font-size:26px; font-weight:800; margin:26px 0 6px; }
+.muted{ color:var(--lg-muted); font-size:14px; }
+.crumb{ font-size:13px; color:var(--lg-muted); margin-top:22px; }
+.legal-list{ list-style:none; margin-top:18px; }
+.legal-list li{ background:var(--lg-card); border:1px solid var(--lg-border); border-radius:12px; padding:14px 18px; margin-bottom:10px; font-size:15px; }
+.legal-content{ background:var(--lg-card); border:1px solid var(--lg-border); border-radius:14px; padding:22px 24px; margin-top:18px; line-height:1.9; font-size:15px; }
+.legal-content h2{ color:#fff; font-size:19px; margin:18px 0 8px; } .legal-content h3{ color:#fff; font-size:16px; margin:14px 0 6px; }
+.legal-content p{ margin:8px 0; } .legal-content ul,.legal-content ol{ margin:8px 24px; } .legal-content li{ margin:4px 0; }
+.legal-content a{ color:var(--lg-cyan); }
+.hash{ margin-top:16px; font-size:12px; word-break:break-all; } .hash code{ color:var(--lg-muted); }
+footer{ margin-top:34px; padding-top:16px; border-top:1px solid var(--lg-border); font-size:12.5px; color:var(--lg-muted); }
