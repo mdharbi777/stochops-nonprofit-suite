@@ -55,10 +55,6 @@
     function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
     function badge(status){ return status==="نشط" ? '<span class="ds-badge ds-badge--ok">نشط</span>' : '<span class="ds-badge ds-badge--muted">مؤرشف</span>'; }
 
-    if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="ds-state"><h3>المستفيدون</h3><p>يجب تسجيل الدخول للوصول إلى هذه الصفحة.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to=/nos/beneficiaries">تسجيل الدخول</a></div>';
-    } else { init(); }
-
     var state = { page:1, size:10, search:"", status:"", cat:"", sort:"creation", dir:"desc", total:0 };
     var tmr;
 
@@ -174,6 +170,11 @@
         else { em.textContent=errMsg(res); }
       });
     }
+
+    // بدء التشغيل بعد تهيئة الحالة والدوال (تفادي رفع التعريف)
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="ds-state"><h3>المستفيدون</h3><p>يجب تسجيل الدخول للوصول إلى هذه الصفحة.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to=/nos/beneficiaries">تسجيل الدخول</a></div>';
+    } else { init(); }
   </script>
 </body>
 </html>
