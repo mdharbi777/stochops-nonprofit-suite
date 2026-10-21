@@ -1,0 +1,30 @@
+/* أنماط محرّكي القائمة والتفاصيل الموحّدين (P2) + أساس صفحات /nos. بلا رموز تعبيرية. */
+:root{ --nc-navy:#0b1220; --nc-navy2:#101b2b; --nc-cyan:#06b6d4; --nc-text:#e2e8f0; --nc-muted:#94a3b8; --nc-card:#111a2e; --nc-border:#1e293b; --nl-cyan:#06b6d4; }
+body{ font-family:"Tajawal",sans-serif; color:var(--nc-text); background:var(--nc-navy); min-height:100vh; margin:0; }
+.wrap{ max-width:1040px; margin:0 auto; padding:0 20px; }
+h1{ color:#fff; font-size:24px; font-weight:800; margin:22px 0 2px; }
+.muted{ color:var(--nc-muted); font-size:14px; }
+.panel{ background:var(--nc-card); border:1px solid var(--nc-border); border-radius:14px; padding:18px 20px; margin-top:16px; }
+.panel h3{ color:#fff; font-size:16px; margin-bottom:12px; }
+
+/* القائمة */
+.pagehdr{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.nl-note{ background:var(--nc-navy2); border:1px solid var(--nc-border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--nc-muted); margin:14px 0; }
+.nl-toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 4px; }
+.nl-toolbar input, .nl-toolbar select{ background:var(--nc-navy); border:1px solid var(--nc-border); border-radius:9px; padding:9px 12px; color:#fff; font-family:inherit; font-size:14px; }
+.nl-search{ flex:1; min-width:200px; }
+.nl-sort{ cursor:pointer; user-select:none; }
+.nl-row{ cursor:pointer; }
+.nl-pager{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; flex-wrap:wrap; font-size:13px; color:var(--nc-muted); }
+.nl-pager .nav{ display:flex; gap:8px; align-items:center; }
+.nl-mono, .nd-mono{ font-variant-numeric:tabular-nums; letter-spacing:.5px; }
+
+/* التفاصيل */
+.nd-crumb{ font-size:13px; color:var(--nc-muted); margin:18px 0 6px; } .nd-crumb a{ color:var(--nc-cyan); }
+.nd-kv{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px 24px; }
+.nd-k{ color:var(--nc-muted); font-size:12.5px; margin-bottom:3px; } .nd-v{ color:var(--nc-text); font-size:15px; font-weight:600; }
+.nd-v a{ color:var(--nc-cyan); }
+.nd-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+@media (max-width:720px){ .nl-hs{ display:none; } }
+@media (max-width:640px){ .nd-kv{ grid-template-columns:1fr; } }

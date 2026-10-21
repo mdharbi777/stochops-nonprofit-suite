@@ -4,133 +4,48 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ملف مستفيد | منصة الفاضل</title>
+  <title>المستفيد | منصة الفاضل</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0; --muted:#94a3b8; --card:#111a2e; --border:#1e293b; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy); min-height:100vh; }
-    .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
-    .topbar{ display:flex; }
-    .crumb { font-size:13px; color:var(--muted); margin:18px 0 8px; }
-    .crumb a{ color:var(--cyan); }
-    h1 { color:#fff; font-size:24px; font-weight:800; margin:4px 0 2px; }
-    .muted { color:var(--muted); font-size:14px; }
-    .panel { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px 20px; margin-top:16px; }
-    .panel h3 { color:#fff; font-size:16px; margin-bottom:12px; }
-    .kv { display:grid; grid-template-columns:repeat(2,1fr); gap:14px 24px; }
-    .kv .k { color:var(--muted); font-size:12.5px; margin-bottom:3px; }
-    .kv .v { color:var(--text); font-size:15px; font-weight:600; }
-    .mono { font-variant-numeric:tabular-nums; letter-spacing:1px; }
-    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
-    @media (max-width:640px){ .kv{ grid-template-columns:1fr; } }
-  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
-  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
-</head>
-<body>
-  <div class="wrap"><div class="topbar"><a class="logo" href="/nos"></a></div><div id="app"></div></div>
   <script>
-    var CSRF = "{{ frappe.session.csrf_token or '' }}";
-    var USER = "{{ frappe.session.user }}";
-    var app = document.getElementById("app");
-    var NAME = new URLSearchParams(location.search).get("name") || "";
-
-    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
-    function api(method, args, isPost){
-      var opt={ headers:{ "X-Frappe-CSRF-Token":CSRF } }; var url="/api/method/"+method;
-      if(isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
-      else if(args){ url+="?"+new URLSearchParams(args).toString(); }
-      return fetch(url,opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); });
-    }
-    function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
-    function badge(s){ return s==="نشط" ? '<span class="ds-badge ds-badge--ok">نشط</span>' : '<span class="ds-badge ds-badge--muted">'+esc(s||"—")+'</span>'; }
-    function reqBadge(s){ var m={"معتمد":"ok","مصروف":"ok","مرفوض":"danger","ملغى":"muted","قيد المراجعة":"warn","مقدم":"muted"}; return '<span class="ds-badge ds-badge--'+(m[s]||"muted")+'">'+esc(s||"—")+'</span>'; }
-
-    if(!USER || USER==="Guest"){
-      app.innerHTML='<div class="ds-state"><h3>ملف المستفيد</h3><p>يجب تسجيل الدخول.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to=/nos/beneficiaries">تسجيل الدخول</a></div>';
-    } else if(!NAME){
-      app.innerHTML='<div class="ds-state ds-state--error"><h3>سجل غير محدد</h3><p>لم يُحدَّد المستفيد.</p><a class="ds-btn ds-btn--secondary" href="/nos/beneficiaries">عودة للقائمة</a></div>';
-    } else { load(); }
-
-    function load(){
-      app.innerHTML='<div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>جارٍ التحميل…</p></div>';
-      api("frappe.client.get",{ doctype:"Beneficiary", name:NAME }).then(function(res){
-        if(!res.ok){
-          var m=errMsg(res);
-          var noperm=/permission|صلاحية|not permitted/i.test(m);
-          app.innerHTML='<div class="ds-state '+(noperm?'':'ds-state--error')+'"><h3>'+(noperm?'لا صلاحية':'تعذّر التحميل')+'</h3><p>'+esc(m)+'</p><a class="ds-btn ds-btn--secondary" href="/nos/beneficiaries">عودة للقائمة</a></div>';
-          return;
-        }
-        render(res.j.message||{});
-      });
-    }
-
-    function render(b){
-      app.innerHTML=
-        '<div class="crumb"><a href="/nos/beneficiaries">المستفيدون</a> &rsaquo; '+esc(b.beneficiary_name||NAME)+'</div>'+
-        '<h1>'+esc(b.beneficiary_name||"")+'</h1>'+
-        '<p class="muted">'+esc(b.name)+' — '+badge(b.status)+'</p>'+
-        '<div class="panel"><h3>بيانات المستفيد</h3><div class="kv">'+
-          kv("الاسم", b.beneficiary_name)+kv("الجوال", b.phone||"—")+kv("الجنس", b.gender||"—")+
-          kv("الفئة", b.social_category||"—")+kv("عدد أفراد الأسرة", String(b.family_members_count||0))+
-          kv("مسؤول الحالة", b.case_worker||"—")+
-          '<div><div class="k">رقم الهوية</div><div class="v" id="nid"><button class="ds-btn ds-btn--secondary ds-btn--sm" id="revealBtn">كشف الهوية</button></div></div>'+
-        '</div>'+
-        '<div class="actions">'+
-          (b.status==="نشط"
-            ? '<button class="ds-btn ds-btn--warning" id="archiveBtn">أرشفة المستفيد</button>'
-            : '<button class="ds-btn ds-btn--secondary" id="activateBtn">إعادة تنشيط</button>')+
-          '<a class="ds-btn ds-btn--secondary" href="/nos/beneficiaries">عودة للقائمة</a>'+
-        '</div></div>'+
-        '<div class="panel" id="relpanel"><h3>طلبات المساعدة المرتبطة</h3><div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>جارٍ التحميل…</p></div></div>';
-
-      document.getElementById("revealBtn").onclick = reveal;
-      var ab=document.getElementById("archiveBtn"); if(ab) ab.onclick=function(){ setStatus("مؤرشف"); };
-      var ac=document.getElementById("activateBtn"); if(ac) ac.onclick=function(){ setStatus("نشط"); };
-      loadRelated();
-    }
-    function kv(k,v){ return '<div><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div></div>'; }
-
-    function reveal(){
-      var btn=document.getElementById("revealBtn"); btn.disabled=true;
-      api("stochops_nonprofit.beneficiaries.reveal_national_id",{beneficiary:NAME},true).then(function(res){
-        btn.disabled=false;
-        if(res.ok && res.j.message){ document.getElementById("nid").innerHTML='<span class="mono">'+esc(res.j.message.national_id||"—")+'</span>'; }
-        else { document.getElementById("nid").innerHTML='<span class="ds-err">'+esc(errMsg(res))+'</span>'; }
-      });
-    }
-
-    function setStatus(st){
-      api("frappe.client.set_value",{ doctype:"Beneficiary", name:NAME, fieldname:"status", value:st },true).then(function(res){
-        if(res.ok){ toast("تم التحديث", NAME); load(); } else { toast("تعذّر التحديث: "+errMsg(res), null, true); }
-      });
-    }
-
-    function loadRelated(){
-      var rp=document.getElementById("relpanel");
-      api("frappe.client.get_list",{ doctype:"Assistance Request",
-        fields:JSON.stringify(["name","request_type","amount","priority","status","creation"]),
-        filters:JSON.stringify([["beneficiary","=",NAME]]), order_by:"creation desc", limit_page_length:50 }).then(function(res){
-        if(!res.ok){ rp.innerHTML='<h3>طلبات المساعدة المرتبطة</h3><div class="ds-state ds-state--error"><p>'+esc(errMsg(res))+'</p></div>'; return; }
-        var data=res.j.message||[];
-        if(!data.length){ rp.innerHTML='<h3>طلبات المساعدة المرتبطة</h3><div class="ds-state ds-state--empty"><p>لا توجد طلبات مساعدة لهذا المستفيد.</p><a class="ds-btn ds-btn--primary" href="/nos/assistance">إنشاء طلب</a></div>'; return; }
-        var rows=data.map(function(r){
-          return '<tr><td>'+esc(r.name)+'</td><td>'+esc(r.request_type||"—")+'</td><td class="mono">'+esc(r.amount!=null?Number(r.amount).toLocaleString("en"):"—")+'</td><td>'+esc(r.priority||"—")+'</td><td>'+reqBadge(r.status)+'</td></tr>';
-        }).join("");
-        rp.innerHTML='<h3>طلبات المساعدة المرتبطة ('+data.length+')</h3>'+
-          '<div class="ds-table-wrap"><table class="ds-table"><thead><tr><th>المرجع</th><th>النوع</th><th>المبلغ</th><th>الأولوية</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-      });
-    }
-
-    function toast(msg, ref, isErr){
-      var t=document.createElement("div"); t.className="ds-toast "+(isErr?"ds-toast--err":"ds-toast--ok");
-      t.innerHTML=esc(msg)+(ref?' <span class="ref">('+esc(ref)+')</span>':"");
-      document.body.appendChild(t); setTimeout(function(){ t.remove(); },3000);
-    }
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_DETAIL = {
+      doctype:"Beneficiary", titleField:"beneficiary_name",
+      listRoute:"/nos/beneficiaries", crumbLabel:"المستفيدون", loginRedirect:"/nos/beneficiaries",
+      statusField:"status", sectionTitle:"بيانات المستفيد",
+      fields:[
+        {field:"beneficiary_name", label:"الاسم"},
+        {field:"phone", label:"الجوال"},
+        {field:"gender", label:"الجنس"},
+        {field:"social_category", label:"الفئة"},
+        {field:"family_members_count", label:"عدد أفراد الأسرة"},
+        {field:"case_worker", label:"مسؤول الحالة"},
+        {field:"national_id", label:"رقم الهوية", reveal:"stochops_nonprofit.beneficiaries.reveal_national_id", revealArg:"beneficiary"}
+      ],
+      statusActions:[
+        {when:"نشط", label:"أرشفة المستفيد", to:"مؤرشف", variant:"warning"},
+        {when:"مؤرشف", label:"إعادة تنشيط", to:"نشط", variant:"secondary"}
+      ],
+      relations:[
+        {doctype:"Assistance Request", filterField:"beneficiary", title:"طلبات المساعدة المرتبطة",
+         columns:[
+           {field:"name",label:"المرجع"},
+           {field:"request_type",label:"النوع"},
+           {field:"amount",label:"المبلغ",money:true},
+           {field:"priority",label:"الأولوية"},
+           {field:"status",label:"الحالة",badge:true}
+         ],
+         createRoute:"/nos/assistance", createLabel:"إنشاء طلب مساعدة"}
+      ]
+    };
   </script>
-</body>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=1" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
 </html>

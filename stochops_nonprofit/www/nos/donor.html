@@ -1,0 +1,47 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المتبرّع | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_DETAIL = {
+      doctype:"Donor", titleField:"donor_name",
+      listRoute:"/nos/donors", crumbLabel:"المتبرعون", loginRedirect:"/nos/donors",
+      statusField:"status", sectionTitle:"بيانات المتبرّع",
+      fields:[
+        {field:"donor_name", label:"الاسم"},
+        {field:"donor_type", label:"النوع"},
+        {field:"phone", label:"الجوال"},
+        {field:"email", label:"البريد الإلكتروني"},
+        {field:"notes", label:"ملاحظات"}
+      ],
+      statusActions:[
+        {when:"نشط", label:"أرشفة المتبرّع", to:"مؤرشف", variant:"warning"},
+        {when:"مؤرشف", label:"إعادة تنشيط", to:"نشط", variant:"secondary"}
+      ],
+      relations:[
+        {doctype:"Donation", filterField:"donor", title:"تبرّعات المتبرّع",
+         columns:[
+           {field:"name",label:"المرجع"},
+           {field:"donation_date",label:"التاريخ"},
+           {field:"donation_type",label:"النوع"},
+           {field:"initiative",label:"المبادرة"}
+         ]}
+      ]
+    };
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=1" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
+</html>

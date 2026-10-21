@@ -4,155 +4,44 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>المتبرعون والتبرعات | منصة الفاضل</title>
+  <title>المتبرعون | منصة الفاضل</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
-      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
-      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
-    a { color:var(--cyan); text-decoration:none; }
-    .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
-    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
-    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
-      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
-    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
-    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
-    .logo b { color:#fff; } .logo span { color:var(--cyan); }
-    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
-    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
-    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
-    .muted { color:var(--muted); font-size:14px; }
-    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
-    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; overflow-x:auto; }
-    .panel h3 { color:#fff; font-size:16px; margin-bottom:6px; }
-    table { width:100%; border-collapse:collapse; margin-top:8px; }
-    th, td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:13.5px; white-space:nowrap; }
-    th { color:var(--muted); font-weight:500; }
-    .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; background:rgba(148,163,184,.15); color:var(--muted); }
-    .pill.on { background:rgba(34,197,94,.14); color:var(--green); }
-    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
-    input, select { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
-    input:focus, select:focus { outline:none; border-color:var(--blue); }
-    .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
-    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 20px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
-    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
-    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
-    .msg.ok { display:block; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.4); color:var(--green); }
-    .center { text-align:center; padding:60px 0; }
-    .num { font-variant-numeric:tabular-nums; }
-    @media (max-width:720px){ .grid3{ grid-template-columns:1fr; } th,td{ white-space:normal; } }
-  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
-  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
-      <div class="right">
-        <a href="/nos/console">لوحة التشغيل</a>
-        <a href="/nos/grants">المنح</a>
-        <span id="whoami"></span>
-        <a href="/api/method/logout">خروج</a>
-      </div>
-    </div>
-    <div id="app"></div>
-  </div>
-
   <script>
-    var CSRF = "{{ frappe.session.csrf_token or '' }}";
-    var USER = "{{ frappe.session.user }}";
-    var app = document.getElementById("app");
-    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
-    var DONORS = [];
-
-    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
-    function today(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0"); }
-    function api(method, args, isPost){
-      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
-      var url = "/api/method/" + method;
-      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
-      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
-      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
-    }
-    function errMsg(res){
-      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
-      return "حدث خطأ.";
-    }
-
-    if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="center"><h1>المتبرعون</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
-    } else { render(); }
-
-    function render(){
-      Promise.all([
-        api("frappe.client.get_list", {doctype:"Donor", fields:JSON.stringify(["name","donor_name","donor_type","phone","status"]), order_by:"creation desc", limit_page_length:0}),
-        api("frappe.client.get_list", {doctype:"Donation", fields:JSON.stringify(["name","donor","donation_date","donation_type","amount","status"]), order_by:"donation_date desc", limit_page_length:0})
-      ]).then(function(r){
-        if(!r[0].ok){ app.innerHTML='<div class="center"><h1>المتبرعون</h1><p class="msg err" style="display:block">'+esc(errMsg(r[0]))+'</p></div>'; return; }
-        DONORS = r[0].j.message||[];
-        var dRows = DONORS.map(function(d){
-          var st = d.status==="نشط"?'<span class="pill on">نشط</span>':'<span class="pill">مؤرشف</span>';
-          return '<tr><td>'+esc(d.donor_name)+'</td><td>'+esc(d.donor_type||"")+'</td><td>'+esc(d.phone||"—")+'</td><td>'+st+'</td></tr>';
-        }).join("");
-        var donRows = (r[1].ok?r[1].j.message:[]||[]).map(function(x){
-          return '<tr><td>'+esc(x.donor)+'</td><td>'+esc(x.donation_date||"")+'</td><td>'+esc(x.donation_type||"")+'</td>'+
-            '<td class="num">'+(x.amount?Number(x.amount).toLocaleString("en-US"):'—')+'</td><td>'+esc(x.status||"")+'</td></tr>';
-        }).join("");
-        var opts = DONORS.map(function(d){ return '<option value="'+esc(d.name)+'">'+esc(d.donor_name)+'</option>'; }).join("");
-        app.innerHTML =
-          '<h1>المتبرعون والتبرعات</h1>'+
-          '<p class="muted">سجلّ المتبرعين وتبرعاتهم، معزول بجمعيتك.</p>'+
-          '<div class="note">التبرعات والقيم هنا <b>تسجيل فقط</b> — لا بوابة دفع ولا تحصيل إلكتروني ولا حركة أموال داخل المنصّة.</div>'+
-          '<div class="panel"><h3>المتبرعون</h3><table><thead><tr><th>الاسم</th><th>النوع</th><th>الجوال</th><th>الحالة</th></tr></thead><tbody>'+
-            (dRows||'<tr><td colspan="4" class="muted" style="text-align:center;padding:20px">لا متبرعون بعد.</td></tr>')+'</tbody></table>'+
-            '<div class="grid3" style="margin-top:14px">'+
-              '<div><label>اسم المتبرّع</label><input id="d_name"></div>'+
-              '<div><label>النوع</label><select id="d_type"><option>فرد</option><option>جهة</option></select></div>'+
-              '<div><label>الجوال</label><input id="d_phone"></div>'+
-            '</div><div style="margin-top:12px"><button class="btn" id="dbtn" onclick="addDonor()">إضافة متبرّع</button></div>'+
-            '<div class="msg" id="dmsg"></div></div>'+
-          '<div class="panel"><h3>التبرعات</h3><table><thead><tr><th>المتبرّع</th><th>التاريخ</th><th>النوع</th><th>المبلغ/القيمة</th><th>الحالة</th></tr></thead><tbody>'+
-            (donRows||'<tr><td colspan="5" class="muted" style="text-align:center;padding:20px">لا تبرعات بعد.</td></tr>')+'</tbody></table>'+
-            (DONORS.length ? '<div class="grid3" style="margin-top:14px">'+
-              '<div><label>المتبرّع</label><select id="t_donor">'+opts+'</select></div>'+
-              '<div><label>النوع</label><select id="t_type"><option>نقدي</option><option>عيني</option><option>تعهّد</option></select></div>'+
-              '<div><label>المبلغ/القيمة (ريال)</label><input id="t_amount" type="number" min="0"></div>'+
-              '<div><label>التاريخ</label><input id="t_date" type="date" value="'+today()+'"></div>'+
-              '<div><label>الحالة</label><select id="t_status"><option>مستلم</option><option>تعهّد</option></select></div>'+
-              '<div><label>مرجع/إيصال</label><input id="t_ref"></div>'+
-            '</div><div style="margin-top:12px"><button class="btn" id="tbtn" onclick="addDonation()">تسجيل تبرّع</button></div>'
-            : '<p class="muted" style="margin-top:12px">أضِف متبرّعاً أولاً لتسجيل تبرّع.</p>')+
-            '<div class="msg" id="tmsg"></div></div>';
-      });
-    }
-
-    function show(id, type, text){ var m=document.getElementById(id); if(!m)return; m.className="msg "+type; m.textContent=text; }
-
-    window.addDonor = function(){
-      var name=document.getElementById("d_name").value.trim();
-      if(!name){ show("dmsg","err","اسم المتبرّع مطلوب."); return; }
-      document.getElementById("dbtn").disabled=true;
-      api("frappe.client.insert", {doc:{doctype:"Donor", donor_name:name, donor_type:document.getElementById("d_type").value, phone:document.getElementById("d_phone").value.trim()}}, true)
-        .then(function(res){ if(res.ok&&res.j.message){ render(); } else { show("dmsg","err",errMsg(res)); document.getElementById("dbtn").disabled=false; } });
-    };
-
-    window.addDonation = function(){
-      var donor=document.getElementById("t_donor").value;
-      if(!donor){ show("tmsg","err","اختر المتبرّع."); return; }
-      var doc = { doctype:"Donation", donor:donor, donation_type:document.getElementById("t_type").value,
-        amount:parseFloat(document.getElementById("t_amount").value||"0"), donation_date:document.getElementById("t_date").value,
-        status:document.getElementById("t_status").value, reference:document.getElementById("t_ref").value.trim() };
-      document.getElementById("tbtn").disabled=true;
-      api("frappe.client.insert", {doc:doc}, true).then(function(res){
-        if(res.ok&&res.j.message){ render(); } else { show("tmsg","err",errMsg(res)); document.getElementById("tbtn").disabled=false; }
-      });
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_LIST = {
+      doctype:"Donor", title:"المتبرعون",
+      desc:"سجلّ المتبرعين والجهات المانحة — تسجيل وتوثيق، معزول بجمعيتك.",
+      loginRedirect:"/nos/donors", detailRoute:"/nos/donor",
+      columns:[
+        {field:"donor_name", label:"الاسم", sortable:true},
+        {field:"donor_type", label:"النوع"},
+        {field:"phone", label:"الجوال", hideSmall:true},
+        {field:"email", label:"البريد", hideSmall:true},
+        {field:"status", label:"الحالة", sortable:true, badge:true}
+      ],
+      search:{ field:"donor_name", placeholder:"بحث بالاسم..." },
+      filters:[
+        {field:"status", label:"كل الحالات", options:["نشط","مؤرشف"]},
+        {field:"donor_type", label:"كل الأنواع", options:["فرد","جهة"]}
+      ],
+      defaultSort:"creation", addLabel:"متبرّع جديد",
+      addFields:[
+        {field:"donor_name", label:"الاسم", type:"text", required:true},
+        {field:"donor_type", label:"النوع", type:"select", options:["فرد","جهة"]},
+        {field:"phone", label:"الجوال", type:"text"},
+        {field:"email", label:"البريد الإلكتروني", type:"text"},
+        {field:"notes", label:"ملاحظات", type:"text"}
+      ]
     };
   </script>
-</body>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-list.js?v=1" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
 </html>

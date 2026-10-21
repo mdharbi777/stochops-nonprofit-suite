@@ -8,173 +8,43 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0; --muted:#94a3b8; --card:#111a2e; --border:#1e293b; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy); min-height:100vh; }
-    .wrap { max-width:1040px; margin:0 auto; padding:0 20px; }
-    .topbar { display:flex; }
-    h1 { color:#fff; font-size:24px; font-weight:800; margin:22px 0 2px; }
-    .muted { color:var(--muted); font-size:14px; }
-    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:14px 0; }
-    .panel { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin-top:16px; }
-    .pagehdr { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 4px; }
-    .toolbar input, .toolbar select { background:var(--navy); border:1px solid var(--border); border-radius:9px; padding:9px 12px; color:#fff; font-family:inherit; font-size:14px; }
-    .toolbar .search { flex:1; min-width:200px; }
-    .th-sort { cursor:pointer; user-select:none; }
-    .th-sort .dir { color:var(--cyan); font-weight:700; }
-    .rowlink { cursor:pointer; }
-    .pager { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; flex-wrap:wrap; font-size:13px; color:var(--muted); }
-    .pager .nav { display:flex; gap:8px; }
-    @media (max-width:720px){ th:nth-child(2),td:nth-child(2){display:none;} th:nth-child(3),td:nth-child(3){display:none;} }
-  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
-  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar"><a class="logo" href="/nos"></a></div>
-    <div id="app"></div>
-  </div>
-
   <script>
-    var CSRF = "{{ frappe.session.csrf_token or '' }}";
-    var USER = "{{ frappe.session.user }}";
-    var app = document.getElementById("app");
-
-    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
-    function api(method, args, isPost){
-      var opt = { headers: { "X-Frappe-CSRF-Token": CSRF } };
-      var url = "/api/method/" + method;
-      if (isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
-      else if (args){ url += "?" + new URLSearchParams(args).toString(); }
-      return fetch(url, opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
-    }
-    function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
-    function badge(status){ return status==="نشط" ? '<span class="ds-badge ds-badge--ok">نشط</span>' : '<span class="ds-badge ds-badge--muted">مؤرشف</span>'; }
-
-    var state = { page:1, size:10, search:"", status:"", cat:"", sort:"creation", dir:"desc", total:0 };
-    var tmr;
-
-    function filters(){
-      var f = [];
-      if (state.status) f.push(["status","=",state.status]);
-      if (state.cat) f.push(["social_category","=",state.cat]);
-      if (state.search) f.push(["beneficiary_name","like","%"+state.search+"%"]);
-      return f;
-    }
-
-    function init(){
-      app.innerHTML =
-        '<div class="pagehdr"><div><h1>المستفيدون</h1>'+
-        '<p class="muted">سجلّ المستفيدين — بيانات تعريف أدنى، معزولة بجمعيتك.</p></div>'+
-        '<button class="ds-btn ds-btn--primary" id="addToggle" type="button">مستفيد جديد</button></div>'+
-        '<div class="note">رقم الهوية مُخزَّن مشفّراً ومحجوب؛ لا يظهر في القائمة. يُكشف من صفحة المستفيد لمدير الجمعية عند الحاجة فقط. لا تُخزَّن بيانات أفراد الأسرة تفصيلاً (عدد إجمالي فقط).</div>'+
-        '<div class="toolbar">'+
-          '<input class="search" id="q" placeholder="بحث بالاسم..." autocomplete="off">'+
-          '<select id="fstatus"><option value="">كل الحالات</option><option>نشط</option><option>مؤرشف</option></select>'+
-          '<select id="fcat"><option value="">كل الفئات</option><option>أرملة</option><option>أيتام</option><option>دخل محدود</option><option>كبار السن</option><option>ذوو إعاقة</option><option>أخرى</option></select>'+
-          '<select id="fsize"><option value="10">10 لكل صفحة</option><option value="25">25</option><option value="50">50</option></select>'+
-        '</div>'+
-        '<div id="addpanel"></div>'+
-        '<div class="panel" id="listpanel"></div>';
-      document.getElementById("addToggle").onclick = toggleAdd;
-      document.getElementById("q").oninput = function(e){ clearTimeout(tmr); tmr=setTimeout(function(){ state.search=e.target.value.trim(); state.page=1; load(); },350); };
-      document.getElementById("fstatus").onchange = function(e){ state.status=e.target.value; state.page=1; load(); };
-      document.getElementById("fcat").onchange = function(e){ state.cat=e.target.value; state.page=1; load(); };
-      document.getElementById("fsize").onchange = function(e){ state.size=parseInt(e.target.value,10); state.page=1; load(); };
-      load();
-    }
-
-    function sortTh(field, label){
-      var active = state.sort===field;
-      var dir = active ? (state.dir==="asc"?" ↑":" ↓") : "";
-      return '<th class="th-sort" data-f="'+field+'">'+esc(label)+'<span class="dir">'+dir+'</span></th>';
-    }
-
-    function load(){
-      var lp = document.getElementById("listpanel");
-      lp.innerHTML = '<div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>جارٍ التحميل…</p></div>';
-      var fl = JSON.stringify(filters());
-      api("frappe.client.get_count", { doctype:"Beneficiary", filters:fl }).then(function(cres){
-        state.total = (cres.ok && typeof cres.j.message==="number") ? cres.j.message : 0;
-        var args = { doctype:"Beneficiary",
-          fields:JSON.stringify(["name","beneficiary_name","phone","gender","social_category","family_members_count","status"]),
-          filters:fl, order_by:state.sort+" "+state.dir,
-          limit_start:(state.page-1)*state.size, limit_page_length:state.size };
-        api("frappe.client.get_list", args).then(function(res){
-          if(!res.ok){ lp.innerHTML = '<div class="ds-state ds-state--error"><h3>تعذّر تحميل القائمة</h3><p>'+esc(errMsg(res))+'</p><button class="ds-btn ds-btn--secondary" onclick="load()">إعادة المحاولة</button></div>'; return; }
-          var data = res.j.message||[];
-          if(!data.length && state.total===0){
-            lp.innerHTML = '<div class="ds-state ds-state--empty"><h3>لا يوجد مستفيدون</h3><p>ابدأ بإضافة أول مستفيد لجمعيتك.</p><button class="ds-btn ds-btn--primary" onclick="toggleAdd()">مستفيد جديد</button></div>'; return;
-          }
-          var rows = data.map(function(b){
-            return '<tr class="rowlink" onclick="openBen(\''+esc(b.name)+'\')">'+
-              '<td>'+esc(b.beneficiary_name)+'</td><td>'+esc(b.phone||"—")+'</td><td>'+esc(b.gender||"—")+'</td>'+
-              '<td>'+esc(b.social_category||"—")+'</td><td>'+esc(String(b.family_members_count||0))+'</td>'+
-              '<td>'+badge(b.status)+'</td><td><span class="ds-btn ds-btn--secondary ds-btn--sm">فتح</span></td></tr>';
-          }).join("");
-          var from = (state.page-1)*state.size + 1, to = Math.min(state.page*state.size, state.total), pages = Math.max(1, Math.ceil(state.total/state.size));
-          lp.innerHTML =
-            '<div class="ds-table-wrap"><table class="ds-table"><thead><tr>'+
-              sortTh("beneficiary_name","الاسم")+'<th>الجوال</th><th>الجنس</th><th>الفئة</th><th>أفراد الأسرة</th>'+
-              sortTh("status","الحالة")+'<th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-            '<div class="pager"><div>عرض '+from+'–'+to+' من '+state.total+'</div>'+
-              '<div class="nav"><button class="ds-btn ds-btn--secondary ds-btn--sm" id="prev" '+(state.page<=1?'disabled':'')+'>السابق</button>'+
-              '<span>صفحة '+state.page+' من '+pages+'</span>'+
-              '<button class="ds-btn ds-btn--secondary ds-btn--sm" id="next" '+(state.page>=pages?'disabled':'')+'>التالي</button></div></div>';
-          document.querySelectorAll(".th-sort").forEach(function(th){ th.onclick=function(){ var f=th.getAttribute("data-f"); if(state.sort===f){ state.dir=state.dir==="asc"?"desc":"asc"; } else { state.sort=f; state.dir="asc"; } load(); }; });
-          var pv=document.getElementById("prev"), nx=document.getElementById("next");
-          if(pv) pv.onclick=function(){ if(state.page>1){state.page--; load();} };
-          if(nx) nx.onclick=function(){ if(state.page<pages){state.page++; load();} };
-        });
-      });
-    }
-
-    window.openBen = function(name){ location.href = "/nos/beneficiary?name="+encodeURIComponent(name); };
-
-    function toggleAdd(){
-      var p = document.getElementById("addpanel");
-      if(p.innerHTML){ p.innerHTML=""; return; }
-      p.innerHTML =
-        '<div class="panel"><h3 style="color:#fff;margin-bottom:10px">إضافة مستفيد</h3>'+
-        '<div class="ds-field"><label>الاسم <span class="req">*</span></label><input class="ds-input" id="b_name"></div>'+
-        '<div class="ds-field"><label>رقم الهوية (اختياري، 10 أرقام)</label><input class="ds-input" id="b_nid" inputmode="numeric"></div>'+
-        '<div class="ds-field"><label>الجوال</label><input class="ds-input" id="b_phone"></div>'+
-        '<div class="ds-field"><label>الجنس</label><select class="ds-select" id="b_gender"><option value="">—</option><option>ذكر</option><option>أنثى</option></select></div>'+
-        '<div class="ds-field"><label>الفئة</label><select class="ds-select" id="b_cat"><option value="">—</option><option>أرملة</option><option>أيتام</option><option>دخل محدود</option><option>كبار السن</option><option>ذوو إعاقة</option><option>أخرى</option></select></div>'+
-        '<div class="ds-field"><label>عدد أفراد الأسرة</label><input class="ds-input" id="b_fam" type="number" min="0" value="0"></div>'+
-        '<div id="addmsg" class="ds-err"></div>'+
-        '<div style="margin-top:8px;display:flex;gap:10px"><button class="ds-btn ds-btn--primary" id="addbtn">حفظ</button>'+
-        '<button class="ds-btn ds-btn--secondary" onclick="toggleAdd()">إلغاء</button></div></div>';
-      document.getElementById("addbtn").onclick = addBen;
-    }
-    window.toggleAdd = toggleAdd;
-
-    function addBen(){
-      var name=(document.getElementById("b_name").value||"").trim();
-      var em=document.getElementById("addmsg");
-      if(!name){ em.textContent="اسم المستفيد مطلوب."; return; }
-      var nid=(document.getElementById("b_nid").value||"").trim();
-      if(nid && !/^\d{10}$/.test(nid)){ em.textContent="رقم الهوية يجب أن يكون 10 أرقام."; return; }
-      var doc={ doctype:"Beneficiary", beneficiary_name:name, phone:(document.getElementById("b_phone").value||"").trim(),
-        gender:document.getElementById("b_gender").value, social_category:document.getElementById("b_cat").value,
-        family_members_count:parseInt(document.getElementById("b_fam").value||"0",10) };
-      if(nid) doc.national_id=nid;
-      var btn=document.getElementById("addbtn"); btn.disabled=true; em.textContent="";
-      api("frappe.client.insert",{doc:doc},true).then(function(res){
-        btn.disabled=false;
-        if(res.ok && res.j.message){ toggleAdd(); state.page=1; state.search=""; var q=document.getElementById("q"); if(q)q.value=""; load(); }
-        else { em.textContent=errMsg(res); }
-      });
-    }
-
-    // بدء التشغيل بعد تهيئة الحالة والدوال (تفادي رفع التعريف)
-    if (!USER || USER==="Guest"){
-      app.innerHTML = '<div class="ds-state"><h3>المستفيدون</h3><p>يجب تسجيل الدخول للوصول إلى هذه الصفحة.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to=/nos/beneficiaries">تسجيل الدخول</a></div>';
-    } else { init(); }
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_LIST = {
+      doctype:"Beneficiary", title:"المستفيدون",
+      desc:"سجلّ المستفيدين — بيانات تعريف أدنى، معزولة بجمعيتك.",
+      note:"رقم الهوية مُخزَّن مشفّراً ومحجوب؛ لا يظهر في القائمة. يُكشف من صفحة المستفيد لمدير الجمعية عند الحاجة فقط. لا تُخزَّن بيانات أفراد الأسرة تفصيلاً (عدد إجمالي فقط).",
+      loginRedirect:"/nos/beneficiaries", detailRoute:"/nos/beneficiary",
+      columns:[
+        {field:"beneficiary_name", label:"الاسم", sortable:true},
+        {field:"phone", label:"الجوال", hideSmall:true},
+        {field:"gender", label:"الجنس", hideSmall:true},
+        {field:"social_category", label:"الفئة"},
+        {field:"family_members_count", label:"أفراد الأسرة"},
+        {field:"status", label:"الحالة", sortable:true, badge:true}
+      ],
+      search:{ field:"beneficiary_name", placeholder:"بحث بالاسم..." },
+      filters:[
+        {field:"status", label:"كل الحالات", options:["نشط","مؤرشف"]},
+        {field:"social_category", label:"كل الفئات", options:["أرملة","أيتام","دخل محدود","كبار السن","ذوو إعاقة","أخرى"]}
+      ],
+      defaultSort:"creation", addLabel:"مستفيد جديد",
+      addFields:[
+        {field:"beneficiary_name", label:"الاسم", type:"text", required:true},
+        {field:"national_id", label:"رقم الهوية (اختياري، 10 أرقام)", type:"text", pattern:/^\d{10}$/, patternMsg:"رقم الهوية يجب أن يكون 10 أرقام."},
+        {field:"phone", label:"الجوال", type:"text"},
+        {field:"gender", label:"الجنس", type:"select", options:["ذكر","أنثى"]},
+        {field:"social_category", label:"الفئة", type:"select", options:["أرملة","أيتام","دخل محدود","كبار السن","ذوو إعاقة","أخرى"]},
+        {field:"family_members_count", label:"عدد أفراد الأسرة", type:"number", default:"0"}
+      ]
+    };
   </script>
-</body>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-list.js?v=1" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
 </html>
