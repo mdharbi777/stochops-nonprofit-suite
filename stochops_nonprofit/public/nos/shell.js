@@ -12,23 +12,28 @@
     { sec: "الموارد البشرية", items: [["الموظفون والعقود", "/nos/personnel"]] },
     { sec: "التقارير والتحليلات", items: [["التقارير", "/nos/reports"], ["المساعد الذكي", "/nos/ai"]] },
     { sec: "الخصوصية وحماية البيانات", items: [["الخصوصية", "/nos/privacy"], ["حقوق الأفراد", "/nos/rights"], ["الإفصاح والمشاركة", "/nos/disclosures"], ["الحوادث والاحتفاظ", "/nos/incidents"]] },
-    { sec: "الإدارة", items: [["إدارة الحسابات", "/nos/accounts"], ["إعدادات الجمعية", "/nos/settings"], ["الدليل", "/nos/guide"]] }
+    { sec: "الإدارة", items: [["إدارة الحسابات", "/nos/accounts"], ["إعدادات الجمعية", "/nos/settings"], ["مكتبة الامتثال", "/nos/templates"], ["الاتفاقيات والإقرارات", "/nos/agreements"], ["طلبات الاستفادة (المشغّل)", "/nos/applications"], ["الدليل", "/nos/guide"]] }
   ];
   var FULL_ROLES = ["Nonprofit Admin", "System Manager", "Administrator"];
-  var ADMIN_ONLY = ["/nos/accounts", "/nos/settings"];
+  var OPERATOR_ROLES = ["System Manager", "Stochops Admin", "Administrator"];
+  var ADMIN_ONLY = ["/nos/accounts", "/nos/settings", "/nos/agreements"];
+  var OPERATOR_ONLY = ["/nos/applications"];
   var COORD = {
-    "Committee Coordinator": ["/nos/console", "/nos/committees", "/nos/meetings", "/nos/decisions", "/nos/initiatives", "/nos/tasks", "/nos/compliance", "/nos/reports", "/nos/guide"],
-    "Program Coordinator": ["/nos/console", "/nos/beneficiaries", "/nos/assistance", "/nos/donors", "/nos/grants", "/nos/initiatives", "/nos/tasks", "/nos/reports", "/nos/guide"]
+    "Committee Coordinator": ["/nos/console", "/nos/committees", "/nos/meetings", "/nos/decisions", "/nos/initiatives", "/nos/tasks", "/nos/compliance", "/nos/reports", "/nos/templates", "/nos/guide"],
+    "Program Coordinator": ["/nos/console", "/nos/beneficiaries", "/nos/assistance", "/nos/donors", "/nos/grants", "/nos/initiatives", "/nos/tasks", "/nos/reports", "/nos/templates", "/nos/guide"]
   };
 
   function rolesList() { return (window.NOS_CTX && window.NOS_CTX.roles) || null; }
   function isAdmin() { var r = rolesList(); return r ? r.some(function (x) { return FULL_ROLES.indexOf(x) >= 0; }) : true; }
+  function isOperator() { var r = rolesList(); return r ? r.some(function (x) { return OPERATOR_ROLES.indexOf(x) >= 0; }) : true; }
   function canSee(path) {
     var r = rolesList();
     if (!r || r.indexOf("Guest") >= 0) return true;           // غير محمّل/زائر → أظهر الكل (الوصول الفعلي على الخادم)
+    if (OPERATOR_ONLY.indexOf(path) >= 0) return isOperator();
     if (ADMIN_ONLY.indexOf(path) >= 0) return isAdmin();
     if (isAdmin()) return true;
     if (r.indexOf("Executive Viewer") >= 0) return true;
+    if (path === "/nos/templates") return true;               // مكتبة الامتثال متاحة لكل حسابات الجمعية
     var allowed = {};
     r.forEach(function (x) { var m = COORD[x]; if (m) m.forEach(function (p) { allowed[p] = 1; }); });
     return !!allowed[path];
