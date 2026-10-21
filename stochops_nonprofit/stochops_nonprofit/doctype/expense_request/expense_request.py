@@ -3,7 +3,21 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from stochops_nonprofit.governance import guard_transition
+
 DECISION_STATES = ("معتمد", "مرفوض")
+
+# مسار الصرف المحوكم (آلة حالات). الحالة النهائية = مجموعة فارغة.
+STATUS_FLOW = {
+    "مسودة": {"مقدّم", "ملغى"},
+    "مقدّم": {"قيد المراجعة", "معتمد", "مرفوض", "ملغى"},
+    "قيد المراجعة": {"معتمد", "مرفوض", "ملغى"},
+    "معتمد": {"مصروف", "ملغى"},
+    "مرفوض": set(),
+    "مصروف": set(),
+    "ملغى": set(),
+}
+DISBURSE_STATES = {"مصروف"}
 
 
 class ExpenseRequest(Document):
@@ -22,6 +36,7 @@ class ExpenseRequest(Document):
             frappe.throw(_("المبلغ لا يكون سالباً."))
         if self.is_new() and not self.requested_by:
             self.requested_by = frappe.session.user
+        guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف")
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة البتّ مطلوبة عند الاعتماد أو الرفض."))

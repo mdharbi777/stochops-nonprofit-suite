@@ -30,12 +30,19 @@
         {field:"approved_by", label:"البتّ بواسطة"},
         {field:"approved_on", label:"تاريخ البتّ"}
       ],
-      statusActions:[],
+      statusActions:[
+        {when:"مقدم", label:"بدء المراجعة", to:"قيد المراجعة", variant:"secondary", roles:["Nonprofit Admin","System Manager"]},
+        {when:"مقدم", label:"اعتماد الطلب", to:"معتمد", variant:"primary", note:true, roles:["Nonprofit Admin","System Manager"]},
+        {when:"مقدم", label:"رفض الطلب", to:"مرفوض", variant:"warning", note:true, roles:["Nonprofit Admin","System Manager"]},
+        {when:"قيد المراجعة", label:"اعتماد الطلب", to:"معتمد", variant:"primary", note:true, roles:["Nonprofit Admin","System Manager"]},
+        {when:"قيد المراجعة", label:"رفض الطلب", to:"مرفوض", variant:"warning", note:true, roles:["Nonprofit Admin","System Manager"]},
+        {when:"معتمد", label:"تسجيل الصرف", to:"مصروف", variant:"secondary", roles:["Nonprofit Admin","System Manager"]}
+      ],
       relations:[]
     };
   </script>
   <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
-  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=2" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=3" defer></script>
 </head>
 <body><div class="wrap"><div id="app"></div></div></body>
 </html>

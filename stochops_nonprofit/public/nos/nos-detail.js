@@ -6,6 +6,7 @@
   var app = document.getElementById("app");
   var CSRF = window.NOS_CSRF || "", USER = window.NOS_USER || "Guest";
   var NAME = new URLSearchParams(location.search).get("name") || "";
+  var ROLES = [];
 
   function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
   function api(method, args, isPost){
@@ -44,19 +45,48 @@
   function render(doc){
     var title=doc[C.titleField]||NAME, st=C.statusField?doc[C.statusField]:null;
     var kv=C.fields.map(function(f){ return '<div><div class="nd-k">'+esc(f.label)+'</div><div class="nd-v" data-fld="'+esc(f.field)+'">'+fieldVal(f,doc)+'</div></div>'; }).join("");
-    var actions=(C.statusActions||[]).filter(function(a){return a.when===st;}).map(function(a){
-      return '<button class="ds-btn ds-btn--'+(a.variant||"secondary")+'" data-to="'+esc(a.to)+'">'+esc(a.label)+'</button>';
+    var acts=(C.statusActions||[]).filter(function(a){
+      return a.when===st && (!a.roles || a.roles.some(function(r){ return ROLES.indexOf(r)>=0; }));
+    });
+    var actionsHtml=acts.map(function(a,i){
+      return '<button class="ds-btn ds-btn--'+(a.variant||"secondary")+'" data-idx="'+i+'">'+esc(a.label)+'</button>';
     }).join("");
     app.innerHTML=
       '<div class="nd-crumb"><a href="'+esc(C.listRoute)+'">'+esc(C.crumbLabel)+'</a> &rsaquo; '+esc(title)+'</div>'+
       '<h1>'+esc(title)+'</h1><p class="muted">'+esc(doc.name)+(st?' — '+badge(st):'')+'</p>'+
       '<div class="panel"><h3>'+esc(C.sectionTitle||"البيانات")+'</h3><div class="nd-kv">'+kv+'</div>'+
-      '<div class="nd-actions">'+actions+'<a class="ds-btn ds-btn--secondary" href="'+esc(C.listRoute)+'">عودة للقائمة</a></div></div>'+
+      '<div class="nd-actions">'+actionsHtml+'<a class="ds-btn ds-btn--secondary" href="'+esc(C.listRoute)+'">عودة للقائمة</a></div>'+
+      '<div id="actform"></div></div>'+
       (C.relations||[]).map(function(r,i){ return '<div class="panel" id="rel'+i+'"><h3>'+esc(r.title)+'</h3><div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>جارٍ التحميل…</p></div></div>'; }).join("");
 
     document.querySelectorAll("[data-reveal]").forEach(function(b){ b.onclick=function(){ doReveal(b); }; });
-    document.querySelectorAll("[data-to]").forEach(function(b){ b.onclick=function(){ setStatus(b.getAttribute("data-to")); }; });
+    document.querySelectorAll("[data-idx]").forEach(function(b){ b.onclick=function(){ doAction(acts[+b.getAttribute("data-idx")]); }; });
     (C.relations||[]).forEach(function(r,i){ loadRel(r,i); });
+  }
+
+  function doAction(a){
+    if(!a) return;
+    var box=document.getElementById("actform");
+    if(a.note){
+      box.innerHTML='<div class="ds-field" style="margin-top:12px"><label>ملاحظة القرار <span class="req">*</span></label>'+
+        '<textarea class="ds-input" id="dnote" rows="2" placeholder="سبب الاعتماد أو الرفض — يُحفظ ويُدقَّق"></textarea></div>'+
+        '<div id="actmsg" class="ds-err"></div>'+
+        '<div class="nd-actions"><button class="ds-btn ds-btn--'+(a.variant||"primary")+'" id="actok">'+esc(a.label)+'</button>'+
+        '<button class="ds-btn ds-btn--secondary" id="actcancel">إلغاء</button></div>';
+      document.getElementById("actcancel").onclick=function(){ box.innerHTML=""; };
+      document.getElementById("actok").onclick=function(){
+        var note=(document.getElementById("dnote").value||"").trim();
+        if(!note){ document.getElementById("actmsg").textContent="ملاحظة القرار مطلوبة."; return; }
+        this.disabled=true; transition(a.to,note);
+      };
+    } else { transition(a.to,null); }
+  }
+  function transition(to,note){
+    var payload={status:to}; if(note!=null) payload.decision_note=note;
+    api("frappe.client.set_value",{doctype:C.doctype,name:NAME,fieldname:JSON.stringify(payload)},true).then(function(res){
+      if(res.ok){ toast("تم تحديث الحالة إلى "+to,NAME); load(); }
+      else { var box=document.getElementById("actform"); if(box) box.innerHTML=""; toast(errMsg(res),null,true); }
+    });
   }
 
   function doReveal(btn){
@@ -67,10 +97,11 @@
       else { cell.innerHTML='<span class="ds-err">'+esc(errMsg(res))+'</span>'; }
     });
   }
-  function setStatus(to){
-    api("frappe.client.set_value",{doctype:C.doctype,name:NAME,fieldname:C.statusField,value:to},true).then(function(res){
-      if(res.ok){ toast("تم التحديث",NAME); load(); } else { toast("تعذّر التحديث: "+errMsg(res),null,true); }
-    });
+  function start(){
+    api("stochops_nonprofit.nav.get_my_context").then(function(res){
+      try{ ROLES=(res.ok && res.j.message && res.j.message.roles) || []; }catch(e){ ROLES=[]; }
+      load();
+    }, function(){ ROLES=[]; load(); });
   }
   function loadRel(r,i){
     var p=document.getElementById("rel"+i);
@@ -85,5 +116,5 @@
     });
   }
 
-  load();
+  start();
 })();

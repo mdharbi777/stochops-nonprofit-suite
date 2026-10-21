@@ -3,7 +3,21 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from stochops_nonprofit.governance import guard_transition
+
 DECISION_STATES = ("معتمد", "مرفوض")
+
+# مسار الشراء المحوكم (آلة حالات). «مُنفّذ» حالة صرف/تنفيذ نهائية.
+STATUS_FLOW = {
+    "مسودة": {"مقدّم", "ملغى"},
+    "مقدّم": {"قيد المراجعة", "معتمد", "مرفوض", "ملغى"},
+    "قيد المراجعة": {"معتمد", "مرفوض", "ملغى"},
+    "معتمد": {"مُنفّذ", "ملغى"},
+    "مرفوض": set(),
+    "مُنفّذ": set(),
+    "ملغى": set(),
+}
+DISBURSE_STATES = {"مُنفّذ"}
 
 
 class ProcurementRequest(Document):
@@ -16,6 +30,7 @@ class ProcurementRequest(Document):
             frappe.throw(_("القيمة لا تكون سالبة."))
         if self.is_new() and not self.requested_by:
             self.requested_by = frappe.session.user
+        guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="التنفيذ/الصرف")
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة البتّ مطلوبة عند الاعتماد أو الرفض."))
