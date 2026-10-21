@@ -28,7 +28,8 @@
   function isOperator() { var r = rolesList(); return r ? r.some(function (x) { return OPERATOR_ROLES.indexOf(x) >= 0; }) : true; }
   function canSee(path) {
     var r = rolesList();
-    if (!r || r.indexOf("Guest") >= 0) return true;           // غير محمّل/زائر → أظهر الكل (الوصول الفعلي على الخادم)
+    if (!r) return true;                                       // الأدوار غير محمّلة بعد → أظهر الكل (الوصول الفعلي على الخادم)
+    // ملاحظة: get_roles يُضمّن "Guest" و"All" لكل مستخدم، فلا نعتمدهما لتمييز الزائر الفعلي.
     if (OPERATOR_ONLY.indexOf(path) >= 0) return isOperator();
     if (ADMIN_ONLY.indexOf(path) >= 0) return isAdmin();
     if (isAdmin()) return true;
