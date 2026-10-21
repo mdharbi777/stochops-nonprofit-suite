@@ -8,98 +8,38 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
-      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
-      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
-    a { color:var(--cyan); text-decoration:none; }
-    .wrap { max-width:960px; margin:0 auto; padding:0 20px; }
-    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
-    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
-      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
-    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
-    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
-    .logo b { color:#fff; } .logo span { color:var(--cyan); }
-    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
-    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
-    h1 { color:#fff; font-size:25px; font-weight:800; margin:24px 0 2px; }
-    .muted { color:var(--muted); font-size:14px; }
-    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; }
-    table { width:100%; border-collapse:collapse; } th,td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:14px; }
-    th { color:var(--muted); font-weight:500; }
-    .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; background:rgba(6,182,212,.12); color:var(--cyan); }
-    label { display:block; font-size:13px; color:var(--text); margin:12px 0 6px; font-weight:500; }
-    input, select, textarea { width:100%; background:#0c1424; border:1px solid var(--border); border-radius:10px;
-      padding:11px 13px; color:#fff; font-family:inherit; font-size:14px; }
-    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--blue); }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:10px 22px; font-weight:700; font-size:14px; font-family:inherit; cursor:pointer; }
-    .btn:hover{ background:#1d4ed8; } .btn:disabled{opacity:.6;}
-    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; display:none; }
-    .msg.err { display:block; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
-    .center { text-align:center; padding:60px 0; } .empty { color:var(--muted); text-align:center; padding:24px; }
-    @media (max-width:640px){ .row{ grid-template-columns:1fr; } }
-  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
-  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
-      <div class="right"><a href="/nos/console">لوحة التشغيل</a><a href="/nos/meetings">الاجتماعات</a><a href="/nos/decisions">القرارات</a><a href="/api/method/logout">خروج</a></div>
-    </div>
-    <div id="app"></div>
-  </div>
-
   <script>
-    var CSRF = "{{ frappe.session.csrf_token or '' }}";
-    var USER = "{{ frappe.session.user }}";
-    var TYPES = ["مجلس إدارة","لجنة","فريق عمل","أخرى"];
-    var app = document.getElementById("app");
-    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
-    function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "حدث خطأ."; }
-    function postApi(method, body){ return fetch("/api/method/"+method,{method:"POST",headers:{"Content-Type":"application/json","X-Frappe-CSRF-Token":CSRF},body:JSON.stringify(body)})
-      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); }); }
-
-    if(!USER || USER==="Guest"){
-      app.innerHTML='<div class="center"><h1>اللجان</h1><p class="muted">يجب تسجيل الدخول.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/console">تسجيل الدخول</a></p></div>';
-    } else { render(); }
-
-    function render(){
-      var url = "/api/method/frappe.client.get_list?doctype=Committee&fields=" +
-        encodeURIComponent('["name","committee_type","status","coordinator"]') + "&limit_page_length=0&order_by=creation desc";
-      fetch(url).then(function(r){ return r.json(); }).then(function(j){
-        var list = (j.message||[]);
-        var rows = list.length ? list.map(function(c){
-          return '<tr><td>'+esc(c.name)+'</td><td><span class="pill">'+esc(c.committee_type||"")+'</span></td><td>'+esc(c.status||"")+'</td><td>'+esc(c.coordinator||"")+'</td></tr>';
-        }).join("") : '<tr><td colspan="4" class="empty">لا توجد لجان بعد — أضف أول لجنة بالأسفل.</td></tr>';
-        var opts = TYPES.map(function(t){ return '<option value="'+esc(t)+'">'+esc(t)+'</option>'; }).join("");
-        app.innerHTML =
-          '<h1>اللجان</h1><p class="muted">لجان جمعيتك ومجالسها</p>'+
-          '<div class="panel"><table><thead><tr><th>اسم اللجنة</th><th>النوع</th><th>الحالة</th><th>المنسّق</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-          '<div class="panel"><h3 style="color:#fff;margin-bottom:6px">إضافة لجنة</h3>'+
-            '<div class="row"><div><label>اسم اللجنة</label><input id="c_name"></div>'+
-            '<div><label>النوع</label><select id="c_type">'+opts+'</select></div></div>'+
-            '<label>الوصف (اختياري)</label><textarea id="c_desc" rows="2"></textarea>'+
-            '<div style="margin-top:16px"><button class="btn" id="addbtn" onclick="addCommittee()">إضافة اللجنة</button></div>'+
-            '<div class="msg" id="msg"></div></div>';
-      });
-    }
-    function show(t,x){ var m=document.getElementById("msg"); if(m){ m.className="msg "+t; m.textContent=x; } }
-
-    window.addCommittee = function(){
-      var name=document.getElementById("c_name").value.trim();
-      var type=document.getElementById("c_type").value;
-      var desc=document.getElementById("c_desc").value.trim();
-      if(!name){ show("err","اسم اللجنة مطلوب."); return; }
-      document.getElementById("addbtn").disabled=true;
-      postApi("frappe.client.insert", { doc: { doctype:"Committee", committee_name:name, committee_type:type, coordinator:USER, description:desc } })
-        .then(function(res){ if(res.ok && res.j.message){ render(); } else { show("err", errMsg(res)); document.getElementById("addbtn").disabled=false; } });
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_LIST = {
+      doctype:"Committee", title:"اللجان",
+      desc:"اللجان ومجالس العمل — معزولة بجمعيتك.",
+      loginRedirect:"/nos/committees", detailRoute:"/nos/committee",
+      columns:[
+        {field:"committee_name", label:"اسم اللجنة", sortable:true},
+        {field:"committee_type", label:"النوع"},
+        {field:"coordinator", label:"المنسّق", hideSmall:true},
+        {field:"status", label:"الحالة", sortable:true, badge:true}
+      ],
+      search:{ field:"committee_name", placeholder:"بحث بالاسم..." },
+      filters:[
+        {field:"status", label:"كل الحالات", options:["نشطة","مؤرشفة"]},
+        {field:"committee_type", label:"كل الأنواع", options:["مجلس إدارة","لجنة","فريق عمل","أخرى"]}
+      ],
+      defaultSort:"creation", addLabel:"لجنة جديدة",
+      addFields:[
+        {field:"committee_name", label:"اسم اللجنة", type:"text", required:true},
+        {field:"committee_type", label:"النوع", type:"select", options:["مجلس إدارة","لجنة","فريق عمل","أخرى"]},
+        {field:"coordinator", label:"المنسّق (بريد المستخدم)", type:"text", required:true},
+        {field:"description", label:"الوصف", type:"text"}
+      ]
     };
   </script>
-</body>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-list.js?v=2" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
 </html>

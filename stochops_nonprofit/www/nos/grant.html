@@ -1,0 +1,49 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المنحة | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_DETAIL = {
+      doctype:"Grant", titleField:"grant_title",
+      listRoute:"/nos/grants", crumbLabel:"المنح", loginRedirect:"/nos/grants",
+      statusField:"status", sectionTitle:"بيانات المنحة",
+      fields:[
+        {field:"grant_title", label:"عنوان المنحة"},
+        {field:"grantor_name", label:"الجهة المانحة"},
+        {field:"amount", label:"قيمة المنحة (ريال)", money:true},
+        {field:"amount_received", label:"المستلم (تسجيل، ريال)", money:true},
+        {field:"start_date", label:"تاريخ البداية"},
+        {field:"end_date", label:"تاريخ النهاية"},
+        {field:"reporting_due", label:"موعد التقرير المستحق"},
+        {field:"initiative", label:"تمويل مبادرة"},
+        {field:"conditions", label:"شروط المنحة"},
+        {field:"notes", label:"ملاحظات"}
+      ],
+      statusActions:[],
+      relations:[
+        {doctype:"Expense Request", filterField:"grant", title:"المصروفات على المنحة",
+         columns:[
+           {field:"name",label:"المرجع"},
+           {field:"title",label:"العنوان"},
+           {field:"amount",label:"المبلغ",money:true},
+           {field:"status",label:"الحالة",badge:true}
+         ]}
+      ]
+    };
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=2" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
+</html>

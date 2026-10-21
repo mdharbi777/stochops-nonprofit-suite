@@ -1,0 +1,51 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>الموظف | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+    window.NOS_DETAIL = {
+      doctype:"Personnel", titleField:"full_name",
+      listRoute:"/nos/personnel", crumbLabel:"الموظفون", loginRedirect:"/nos/personnel",
+      statusField:"status", sectionTitle:"بيانات الموظف/المتطوّع",
+      fields:[
+        {field:"full_name", label:"الاسم"},
+        {field:"personnel_type", label:"النوع"},
+        {field:"job_title", label:"المسمّى الوظيفي"},
+        {field:"department", label:"الإدارة/القسم"},
+        {field:"join_date", label:"تاريخ المباشرة"},
+        {field:"phone", label:"الجوال"},
+        {field:"email", label:"البريد"},
+        {field:"national_id", label:"رقم الهوية", reveal:"stochops_nonprofit.personnel.reveal_national_id", revealArg:"personnel"}
+      ],
+      statusActions:[
+        {when:"نشط", label:"إيقاف مؤقت", to:"موقوف", variant:"warning"},
+        {when:"موقوف", label:"إعادة تنشيط", to:"نشط", variant:"secondary"}
+      ],
+      relations:[
+        {doctype:"Contract", filterField:"personnel", title:"عقود الموظف",
+         columns:[
+           {field:"name",label:"المرجع"},
+           {field:"contract_title",label:"العنوان"},
+           {field:"contract_type",label:"النوع"},
+           {field:"end_date",label:"تاريخ الانتهاء"},
+           {field:"status",label:"الحالة",badge:true}
+         ]}
+      ]
+    };
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=3" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-detail.js?v=2" defer></script>
+</head>
+<body><div class="wrap"><div id="app"></div></div></body>
+</html>
