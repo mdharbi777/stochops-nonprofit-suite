@@ -54,7 +54,7 @@
         var list=r[0].message||[], inits=(r[1].message||[]);
         var rows=list.length?list.map(function(t){
           var late=t.due_date && t.status!=="Completed" && t.status!=="Cancelled" && t.due_date<TODAY;
-          return '<tr><td>'+esc(t.title||"")+'</td><td>'+esc(t.initiative||"")+'</td><td>'+esc(t.assigned_to||"")+'</td><td><span class="'+(late?"late":"")+'">'+esc(t.due_date||"")+(late?" ⚠":"")+'</span></td><td>'+statusSel(t.name,t.status)+'</td></tr>';
+          return '<tr><td>'+esc(t.title||"")+'</td><td>'+esc(t.initiative||"")+'</td><td>'+esc(t.assigned_to||"")+'</td><td><span class="'+(late?"late":"")+'">'+esc(t.due_date||"")+(late?" — متأخرة":"")+'</span></td><td>'+statusSel(t.name,t.status)+'</td></tr>';
         }).join(""):'<tr><td colspan="5" class="empty">لا توجد مهام بعد.</td></tr>';
         var iopts=inits.map(function(i){return '<option value="'+esc(i.name)+'">'+esc((i.title?i.title+" — ":"")+i.name)+'</option>';}).join("");
         app.innerHTML='<h1>المهام</h1><p class="muted">مهام مبادرات جمعيتك</p>'+
