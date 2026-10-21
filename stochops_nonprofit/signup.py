@@ -91,51 +91,51 @@ def _send_verification(email, full_name):
     return link
 
 
-@frappe.whitelist(allow_guest=True)
-@rate_limit(limit=8, seconds=3600)
-def register_charity(
-    charity_name, admin_full_name, admin_email, password,
-    captcha_token=None, captcha_answer=None, admin_mobile=None, registration_number=None,
-):
-    _check_captcha(captcha_token, captcha_answer)
-
+# ---------- تهيئة الجمعية والمدير (داخلي، يُعاد استخدامه في التفعيل المحوكم P3) ----------
+def create_charity(charity_name, registration_number=None, contact_email=None, contact_mobile=None, status="Suspended"):
+    """ينشئ كيان جمعية. الافتراضي Suspended (مساحة مُهيّأة غير مفعّلة حتى إتمام القبول والتفعيل)."""
     charity_name = (charity_name or "").strip()
-    admin_full_name = (admin_full_name or "").strip()
-    admin_email = (admin_email or "").strip().lower()
-
-    if not (charity_name and admin_full_name and admin_email and password):
-        frappe.throw(_("الحقول المطلوبة: اسم الجمعية، اسم المدير، البريد، كلمة المرور."))
-    validate_email_address(admin_email, throw=True)
-    if len(password) < MIN_PASSWORD:
-        frappe.throw(_("كلمة المرور يجب ألا تقل عن {0} أحرف.").format(MIN_PASSWORD))
+    if not charity_name:
+        frappe.throw(_("اسم الجمعية مطلوب."))
     if frappe.db.exists("Charity", charity_name):
         frappe.throw(_("اسم الجمعية مُستخدم مسبقاً."))
-    if frappe.db.exists("User", admin_email):
-        frappe.throw(_("هذا البريد مُستخدم مسبقاً."))
-
-    charity = frappe.get_doc(
+    return frappe.get_doc(
         {
             "doctype": "Charity", "charity_name": charity_name, "registration_number": registration_number,
-            "contact_email": admin_email, "contact_mobile": admin_mobile, "status": "Active",
+            "contact_email": (contact_email or "").strip().lower() or None,
+            "contact_mobile": contact_mobile, "status": status,
         }
     ).insert(ignore_permissions=True)
 
+
+def create_charity_admin(email, full_name, charity, mobile=None, enabled=0):
+    """ينشئ مدير جمعية (معطّلاً افتراضياً حتى يضبط كلمة مروره عبر دعوة). يربطه بالجمعية ودور المدير."""
+    email = (email or "").strip().lower()
+    full_name = (full_name or "").strip()
+    if not (email and full_name):
+        frappe.throw(_("اسم المدير وبريده مطلوبان."))
+    validate_email_address(email, throw=True)
+    if frappe.db.exists("User", email):
+        frappe.throw(_("هذا البريد مُستخدم مسبقاً."))
     user = frappe.get_doc(
         {
-            "doctype": "User", "email": admin_email, "first_name": admin_full_name, "mobile_no": admin_mobile,
-            "language": "ar", "time_zone": "Asia/Riyadh", "enabled": 0,  # معطّل حتى تأكيد البريد
-            "send_welcome_email": 0, "new_password": password,
+            "doctype": "User", "email": email, "first_name": full_name, "mobile_no": mobile,
+            "language": "ar", "time_zone": "Asia/Riyadh", "enabled": enabled, "send_welcome_email": 0,
         }
     ).insert(ignore_permissions=True)
     user.add_roles(ADMIN_ROLE)
-    frappe.db.set_value("User", user.name, "charity", charity.name)
-    frappe.db.commit()
+    frappe.db.set_value("User", user.name, "charity", charity)
+    return user
 
-    link = _send_verification(admin_email, admin_full_name)
-    result = {"charity": charity.name, "admin": user.name, "pending_verification": True}
-    if frappe.conf.get("developer_mode"):
-        result["verify_url"] = link  # للتجربة محلياً فقط (بلا SMTP)
-    return result
+
+@frappe.whitelist(allow_guest=True)
+def register_charity(*args, **kwargs):
+    """التسجيل الذاتي متوقّف (P3): القبول انتقائي. لا يُنشأ حساب إنتاج إلا بعد اعتماد
+    طلب الاستفادة وقبول الاتفاقيات والتفعيل من مشغّل المنصّة."""
+    frappe.throw(
+        _("التسجيل الذاتي متوقّف. تقدّم بطلب استفادة عبر /apply، ويُفعّل حسابك بعد الاعتماد وقبول الاتفاقيات."),
+        frappe.PermissionError,
+    )
 
 
 @frappe.whitelist(allow_guest=True)

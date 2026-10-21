@@ -103,12 +103,57 @@
           (d.decision_reason?'<p class="muted">آخر مبرّر: '+esc(d.decision_reason)+(d.decided_by?' — '+esc(d.decided_by):'')+(d.decided_on?' · '+esc(d.decided_on):'')+'</p>':'')+
           '<div id="decmsg" class="ds-err"></div>'+
           '<div class="nd-actions">'+(acts||'<span class="muted">حالة نهائية — لا انتقالات.</span>')+'<a class="ds-btn ds-btn--secondary" href="#" id="back2">عودة للقائمة</a></div>'+
-          '<div id="decform"></div></div>';
+          '<div id="decform"></div></div>'+
+        '<div class="panel" id="actv"><h3>القبول والتفعيل</h3><div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>…</p></div></div>';
       document.getElementById("back").onclick=function(e){ e.preventDefault(); list(); };
       document.getElementById("back2").onclick=function(e){ e.preventDefault(); list(); };
       document.getElementById("savev").onclick=saveVerify;
       document.getElementById("saves").onclick=saveScores;
       document.querySelectorAll("[data-to]").forEach(function(b){ b.onclick=function(){ decide(b.getAttribute("data-to")); }; });
+      loadActivation(d);
+    });
+  }
+
+  function loadActivation(d){
+    var p=document.getElementById("actv"); if(!p) return;
+    if(d.status!=="Approved" && d.status!=="Rejected" && d.status!=="Waitlisted"){
+      // قبل الاعتماد: لا تفعيل
+    }
+    api("frappe.client.get_list",{doctype:"Association Approval", filters:JSON.stringify([["application","=",d.name]]),
+      fields:JSON.stringify(["name","status","charity","admin_user","acceptance_token"]), order_by:"creation desc", limit_page_length:1}).then(function(res){
+      var appr=(res.ok && res.j.message && res.j.message[0]) || null;
+      var html='<h3>القبول والتفعيل</h3>';
+      if(!appr){
+        if(d.status!=="Approved"){ html+='<p class="muted">يُتاح إصدار رابط القبول والتفعيل بعد اعتماد الطلب.</p>'; }
+        else { html+='<p class="muted">الطلب معتمَد. يتطلّب الإصدار نشر «شروط الاستخدام» و«DPA» في المركز القانوني.</p>'+
+          '<div id="am" class="ds-err"></div><button class="ds-btn ds-btn--primary" id="issue">إصدار رابط القبول والتفعيل</button>'; }
+      } else {
+        var stmap={ "Awaiting Acceptance":"بانتظار قبول الممثّل", "Accepted":"قُبِلت الاتفاقيات", "Activated":"مُفعّلة", "Revoked":"ملغاة" };
+        html+='<div class="nd-kv"><div><div class="nd-k">قرار الاعتماد</div><div class="nd-v">'+esc(appr.name)+'</div></div>'+
+          '<div><div class="nd-k">الحالة</div><div class="nd-v">'+esc(stmap[appr.status]||appr.status)+'</div></div>'+
+          '<div><div class="nd-k">الجمعية (مساحة)</div><div class="nd-v">'+esc(appr.charity||"—")+'</div></div>'+
+          (appr.admin_user?'<div><div class="nd-k">حساب المدير</div><div class="nd-v">'+esc(appr.admin_user)+'</div></div>':'')+'</div>'+
+          '<div id="am" class="ds-err"></div><div class="nd-actions">';
+        if(appr.status==="Accepted"){ html+='<button class="ds-btn ds-btn--primary" id="activate">تفعيل الحساب وإنشاء المدير</button>'; }
+        else if(appr.status==="Awaiting Acceptance"){ html+='<span class="muted">بانتظار قبول الممثّل للاتفاقيات عبر الرابط المرسَل.</span>'; }
+        else if(appr.status==="Activated"){ html+='<span class="ds-badge ds-badge--ok">مُفعّلة</span>'; }
+        html+='</div>';
+      }
+      p.innerHTML=html;
+      var ib=document.getElementById("issue"); if(ib) ib.onclick=function(){ ib.disabled=true; issueActivation(d.name); };
+      var ab=document.getElementById("activate"); if(ab) ab.onclick=function(){ ab.disabled=true; activateAccount(appr.name); };
+    });
+  }
+  function issueActivation(appName){
+    api("stochops_nonprofit.activation.issue_activation",{application:appName},true).then(function(res){
+      if(res.ok){ toast("صدر رابط القبول وأُرسل للممثّل"); detail(); }
+      else { var m=document.getElementById("am"); if(m) m.textContent=errMsg(res); var b=document.getElementById("issue"); if(b) b.disabled=false; }
+    });
+  }
+  function activateAccount(apprName){
+    api("stochops_nonprofit.activation.activate",{approval:apprName},true).then(function(res){
+      if(res.ok){ toast("تم تفعيل الجمعية وإرسال دعوة المدير"); detail(); }
+      else { var m=document.getElementById("am"); if(m) m.textContent=errMsg(res); var b=document.getElementById("activate"); if(b) b.disabled=false; }
     });
   }
   function chk(id,label,v){ return '<label><input type="checkbox" id="c_'+id+'"'+(v?" checked":"")+'> '+esc(label)+'</label>'; }

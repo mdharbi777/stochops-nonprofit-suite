@@ -1,0 +1,35 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>قبول الاتفاقيات | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/legal.css?v=1" />
+  <style>
+    .agr{ background:var(--lg-card); border:1px solid var(--lg-border); border-radius:14px; padding:18px 20px; margin-top:16px; }
+    .agr h2{ color:#fff; font-size:17px; margin-bottom:4px; } .agr .v{ color:var(--lg-muted); font-size:12.5px; margin-bottom:10px; }
+    .agr .body{ max-height:260px; overflow:auto; line-height:1.9; font-size:14px; border-top:1px solid var(--lg-border); padding-top:10px; }
+    .chk{ display:flex; gap:10px; align-items:flex-start; margin-top:12px; font-size:14px; color:#e2e8f0; }
+    .fld{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+    .fld label{ font-size:13px; color:var(--lg-muted); } .fld input[type=text]{ background:#0c1424; border:1px solid var(--lg-border); border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; }
+    .btn{ background:var(--lg-blue); color:#fff; border:none; border-radius:999px; padding:12px 26px; font-weight:700; font-family:inherit; font-size:15px; cursor:pointer; margin-top:18px; }
+    .btn:disabled{ opacity:.6; cursor:default; }
+    .msg{ margin-top:12px; font-size:14px; } .msg.err{ color:#f87171; }
+  </style>
+  <script>window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";</script>
+  <script src="/assets/stochops_nonprofit/nos/accept-agreements.js?v=1" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="nav"><a href="/legal">المركز القانوني</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+</body>
+</html>

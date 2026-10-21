@@ -228,64 +228,21 @@ class TestSignupAccounts(FrappeTestCase):
                 frappe.delete_doc("Charity", c, force=1, ignore_permissions=True)
         frappe.db.commit()
 
-    def _cap(self):
-        from stochops_nonprofit.signup import _unsign, get_captcha
-
-        c = get_captcha()
-        return c["token"], _unsign(c["token"])["s"]
-
     def _register(self, suffix=""):
-        from stochops_nonprofit.signup import _verify_token, confirm_email, register_charity
-
+        # القبول انتقائي (P3): التسجيل الذاتي متوقّف — نهيّئ الجمعية والمدير مباشرة
+        # لاختبار إدارة الحسابات التي تلي التفعيل.
+        charity = make_charity(f"جمعية تسجيل {self.tok}{suffix}")
         email = f"regadmin_{self.tok}{suffix}@reg.local"
-        t, a = self._cap()
-        res = register_charity(
-            f"جمعية تسجيل {self.tok}{suffix}", "مدير الجمعية", email, "password123",
-            captcha_token=t, captcha_answer=a,
-        )
-        self.created_charities.append(res["charity"])
-        self.created_users.append(res["admin"])
-        confirm_email(_verify_token(email))  # تفعيل البريد ليُمكّن المدير من التصرّف
-        return res
+        admin = make_charity_user(email, charity, ["Nonprofit Admin"])
+        self.created_charities.append(charity)
+        self.created_users.append(admin)
+        return {"charity": charity, "admin": admin}
 
-    def test_register_creates_charity_and_admin(self):
-        res = self._register()
-        self.assertTrue(frappe.db.exists("Charity", res["charity"]))
-        self.assertEqual(frappe.db.get_value("User", res["admin"], "charity"), res["charity"])
-        self.assertIn("Nonprofit Admin", frappe.get_roles(res["admin"]))
-
-    def test_register_rejects_duplicate_and_bad_input(self):
+    def test_self_signup_disabled(self):
         from stochops_nonprofit.signup import register_charity
 
-        self._register()
-        t, a = self._cap()
-        with self.assertRaises(frappe.ValidationError):  # duplicate charity name
-            register_charity(f"جمعية تسجيل {self.tok}", "x", f"other_{self.tok}@reg.local", "password123", captcha_token=t, captcha_answer=a)
-        t, a = self._cap()
-        with self.assertRaises(frappe.ValidationError):  # existing email
-            register_charity(f"أخرى {self.tok}", "x", f"regadmin_{self.tok}@reg.local", "password123", captcha_token=t, captcha_answer=a)
-        t, a = self._cap()
-        with self.assertRaises(frappe.ValidationError):  # short password
-            register_charity(f"قصيرة {self.tok}", "x", f"short_{self.tok}@reg.local", "123", captcha_token=t, captcha_answer=a)
-
-    def test_bad_captcha_rejected(self):
-        from stochops_nonprofit.signup import register_charity
-
-        t, a = self._cap()
-        with self.assertRaises(frappe.ValidationError):
-            register_charity(f"كابتشا {self.tok}", "x", f"cap_{self.tok}@reg.local", "password123", captcha_token=t, captcha_answer=a + 1)
-
-    def test_account_disabled_until_verified(self):
-        from stochops_nonprofit.signup import _verify_token, confirm_email, register_charity
-
-        email = f"ver_{self.tok}@reg.local"
-        t, a = self._cap()
-        res = register_charity(f"تحقّق {self.tok}", "مدير", email, "password123", captcha_token=t, captcha_answer=a)
-        self.created_charities.append(res["charity"])
-        self.created_users.append(res["admin"])
-        self.assertEqual(frappe.db.get_value("User", email, "enabled"), 0)
-        confirm_email(_verify_token(email))
-        self.assertEqual(frappe.db.get_value("User", email, "enabled"), 1)
+        with self.assertRaises(frappe.PermissionError):
+            register_charity(f"جمعية {self.tok}", "مدير", f"x_{self.tok}@reg.local", "password123")
 
     def test_five_account_limit_and_scoping(self):
         from stochops_nonprofit.accounts import create_account
