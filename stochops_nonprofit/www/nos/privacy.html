@@ -95,7 +95,7 @@
       ]).then(function(r){
         if(!r[0].ok){ app.innerHTML='<div class="center"><h1>الخصوصية</h1><p class="msg err" style="display:block">'+esc(errMsg(r[0]))+'</p></div>'; return; }
         var s = r[0].j.message||{};
-        var gate = s.gate_open ? '<span class="status on">● بوابة الإنتاج مفتوحة</span>' : '<span class="status off">● بوابة الإنتاج مغلقة (بيانات مصطنعة فقط)</span>';
+        var gate = s.gate_open ? '<span class="status on">بوابة الإنتاج: مفتوحة</span>' : '<span class="status off">بوابة الإنتاج: مغلقة (بيانات مصطنعة فقط)</span>';
         var logs = (r[1].ok?r[1].j.message:[]||[]).map(function(l){
           return '<tr><td>'+esc(l.event_type)+'</td><td>'+esc(l.accessed_by||"")+'</td><td>'+esc(l.accessed_on||"")+'</td><td>'+esc((l.reference_doctype||"")+" "+(l.reference_name||""))+'</td><td>'+esc(l.accessed_field||"—")+'</td></tr>';
         }).join("");

@@ -20,6 +20,17 @@ ALLOWED_ROLES = [
 MIN_PASSWORD = 8
 INVITE_TTL = 3 * 24 * 3600  # 3 أيام
 
+# مستخدمو النظام لا يُحتسبون ضمن حسابات الجمعية ولا يظهرون في إدارتها
+SYSTEM_USERS = ["Administrator", "Guest"]
+
+
+def _charity_user_filters(charity):
+    return {"charity": charity, "name": ["not in", SYSTEM_USERS]}
+
+
+def _charity_user_count(charity):
+    return frappe.db.count("User", _charity_user_filters(charity))
+
 
 def _log_perm(email, note):
     try:
@@ -50,7 +61,7 @@ def list_accounts():
     charity = _require_charity_admin()
     max_accounts = frappe.db.get_value("Charity", charity, "max_accounts") or 5
     users = frappe.get_all(
-        "User", filters={"charity": charity}, fields=["name", "full_name", "enabled"], order_by="creation asc"
+        "User", filters=_charity_user_filters(charity), fields=["name", "full_name", "enabled"], order_by="creation asc"
     )
     for u in users:
         u["roles"] = _charity_roles(u["name"])
@@ -74,7 +85,7 @@ def _precheck_account(charity, full_name, email, role):
     if frappe.db.exists("User", email):
         frappe.throw(_("هذا البريد مُستخدم مسبقاً."))
     max_accounts = frappe.db.get_value("Charity", charity, "max_accounts") or 5
-    current = frappe.db.count("User", {"charity": charity})
+    current = _charity_user_count(charity)
     if current >= max_accounts:
         frappe.throw(_("بلغت الحد الأقصى لحسابات الجمعية ({0}).").format(max_accounts))
     return full_name, email, max_accounts, current
@@ -196,7 +207,7 @@ def get_charity_settings():
          "max_accounts", "expense_approval_limit"],
         as_dict=True,
     )
-    data["used"] = frappe.db.count("User", {"charity": charity})
+    data["used"] = _charity_user_count(charity)
     return data
 
 
@@ -242,7 +253,7 @@ def onboarding_status():
          "expense_approval_limit", "max_accounts", "onboarding_completed"],
         as_dict=True,
     )
-    used = frappe.db.count("User", {"charity": charity})
+    used = _charity_user_count(charity)
     identity_done = bool((data.get("registration_number") or "").strip() and (data.get("contact_email") or "").strip())
     limit_done = float(data.get("expense_approval_limit") or 0) > 0
     team_done = used > 1

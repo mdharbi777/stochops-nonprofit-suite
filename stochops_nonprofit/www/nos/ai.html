@@ -93,8 +93,8 @@
         var d = res.j.message;
         var opts = (d.tasks||[]).map(function(t){ return '<option value="'+esc(t.key)+'">'+esc(t.label)+'</option>'; }).join("");
         var statusHtml = d.enabled
-          ? '<span class="status on">● مُفعّل · المزوّد: '+esc(d.provider)+' (محاكاة محلية)</span>'
-          : '<span class="status off">● موقوف — يُفعّله مشغّل المنصّة من الإعدادات</span>';
+          ? '<span class="status on">الحالة: مُفعّل · المزوّد: '+esc(d.provider)+' (محاكاة محلية)</span>'
+          : '<span class="status off">الحالة: موقوف — يُفعّله مشغّل المنصّة من الإعدادات</span>';
         app.innerHTML =
           '<h1>المساعد الذكي</h1>'+
           '<p class="muted">مساعد مسوّدات محلي — بمحاكاة بلا اتصال خارجي.</p>'+
