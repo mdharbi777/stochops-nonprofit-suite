@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>متابعة طلب الاستفادة | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/legal.css?v=1" />
+  <style>
+    .fld{ display:flex; flex-direction:column; gap:6px; margin-top:14px; }
+    label.fl{ font-size:13px; color:var(--lg-muted); }
+    .fld input{ background:#0c1424; border:1px solid var(--lg-border); border-radius:10px; padding:10px 12px; color:#fff; font-family:inherit; font-size:14px; }
+    .btn{ background:var(--lg-blue); color:#fff; border:none; border-radius:999px; padding:11px 24px; font-weight:700; font-family:inherit; font-size:15px; cursor:pointer; margin-top:16px; }
+    .msg{ margin-top:12px; font-size:14px; } .msg.err{ color:#f87171; }
+    .result{ background:var(--lg-card); border:1px solid var(--lg-border); border-radius:14px; padding:20px 22px; margin-top:18px; }
+    .result .st{ font-size:20px; font-weight:800; color:#fff; }
+    .badge{ display:inline-block; border-radius:999px; padding:4px 12px; font-size:13px; font-weight:700; }
+    .b-ok{ background:rgba(34,197,94,.15); color:#22c55e; } .b-no{ background:rgba(248,113,113,.15); color:#f87171; }
+    .b-wait{ background:rgba(148,163,184,.15); color:var(--lg-muted); } .b-warn{ background:rgba(234,179,8,.15); color:#eab308; }
+  </style>
+  <script src="/assets/stochops_nonprofit/nos/application-status.js?v=1" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="nav"><a href="/apply">طلب جديد</a><a href="/legal">المركز القانوني</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+</body>
+</html>

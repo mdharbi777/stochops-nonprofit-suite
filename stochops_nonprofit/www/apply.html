@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>طلب الاستفادة من الفاضل | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/legal.css?v=1" />
+  <style>
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 18px; margin-top:16px; }
+    .fld{ display:flex; flex-direction:column; gap:6px; } .fld.full{ grid-column:1 / -1; }
+    label.fl{ font-size:13px; color:var(--lg-muted); } label.fl .req{ color:#f87171; }
+    .fld input, .fld select, .fld textarea{ background:#0c1424; border:1px solid var(--lg-border); border-radius:10px;
+      padding:10px 12px; color:#fff; font-family:inherit; font-size:14px; }
+    .fld textarea{ min-height:70px; resize:vertical; }
+    .btn{ background:var(--lg-blue); color:#fff; border:none; border-radius:999px; padding:11px 24px; font-weight:700; font-family:inherit; font-size:15px; cursor:pointer; }
+    .btn:disabled{ opacity:.6; cursor:default; }
+    .msg{ margin-top:12px; font-size:14px; } .msg.err{ color:#f87171; }
+    .ok-box{ background:var(--lg-card); border:1px solid #22c55e; border-radius:14px; padding:20px 22px; margin-top:16px; }
+    .ok-box .code{ font-variant-numeric:tabular-nums; letter-spacing:1px; color:var(--lg-cyan); font-weight:700; }
+    .note{ background:var(--lg-navy2); border:1px solid var(--lg-border); border-radius:10px; padding:10px 14px; font-size:12.5px; color:var(--lg-muted); margin:14px 0; }
+    @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } }
+  </style>
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/apply.js?v=1" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="nav"><a href="/application-status">متابعة طلب</a><a href="/legal">المركز القانوني</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+</body>
+</html>

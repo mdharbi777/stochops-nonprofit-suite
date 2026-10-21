@@ -1,0 +1,41 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>طلبات الاستفادة (المشغّل) | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=1" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/legal.css?v=1" />
+  <style>
+    .optabs{ display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
+    .optab{ background:var(--nc-card,#111a2e); border:1px solid var(--nc-border,#1e293b); color:#e2e8f0; border-radius:999px; padding:8px 16px; font-family:inherit; font-size:14px; cursor:pointer; }
+    .optab.active{ background:#2563eb; border-color:#2563eb; color:#fff; font-weight:700; }
+    .scoregrid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+    .scoregrid .fld{ display:flex; flex-direction:column; gap:5px; }
+    .scoregrid label{ font-size:12.5px; color:#94a3b8; }
+    .scoregrid input{ background:#0c1424; border:1px solid var(--nc-border,#1e293b); border-radius:8px; padding:8px 10px; color:#fff; font-family:inherit; }
+    .chkrow{ display:flex; gap:18px; flex-wrap:wrap; margin:8px 0; }
+    .chkrow label{ color:#e2e8f0; font-size:14px; display:flex; gap:7px; align-items:center; }
+    @media (max-width:640px){ .scoregrid{ grid-template-columns:1fr; } }
+  </style>
+  <script>
+    window.NOS_CSRF = "{{ frappe.session.csrf_token or '' }}";
+    window.NOS_USER = "{{ frappe.session.user }}";
+  </script>
+  <script src="/assets/stochops_nonprofit/nos/applications-ops.js?v=1" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="nav"><span class="muted">لوحة المشغّل</span><a href="/app">Desk</a><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+</body>
+</html>
