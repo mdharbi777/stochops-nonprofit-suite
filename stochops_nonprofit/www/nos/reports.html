@@ -88,6 +88,7 @@
       {name:"Beneficiary Categories", label:"فئات المستفيدين (مُجهّل)", desc:"توزيع مُجمّع لفئات المستفيدين بلا معرّفات، مع إخفاء الخلايا الصغيرة.", dated:false}
     ];
     var current = 0;
+    var lastCols = [], lastRows = [], groupField = null;
 
     function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
     function firstDay(){ var t=new Date(); return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-01"; }
@@ -154,6 +155,8 @@
       return esc(val);
     }
 
+    function cellVal(row, col){ return Array.isArray(row) ? row[lastCols.indexOf(col)] : row[col.fieldname]; }
+
     function renderReport(res){
       var r = REPORTS[current];
       var out = document.getElementById("out");
@@ -165,6 +168,7 @@
         if (typeof c === "string"){ var p=c.split(":"); return {label:p[0], fieldname:p[0], fieldtype:p[1]||"Data"}; }
         return c;
       });
+      lastCols = cols; lastRows = rows;
       var head = cols.map(function(c){ return '<th>'+esc(c.label||c.fieldname)+'</th>'; }).join("");
       var body = rows.map(function(row){
         var tds = cols.map(function(c){
@@ -175,13 +179,59 @@
       }).join("");
       out.innerHTML =
         '<div class="panel">'+
-          '<div class="rtitle">'+esc(r.label)+'</div>'+
-          '<div class="rdesc">'+esc(r.desc)+'</div>'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'+
+            '<div><div class="rtitle">'+esc(r.label)+'</div><div class="rdesc">'+esc(r.desc)+'</div></div>'+
+            (rows.length ? '<div style="display:flex;gap:8px;margin-top:12px">'+
+              '<button class="btn-sm" onclick="exportReport(\'Excel\')">تصدير Excel</button>'+
+              '<button class="btn-sm" onclick="exportReport(\'PDF\')">تصدير PDF</button></div>' : '')+
+          '</div>'+
           (rows.length ? '<table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table>'+
             '<div class="count">عدد الصفوف: '+rows.length+'</div>'
             : '<div class="empty">لا توجد بيانات لعرضها.</div>')+
-        '</div>';
+        '</div>'+
+        (rows.length ? '<div class="panel" id="chartpanel"></div>' : '');
+      if (rows.length) renderChart();
     }
+
+    function exportReport(fmt){
+      var r = REPORTS[current], filters = {};
+      if (r.dated){ var fe=document.getElementById("from"), te=document.getElementById("to"); if (fe&&te){ filters.from_date=fe.value; filters.to_date=te.value; } }
+      var f = document.createElement("form");
+      f.method = "POST"; f.action = "/api/method/stochops_nonprofit.reports.export_report"; f.style.display = "none";
+      function add(k,v){ var i=document.createElement("input"); i.type="hidden"; i.name=k; i.value=v; f.appendChild(i); }
+      add("report_name", r.name); add("file_format", fmt); add("filters", JSON.stringify(filters)); add("csrf_token", CSRF);
+      document.body.appendChild(f); f.submit(); setTimeout(function(){ f.remove(); }, 1000);
+    }
+    window.exportReport = exportReport;
+
+    function catCols(){ return lastCols.filter(function(c){ return ["Data","Link","Select"].indexOf(c.fieldtype)>=0; }); }
+    function renderChart(){
+      var cp = document.getElementById("chartpanel"); if (!cp) return;
+      var cc = catCols();
+      if (!cc.length){ cp.style.display="none"; return; }
+      if (!groupField || !cc.some(function(c){ return c.fieldname===groupField; })) groupField = cc[0].fieldname;
+      var col = cc.filter(function(c){ return c.fieldname===groupField; })[0];
+      var selStyle = 'background:#0c1424;border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:#fff;font-family:inherit;font-size:14px';
+      var sel = '<select id="grpsel" style="'+selStyle+'" onchange="onGroup()">'+cc.map(function(c){
+        return '<option value="'+esc(c.fieldname)+'"'+(c.fieldname===groupField?' selected':'')+'>'+esc(c.label)+'</option>'; }).join("")+'</select>';
+      var map = {};
+      lastRows.forEach(function(row){ var v=cellVal(row,col); var k=(v==null||v==="")?"—":String(v); map[k]=(map[k]||0)+1; });
+      var arr = Object.keys(map).map(function(k){ return {k:k,v:map[k]}; }).sort(function(a,b){ return b.v-a.v; }).slice(0,12);
+      var max = arr.reduce(function(m,x){ return Math.max(m,x.v); }, 0) || 1;
+      var barH=26, gap=10, w=640, lblW=190, chartW=w-lblW-48, H=arr.length*(barH+gap)+8;
+      var bars = arr.map(function(x,i){
+        var y=i*(barH+gap)+4, bw=Math.max(3, Math.round(x.v/max*chartW)), x0=w-lblW-bw;
+        return '<text x="'+(w-6)+'" y="'+(y+barH/2+4)+'" text-anchor="end" fill="#e2e8f0" font-size="12.5">'+esc(x.k)+'</text>'+
+               '<rect x="'+x0+'" y="'+y+'" width="'+bw+'" height="'+barH+'" rx="4" fill="#2563eb"></rect>'+
+               '<text x="'+(x0-6)+'" y="'+(y+barH/2+4)+'" text-anchor="end" fill="#94a3b8" font-size="12.5">'+x.v+'</text>';
+      }).join("");
+      cp.style.display = "block";
+      cp.innerHTML = '<div class="rtitle">تحليل — التوزيع حسب العمود</div>'+
+        '<div class="rdesc">عدد السجلات المرئية لك مجمّعة حسب العمود المختار (أعلى 12).</div>'+
+        '<div style="margin:6px 4px 14px">'+sel+'</div>'+
+        '<svg viewBox="0 0 '+w+' '+H+'" width="100%" role="img" aria-label="رسم شريطي للتوزيع">'+bars+'</svg>';
+    }
+    window.onGroup = function(){ groupField = document.getElementById("grpsel").value; renderChart(); };
   </script>
 </body>
 </html>
