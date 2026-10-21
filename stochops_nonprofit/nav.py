@@ -18,3 +18,17 @@ def get_my_context():
         "charity": charity,
         "charity_name": charity_name,
     }
+
+
+def set_nos_no_cache(context):
+    """صفحات /nos تعتمد على جلسة المستخدم ⇒ تُمنع من كاش الموقع (وإلا تُخدَم نسخة Guest).
+
+    يُستدعى عبر hook update_website_context لكل صفحات الموقع.
+    """
+    try:
+        path = getattr(getattr(frappe.local, "request", None), "path", "") or ""
+        if path.startswith("/nos"):
+            context["no_cache"] = 1
+    except Exception:
+        pass
+    return context

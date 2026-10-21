@@ -156,6 +156,9 @@ doc_events = {
 # بعد الدخول: وجّه مستخدمي الجمعية إلى الواجهة المحوكمة /nos بدل /app
 on_session_creation = "stochops_nonprofit.session.route_charity_users_to_nos"
 
+# صفحات /nos تعتمد الجلسة ⇒ تُمنع من كاش الموقع (تُعرَض بالمستخدم الصحيح لا نسخة Guest)
+update_website_context = "stochops_nonprofit.nav.set_nos_no_cache"
+
 # Generators
 # ----------
 
