@@ -1,0 +1,74 @@
+/* نظام تصميم منصة الفاضل الموحّد (P1) — بلا رموز تعبيرية؛ أزرار نصية؛ الحالة لا تُميَّز باللون وحده.
+   مكوّنات مشتركة تتبنّاها صفحات /nos تدريجياً. RTL، عربية Tajawal، ألوان المنصة. */
+:root{
+  --ds-navy:#0b1220; --ds-navy2:#101b2b; --ds-blue:#2563eb; --ds-blue-700:#1d4ed8; --ds-cyan:#06b6d4;
+  --ds-text:#e2e8f0; --ds-muted:#94a3b8; --ds-card:#111a2e; --ds-border:#1e293b;
+  --ds-ok:#4ade80; --ds-warn:#fbbf24; --ds-danger:#f87171; --ds-radius:10px;
+}
+
+/* ===== الأزرار (نصية، إجراء رئيسي واحد في السياق) ===== */
+.ds-btn{ display:inline-block; font-family:"Tajawal",sans-serif; font-weight:700; font-size:14px;
+  border-radius:999px; padding:10px 20px; cursor:pointer; border:1px solid transparent; text-decoration:none;
+  transition:.12s; line-height:1.4; }
+.ds-btn:focus-visible{ outline:2px solid var(--ds-cyan); outline-offset:2px; }
+.ds-btn[disabled], .ds-btn.is-disabled{ opacity:.55; cursor:not-allowed; }
+.ds-btn--primary{ background:var(--ds-blue); color:#fff; }
+.ds-btn--primary:hover{ background:var(--ds-blue-700); }
+.ds-btn--secondary{ background:transparent; color:var(--ds-text); border-color:var(--ds-border); }
+.ds-btn--secondary:hover{ border-color:var(--ds-cyan); }
+.ds-btn--warning{ background:transparent; color:var(--ds-danger); border-color:var(--ds-danger); }
+.ds-btn--warning:hover{ background:rgba(248,113,113,.1); }
+.ds-btn--sm{ padding:6px 14px; font-size:13px; }
+
+/* ===== علامات الحالة (نص + شكل حدّي مختلف — لا لون وحده) ===== */
+.ds-badge{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700;
+  padding:2px 10px; border-radius:999px; border:1px solid var(--ds-border); color:var(--ds-text); background:var(--ds-navy2); }
+.ds-badge::before{ content:""; width:7px; height:7px; border-radius:2px; background:var(--ds-muted); }
+.ds-badge--ok{ color:var(--ds-ok); border-color:rgba(74,222,128,.5); }
+.ds-badge--ok::before{ background:var(--ds-ok); border-radius:50%; }               /* دائرة = إيجابي */
+.ds-badge--warn{ color:var(--ds-warn); border-color:rgba(251,191,36,.5); }
+.ds-badge--warn::before{ background:var(--ds-warn); width:0;height:0;border-radius:0;
+  border-inline-start:4px solid transparent;border-inline-end:4px solid transparent;border-bottom:7px solid var(--ds-warn); } /* مثلث = تحذير */
+.ds-badge--danger{ color:var(--ds-danger); border-color:rgba(248,113,113,.5); }
+.ds-badge--danger::before{ background:var(--ds-danger); border-radius:1px; }         /* مربّع = خطر/متأخر */
+.ds-badge--muted{ color:var(--ds-muted); }
+
+/* ===== حالات الصفحة الموحّدة (نصية، مع إجراء عند الحاجة) ===== */
+.ds-state{ text-align:center; padding:48px 20px; border:1px dashed var(--ds-border); border-radius:var(--ds-radius);
+  background:var(--ds-card); margin:16px 0; }
+.ds-state h3{ color:#fff; font-size:17px; margin-bottom:6px; }
+.ds-state p{ color:var(--ds-muted); font-size:14px; max-width:460px; margin:0 auto 14px; }
+.ds-state--error{ border-color:rgba(248,113,113,.4); }
+.ds-state--empty{ border-style:dashed; }
+.ds-state--loading{ border-style:solid; }
+.ds-spinner{ width:22px; height:22px; border:2px solid var(--ds-border); border-top-color:var(--ds-cyan);
+  border-radius:50%; margin:0 auto 12px; animation:ds-spin .8s linear infinite; }
+@keyframes ds-spin{ to{ transform:rotate(360deg); } }
+
+/* شريط نجاح/خطأ مؤقّت مع رقم مرجعي */
+.ds-toast{ position:fixed; inset-block-start:16px; inset-inline-start:50%; transform:translateX(-50%); z-index:200;
+  background:var(--ds-navy2); border:1px solid var(--ds-border); border-radius:var(--ds-radius); padding:12px 18px;
+  color:var(--ds-text); font-size:14px; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:90vw; }
+.ds-toast--ok{ border-color:rgba(74,222,128,.5); }
+.ds-toast--err{ border-color:rgba(248,113,113,.5); }
+.ds-toast .ref{ color:var(--ds-muted); font-size:12px; }
+
+/* ===== النماذج ===== */
+.ds-field{ margin-bottom:14px; }
+.ds-field > label{ display:block; color:var(--ds-text); font-size:13px; font-weight:600; margin-bottom:6px; }
+.ds-field > label .req{ color:var(--ds-danger); }
+.ds-input, .ds-select, .ds-textarea{ width:100%; background:var(--ds-navy); color:var(--ds-text);
+  border:1px solid var(--ds-border); border-radius:9px; padding:10px 12px; font-family:inherit; font-size:14px; }
+.ds-input:focus, .ds-select:focus, .ds-textarea:focus{ outline:none; border-color:var(--ds-cyan); }
+.ds-field.has-error .ds-input, .ds-field.has-error .ds-select{ border-color:var(--ds-danger); }
+.ds-err{ color:var(--ds-danger); font-size:12px; margin-top:5px; }
+
+/* ===== الجداول ===== */
+.ds-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+.ds-table th{ text-align:start; color:var(--ds-muted); font-weight:700; padding:10px 12px; border-bottom:1px solid var(--ds-border); position:sticky; top:0; background:var(--ds-card); }
+.ds-table td{ padding:11px 12px; border-bottom:1px solid var(--ds-border); color:var(--ds-text); }
+.ds-table tr:hover td{ background:#16233f; }
+.ds-table-wrap{ overflow-x:auto; border:1px solid var(--ds-border); border-radius:var(--ds-radius); }
+
+/* إتاحة: تركيز واضح عام */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--ds-cyan); outline-offset:2px; }

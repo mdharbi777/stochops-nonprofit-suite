@@ -1,95 +1,99 @@
-/* هيكل منصة الفاضل الموحّد: قائمة جانبية ثابتة + شريط علوي + تنقّل.
-   يُضمَّن في صفحات الوحدات داخل /nos ويبني الهيكل وقت التشغيل دون تعديل محتوى الصفحة. */
+/* هيكل منصة الفاضل الموحّد (P1): قائمة جانبية نصية (بلا رموز تعبيرية) تعكس دور المستخدم،
+   وشريط علوي موحّد مع مسار تنقّل. الأدوار من الخادم عبر stochops_nonprofit.nav.get_my_context.
+   الصلاحيات الفعلية مفروضة على الخادم؛ القائمة تُخفي ما لا يحقّ عرضه فقط. */
 (function () {
   "use strict";
+
   var NAV = [
-    { items: [["لوحة التشغيل", "/nos/console", "📊"]] },
-    { sec: "المستفيدون", items: [["المستفيدون", "/nos/beneficiaries", "👤"], ["طلبات المساعدة", "/nos/assistance", "🤝"]] },
-    { sec: "الموارد والمالية", items: [["المتبرعون", "/nos/donors", "💛"], ["المنح", "/nos/grants", "🎁"], ["المصروفات", "/nos/expenses", "💳"], ["المشتريات", "/nos/procurement", "🛒"]] },
-    { sec: "الحوكمة", items: [["اللجان", "/nos/committees", "🏛️"], ["الاجتماعات", "/nos/meetings", "📅"], ["القرارات", "/nos/decisions", "✅"], ["المبادرات", "/nos/initiatives", "🚀"], ["المهام", "/nos/tasks", "📌"], ["الالتزامات الحكومية", "/nos/compliance", "📋"]] },
-    { sec: "الموارد البشرية", items: [["الموظفون والعقود", "/nos/personnel", "🧑‍💼"]] },
-    { sec: "التقارير والذكاء", items: [["التقارير", "/nos/reports", "📈"], ["المساعد الذكي", "/nos/ai", "🤖"]] },
-    { sec: "الخصوصية (PDPL)", items: [["الخصوصية وحماية البيانات", "/nos/privacy", "🔒"], ["حقوق الأفراد", "/nos/rights", "🛡️"], ["الإفصاح والمشاركة", "/nos/disclosures", "📤"], ["الحوادث والاحتفاظ", "/nos/incidents", "⚠️"]] },
-    { sec: "الإدارة", items: [["إدارة الحسابات", "/nos/accounts", "👥"], ["إعدادات الجمعية", "/nos/settings", "⚙️"], ["الدليل", "/nos/guide", "📖"]] }
+    { items: [["لوحة التشغيل", "/nos/console"]] },
+    { sec: "المستفيدون", items: [["المستفيدون", "/nos/beneficiaries"], ["طلبات المساعدة", "/nos/assistance"]] },
+    { sec: "الموارد والمالية", items: [["المتبرعون", "/nos/donors"], ["المنح", "/nos/grants"], ["المصروفات", "/nos/expenses"], ["المشتريات", "/nos/procurement"]] },
+    { sec: "الحوكمة", items: [["اللجان", "/nos/committees"], ["الاجتماعات", "/nos/meetings"], ["القرارات", "/nos/decisions"], ["المبادرات", "/nos/initiatives"], ["المهام", "/nos/tasks"], ["الالتزامات الحكومية", "/nos/compliance"]] },
+    { sec: "الموارد البشرية", items: [["الموظفون والعقود", "/nos/personnel"]] },
+    { sec: "التقارير والتحليلات", items: [["التقارير", "/nos/reports"], ["المساعد الذكي", "/nos/ai"]] },
+    { sec: "الخصوصية وحماية البيانات", items: [["الخصوصية", "/nos/privacy"], ["حقوق الأفراد", "/nos/rights"], ["الإفصاح والمشاركة", "/nos/disclosures"], ["الحوادث والاحتفاظ", "/nos/incidents"]] },
+    { sec: "الإدارة", items: [["إدارة الحسابات", "/nos/accounts"], ["إعدادات الجمعية", "/nos/settings"], ["الدليل", "/nos/guide"]] }
   ];
+  var FULL_ROLES = ["Nonprofit Admin", "System Manager", "Administrator"];
+  var ADMIN_ONLY = ["/nos/accounts", "/nos/settings"];
+  var COORD = {
+    "Committee Coordinator": ["/nos/console", "/nos/committees", "/nos/meetings", "/nos/decisions", "/nos/initiatives", "/nos/tasks", "/nos/compliance", "/nos/reports", "/nos/guide"],
+    "Program Coordinator": ["/nos/console", "/nos/beneficiaries", "/nos/assistance", "/nos/donors", "/nos/grants", "/nos/initiatives", "/nos/tasks", "/nos/reports", "/nos/guide"]
+  };
+
+  function rolesList() { return (window.NOS_CTX && window.NOS_CTX.roles) || null; }
+  function isAdmin() { var r = rolesList(); return r ? r.some(function (x) { return FULL_ROLES.indexOf(x) >= 0; }) : true; }
+  function canSee(path) {
+    var r = rolesList();
+    if (!r || r.indexOf("Guest") >= 0) return true;           // غير محمّل/زائر → أظهر الكل (الوصول الفعلي على الخادم)
+    if (ADMIN_ONLY.indexOf(path) >= 0) return isAdmin();
+    if (isAdmin()) return true;
+    if (r.indexOf("Executive Viewer") >= 0) return true;
+    var allowed = {};
+    r.forEach(function (x) { var m = COORD[x]; if (m) m.forEach(function (p) { allowed[p] = 1; }); });
+    return !!allowed[path];
+  }
 
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function cookie(k) { var m = document.cookie.match("(^|;)\\s*" + k + "\\s*=\\s*([^;]+)"); return m ? decodeURIComponent(m.pop()) : ""; }
-
-  function currentPath() {
-    var p = location.pathname.replace(/\/+$/, "");
-    if (p === "/nos" || p === "") p = "/nos/console";
-    return p;
-  }
-
-  function label(path) {
-    for (var g = 0; g < NAV.length; g++) for (var i = 0; i < NAV[g].items.length; i++) if (NAV[g].items[i][1] === path) return NAV[g].items[i][0];
-    return "منصة الفاضل";
-  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
+  function currentPath() { var p = location.pathname.replace(/\/+$/, ""); return (p === "/nos" || p === "") ? "/nos/console" : p; }
+  function label(path) { for (var g = 0; g < NAV.length; g++) for (var i = 0; i < NAV[g].items.length; i++) if (NAV[g].items[i][1] === path) return NAV[g].items[i][0]; return "منصة الفاضل"; }
 
   function build() {
     if (document.querySelector(".nos-sidebar")) return;
     var path = currentPath();
     document.body.classList.add("nos-app");
-    // إخفاء أي شريط علوي قديم داخل الصفحة لتفادي التكرار
     document.querySelectorAll(".topbar").forEach(function (t) { t.style.display = "none"; });
 
-    // القائمة الجانبية
     var sb = el("aside", "nos-sidebar");
-    var brand = el("div", "nos-sb-brand", '<span class="mk"><i></i><i></i><i></i></span><b>Stoch</b><span>ops</span>');
-    sb.appendChild(brand);
+    sb.appendChild(el("div", "nos-sb-brand", '<span class="mk"><i></i><i></i><i></i></span><b>Stoch</b><span>ops</span>'));
     var nav = el("nav", "nos-sb-nav");
     NAV.forEach(function (grp) {
-      if (grp.sec) nav.appendChild(el("div", "nos-sb-sec", grp.sec));
-      grp.items.forEach(function (it) {
+      var visible = grp.items.filter(function (it) { return canSee(it[1]); });
+      if (!visible.length) return;
+      if (grp.sec) nav.appendChild(el("div", "nos-sb-sec", esc(grp.sec)));
+      visible.forEach(function (it) {
         var a = el("a", "nos-sb-link" + (it[1] === path ? " active" : ""));
-        a.href = it[1];
-        a.innerHTML = '<span class="ic">' + it[2] + "</span><span>" + it[0] + "</span>";
+        a.href = it[1]; a.textContent = it[0];
+        if (it[1] === path) a.setAttribute("aria-current", "page");
         nav.appendChild(a);
       });
     });
     sb.appendChild(nav);
-    sb.appendChild(el("div", "nos-sb-foot", 'نسخة تجريبية · <span class="pill">بيانات مصطنعة</span>'));
+    sb.appendChild(el("div", "nos-sb-foot", "نسخة تجريبية — بيانات مصطنعة"));
     document.body.insertBefore(sb, document.body.firstChild);
     var scrim = el("div", "nos-scrim");
     scrim.addEventListener("click", function () { document.body.classList.remove("nos-sb-open"); });
     document.body.insertBefore(scrim, document.body.firstChild);
 
-    // الشريط العلوي الموحّد
-    var user = cookie("full_name") || cookie("user_id") || "";
+    var charityName = (window.NOS_CTX && window.NOS_CTX.charity_name) || "منصة الفاضل";
+    var user = (window.NOS_CTX && window.NOS_CTX.user && window.NOS_CTX.user !== "Guest" ? window.NOS_CTX.user : "") || cookie("full_name") || "مستخدم";
     var top = el("header", "nos-top");
     top.innerHTML =
-      '<div class="cr">' +
-      '<button class="nos-burger" aria-label="القائمة">☰</button>' +
-      '<div><div class="nm" id="nosCharity">منصة الفاضل</div>' +
-      '<div class="bc">منصة الفاضل <b>›</b> ' + label(path) + "</div></div></div>" +
-      '<div class="ac"><span class="u">' + (user || "مستخدم") + "</span>" +
-      '<a href="/nos/settings">الإعدادات</a>' +
-      '<a href="#" id="nosLogout">خروج</a></div>';
+      '<div class="cr"><button class="nos-burger" type="button" aria-label="القائمة">القائمة</button>' +
+      '<div><div class="nm">' + esc(charityName) + "</div>" +
+      '<div class="bc">منصة الفاضل &rsaquo; ' + esc(label(path)) + "</div></div></div>" +
+      '<div class="ac"><span class="u">' + esc(user) + "</span>" +
+      '<a href="/nos/settings">الإعدادات</a><a href="#" id="nosLogout">تسجيل الخروج</a></div>';
     var wrap = document.querySelector(".wrap") || document.body;
     wrap.insertBefore(top, wrap.firstChild);
 
     top.querySelector(".nos-burger").addEventListener("click", function () { document.body.classList.toggle("nos-sb-open"); });
     top.querySelector("#nosLogout").addEventListener("click", function (e) {
       e.preventDefault();
-      fetch("/api/method/logout", { headers: { "X-Frappe-CSRF-Token": (window.frappe && frappe.csrf_token) || "" } })
-        .finally(function () { location.href = "/nos"; });
+      fetch("/api/method/logout", { headers: { "X-Frappe-CSRF-Token": (window.frappe && frappe.csrf_token) || "" } }).finally(function () { location.href = "/nos"; });
     });
-
-    // اسم الجمعية (اختياري — لا يُعطّل الشريط إن فشل)
-    try {
-      fetch("/api/method/frappe.client.get_value?doctype=User&filters=" + encodeURIComponent(JSON.stringify({ name: cookie("user_id") })) + "&fieldname=charity")
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          var ch = d && d.message && d.message.charity;
-          if (!ch) return;
-          return fetch("/api/method/frappe.client.get_value?doctype=Charity&filters=" + encodeURIComponent(JSON.stringify({ name: ch })) + "&fieldname=charity_name")
-            .then(function (r) { return r.json(); })
-            .then(function (d2) { if (d2 && d2.message && d2.message.charity_name) document.getElementById("nosCharity").textContent = d2.message.charity_name; });
-        }).catch(function () {});
-    } catch (e) {}
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
-  else build();
+  function boot() {
+    fetch("/api/method/stochops_nonprofit.nav.get_my_context", { headers: { "X-Frappe-CSRF-Token": (window.frappe && frappe.csrf_token) || "" } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { window.NOS_CTX = (d && d.message) || { roles: null }; })
+      .catch(function () { window.NOS_CTX = { roles: null }; })
+      .then(build);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 })();
