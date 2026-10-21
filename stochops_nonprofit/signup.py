@@ -47,6 +47,7 @@ def _unsign(token):
 
 # ---------- Captcha حسابي ----------
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=40, seconds=3600)
 def get_captcha():
     a, b = random.randint(1, 9), random.randint(1, 9)
     return {"question": f"{a} + {b} =", "token": _sign({"k": "captcha", "s": a + b, "exp": int(time.time()) + 600})}
@@ -138,6 +139,7 @@ def register_charity(
 
 
 @frappe.whitelist(allow_guest=True)
+@rate_limit(limit=20, seconds=3600)
 def confirm_email(token):
     p = _unsign(token)
     if not p or p.get("k") != "verify":
