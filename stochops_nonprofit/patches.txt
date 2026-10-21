@@ -5,3 +5,4 @@
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
 stochops_nonprofit.patches.add_charity_indexes
+stochops_nonprofit.patches.seed_compliance_templates
