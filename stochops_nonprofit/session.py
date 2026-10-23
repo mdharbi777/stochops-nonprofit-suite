@@ -1,30 +1,19 @@
 """توجيه ما بعد الدخول.
 
-مستخدمو الجمعية (بأدوار المنصة، وبلا System Manager) يُوجَّهون تلقائياً إلى
-الواجهة المحوكمة «/nos» بدل لوحة Frappe التقنية «/app». الإداريون التقنيون
-(System Manager / Administrator) يبقون على سلوك Frappe الافتراضي.
+كل المستخدمين — مستخدمو الجمعية والمشغّل — يُوجَّهون تلقائياً إلى الواجهة المحوكمة
+«/nos/console» بدل لوحة Frappe التقنية «/app». يبقى Administrator وحده على سلوك
+Frappe الافتراضي (لوحة الإدارة الكاملة). ويمكن للمشغّل فتح «/app» يدوياً عند الحاجة.
 """
 import frappe
 
-PORTAL_ROLES = {
-    "Nonprofit Admin",
-    "Executive Viewer",
-    "Committee Coordinator",
-    "Program Coordinator",
-}
-
 
 def route_charity_users_to_nos(login_manager=None):
-    """on_session_creation hook: يضبط صفحة البداية إلى /nos لمستخدمي الجمعية."""
+    """on_session_creation hook: يضبط صفحة البداية إلى /nos/console لكل المستخدمين عدا Administrator."""
     try:
         user = frappe.session.user
         if not user or user in ("Guest", "Administrator"):
             return
-        roles = set(frappe.get_roles(user))
-        if "System Manager" in roles:
-            return
-        if roles & PORTAL_ROLES:
-            frappe.local.response["home_page"] = "/nos"
+        frappe.local.response["home_page"] = "/nos/console"
     except Exception:
         # لا نُعطّل الدخول مهما حدث
         pass

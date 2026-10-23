@@ -195,6 +195,10 @@ def has_charity_permission(doc, ptype=None, user=None, permission_type=None):
     if is_data_super(user):
         return True
     if ptype == "create" or _is_new(doc):
+        # دفاع عميق: لا يُنشئ غير المشغّل سجلاً بجمعية غير جمعيته (تُفرَض لاحقاً في set_charity)
+        c = doc.get("charity") or None
+        if c and c != get_user_charity(user):
+            return False
         return True
     return (doc.get("charity") or None) == get_user_charity(user)
 
@@ -223,11 +227,18 @@ def has_case_permission(doc, ptype=None, user=None, permission_type=None):
 
 
 def set_charity(doc, method=None):
-    """يضبط حقل charity تلقائياً من جمعية المستخدم عند الإنشاء (إن لم يُحدَّد)."""
-    if not doc.get("charity"):
-        charity = get_user_charity()
-        if charity:
-            doc.charity = charity
+    """يضبط ويَفرِض حقل charity من جمعية المستخدم عند الإنشاء.
+
+    أمان (H1): لغير مشغّل المنصّة تُفرَض جمعية المستخدم دائماً وتُتجاهَل أي قيمة واردة
+    من العميل، لمنع زرع سجلات في جمعية أخرى عبر الـ API. من بلا جمعية لا يُنشئ سجلاً.
+    يحتفظ المشغّل (break-glass) بإمكان ضبط الجمعية صراحةً.
+    """
+    if is_data_super():
+        return
+    charity = get_user_charity()
+    if not charity:
+        frappe.throw(frappe._("حسابك غير مرتبط بجمعية؛ لا يمكن إنشاء السجل."), frappe.PermissionError)
+    doc.charity = charity
 
 
 def set_charity_case(doc, method=None):

@@ -34,8 +34,12 @@ class ExpenseRequest(Document):
     def validate(self):
         if self.amount and float(self.amount) < 0:
             frappe.throw(_("المبلغ لا يكون سالباً."))
-        if self.is_new() and not self.requested_by:
+        # أمان (H2) فصل المهام: يُفرَض مُقدّم الطلب = المستخدم الحالي، ولا يُغيَّر لاحقاً،
+        # حتى لا يتمكّن أحد من الاعتماد على طلب أنشأه بنسب التقديم لغيره.
+        if self.is_new():
             self.requested_by = frappe.session.user
+        elif self.has_value_changed("requested_by"):
+            frappe.throw(_("لا يمكن تغيير مُقدّم الطلب بعد الإنشاء."), frappe.PermissionError)
         guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف")
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():

@@ -215,7 +215,9 @@ def get_charity_settings():
 def update_charity_settings(registration_number=None, contact_email=None, contact_mobile=None,
                             expense_approval_limit=None):
     """تحديث الحقول القابلة للتغيير في هوية الجمعية. مدير الجمعية فقط، على جمعيته فقط.
-    الاسم/الحالة/حد الحسابات تُدار من منصّة STOCHOPS (غير قابلة للتعديل هنا)."""
+    الاسم/الحالة/حدّ الحسابات **وحدّ الاعتماد المالي (expense_approval_limit)** تُدار من
+    منصّة STOCHOPS (المشغّل) وغير قابلة للتعديل هنا — أمان (M1): منعاً لرفع المعتمِد سقفه بنفسه.
+    يُقبل المُعامل expense_approval_limit للتوافق لكن يُتجاهَل."""
     charity = _require_charity_admin()
     updates = {}
     if registration_number is not None:
@@ -227,11 +229,7 @@ def update_charity_settings(registration_number=None, contact_email=None, contac
         updates["contact_email"] = email
     if contact_mobile is not None:
         updates["contact_mobile"] = (contact_mobile or "").strip()
-    if expense_approval_limit is not None:
-        limit = float(expense_approval_limit or 0)
-        if limit < 0:
-            frappe.throw(_("حدّ الاعتماد لا يكون سالباً."))
-        updates["expense_approval_limit"] = limit
+    # expense_approval_limit متجاهَل عمداً: يُدار من المشغّل فقط (أمان M1)
     if updates:
         frappe.db.set_value("Charity", charity, updates)
         frappe.db.commit()

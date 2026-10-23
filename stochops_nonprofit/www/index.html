@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>منصة الفاضل — إدارة وحوكمة الجمعيات الخيرية</title>
+  <meta name="description" content="منصة الفاضل: أدوات مجانية بالعربية لإدارة وحوكمة الجمعيات الخيرية السعودية، ببيانات داخل المملكة." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0b1220; --bg2:#0e1a2e; --panel:#16223a; --line:#223150;
+      --ink:#eaf0f8; --muted:#9db0c8; --brand:#3d6ef5; --accent:#f2922e;
+      --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{background:var(--bg);color:var(--ink);font-family:'Tajawal',system-ui,Tahoma,sans-serif;line-height:1.6;-webkit-text-size-adjust:100%}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:0 20px}
+    /* topbar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;gap:16px;flex-wrap:wrap}
+    .logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;direction:ltr}
+    .logo b{color:var(--ink)} .logo span{color:var(--accent)}
+    .logo .mark{display:inline-flex;gap:3px;align-items:flex-end}
+    .logo .mark i{width:5px;border-radius:2px;background:var(--brand);display:block}
+    .logo .mark i:nth-child(1){height:12px}.logo .mark i:nth-child(2){height:18px}.logo .mark i:nth-child(3){height:24px;background:var(--accent)}
+    .nav{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+    .nav a{color:var(--muted);font-weight:500;font-size:16px}
+    .nav a:hover{color:var(--ink)}
+    .nav a.btn{background:var(--brand);color:#fff;padding:9px 18px;border-radius:10px;font-weight:700}
+    .nav a.btn:hover{background:#3360e0}
+    /* hero */
+    .hero{padding:70px 0 50px;background:linear-gradient(160deg,#0b1220 0%,#0e1a2e 70%,#13213c 100%)}
+    .eyebrow{color:var(--brand);font-weight:700;font-size:16px;letter-spacing:1px;margin-bottom:14px}
+    .hero h1{font-size:clamp(34px,6vw,62px);font-weight:800;line-height:1.1;margin:0 0 20px}
+    .hero p.lead{font-size:clamp(18px,2.4vw,24px);color:#c7d4e6;max-width:720px;margin:0 0 30px}
+    .cta{display:flex;gap:14px;flex-wrap:wrap}
+    .cta a{padding:14px 28px;border-radius:12px;font-weight:700;font-size:18px}
+    .cta a.primary{background:var(--accent);color:#1a1200}
+    .cta a.primary:hover{background:#e07f1c}
+    .cta a.ghost{border:1px solid var(--line);color:var(--ink);background:rgba(255,255,255,.02)}
+    .cta a.ghost:hover{border-color:var(--brand)}
+    .hero .tiny{margin-top:22px;color:var(--muted);font-size:15px}
+    /* section */
+    section.block{padding:56px 0;border-top:1px solid var(--line)}
+    h2.sec{font-size:clamp(26px,4vw,38px);font-weight:800;margin:0 0 10px}
+    p.secsub{color:var(--muted);font-size:18px;margin:0 0 34px;max-width:680px}
+    .grid{display:grid;gap:20px;grid-template-columns:repeat(4,1fr)}
+    .grid.g3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:860px){.grid,.grid.g3{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.grid,.grid.g3{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:10px}
+    .card h3{font-size:21px;font-weight:700;margin:0;color:var(--ink)}
+    .card p{margin:0;color:var(--muted);font-size:16px}
+    .card .ic{width:44px;height:44px;border-radius:11px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px}
+    /* steps */
+    .steps{display:grid;gap:18px;grid-template-columns:repeat(4,1fr);counter-reset:s}
+    @media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.steps{grid-template-columns:1fr}}
+    .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;position:relative}
+    .step .n{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+    .step:last-child .n{background:var(--accent)}
+    .step h3{margin:0 0 6px;font-size:19px}
+    .step p{margin:0;color:var(--muted);font-size:15px}
+    /* modules */
+    .chips{display:flex;flex-wrap:wrap;gap:10px}
+    .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:16px;color:#c7d4e6}
+    /* final cta */
+    .final{background:linear-gradient(135deg,#17458f,#1d2b57);border:1px solid #2b3f6b;border-radius:22px;padding:46px;text-align:center;margin:10px 0}
+    .final h2{font-size:clamp(26px,4vw,38px);margin:0 0 12px;font-weight:800}
+    .final p{color:#d6e2f4;font-size:18px;margin:0 0 26px}
+    /* footer */
+    footer.site{border-top:1px solid var(--line);padding:34px 0 50px;color:var(--muted);font-size:15px}
+    footer.site .frow{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+    footer.site .links{display:flex;gap:18px;flex-wrap:wrap}
+    footer.site a:hover{color:var(--ink)}
+    footer.site .note{margin-top:18px;font-size:13.5px;color:#6f7f95;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <nav class="nav">
+        <a href="/legal">المركز القانوني</a>
+        <a href="/apply">طلب الاستفادة</a>
+        <a class="btn" href="/signin">تسجيل الدخول</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="wrap">
+      <div class="eyebrow">منصة الفاضل</div>
+      <h1>إدارة وحوكمة الجمعيات الخيرية — بالعربية ومجانًا</h1>
+      <p class="lead">منصة متكاملة تساعد الجمعيات الخيرية السعودية على إدارة المستفيدين والمساعدات والتبرّعات والمصروفات والحوكمة، ببيانات محفوظة بالكامل داخل المملكة.</p>
+      <div class="cta">
+        <a class="primary" href="/apply">قدّم طلب استفادة</a>
+        <a class="ghost" href="/signin">دخول الجمعيات</a>
+      </div>
+      <p class="tiny">مبادرة فردية غير تجارية من محمد صالح حسن الحربي · لا رسوم ولا اشتراكات.</p>
+    </div>
+  </div>
+
+  <section class="block">
+    <div class="wrap">
+      <h2 class="sec">لماذا الفاضل؟</h2>
+      <p class="secsub">أدوات احترافية مصمّمة لسياق العمل الخيري السعودي.</p>
+      <div class="grid">
+        <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2922e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg></div><h3>مجانية بالكامل</h3><p>لا رسوم ولا اشتراكات ولا أي مقابل مالي، حالي أو مستقبلي.</p></div>
+        <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2922e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3.1 7.7-7 9-3.9-1.3-7-4.4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>عربية وداخل المملكة</h3><p>واجهة عربية بالكامل، والبيانات والنسخ الاحتياطية في الرياض.</p></div>
+        <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2922e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3>خصوصية وأمان</h3><p>عزل كامل لبيانات كل جمعية وتشفير الحقول الحساسة.</p></div>
+        <div class="card"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f2922e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><rect x="7" y="12" width="3" height="5" fill="#f2922e" stroke="none"/><rect x="12" y="8" width="3" height="9" fill="#f2922e" stroke="none"/><rect x="17" y="5" width="3" height="12" fill="#f2922e" stroke="none"/></svg></div><h3>حوكمة وتقارير</h3><p>لجان وقرارات والتزامات وتقارير قابلة للتصدير Excel وPDF.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <h2 class="sec">رحلة الانضمام</h2>
+      <p class="secsub">قبول انتقائي مدروس — التقديم لا يعني فتح حساب فوري.</p>
+      <div class="steps">
+        <div class="step"><div class="n">١</div><h3>تقديم الطلب</h3><p>تعبّئون نموذج طلب الاستفادة — بيانات الجمعية فقط.</p></div>
+        <div class="step"><div class="n">٢</div><h3>المراجعة والاعتماد</h3><p>نتحقق من الأهلية والترخيص ثم نعتمد الطلب.</p></div>
+        <div class="step"><div class="n">٣</div><h3>التفعيل وقبول الاتفاقيات</h3><p>تُصدر دعوة، وتُقبل الشروط واتفاقية البيانات إلكترونيًا.</p></div>
+        <div class="step"><div class="n">٤</div><h3>البدء بالعمل</h3><p>يُنشأ حساب مدير الجمعية وتبدأون الإدارة.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <h2 class="sec">وحدات تغطي كل العمل</h2>
+      <p class="secsub">كل عمليات الجمعية في مكان واحد ومعزول.</p>
+      <div class="chips">
+        <span class="chip">المستفيدون</span><span class="chip">طلبات المساعدة</span><span class="chip">المتبرعون</span>
+        <span class="chip">المنح</span><span class="chip">المصروفات</span><span class="chip">المشتريات</span>
+        <span class="chip">اللجان</span><span class="chip">الاجتماعات</span><span class="chip">القرارات</span>
+        <span class="chip">المبادرات</span><span class="chip">المهام</span><span class="chip">الالتزامات الحكومية</span>
+        <span class="chip">الموظفون والعقود</span><span class="chip">التقارير</span><span class="chip">المركز القانوني</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="final">
+        <h2>جاهزون لخدمة جمعيتكم</h2>
+        <p>ابدؤوا بتقديم طلب الاستفادة، ونتواصل معكم بعد المراجعة.</p>
+        <div class="cta" style="justify-content:center">
+          <a class="primary" href="/apply">قدّم طلب استفادة الآن</a>
+          <a class="ghost" href="/legal">اطّلع على الوثائق القانونية</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="wrap">
+      <div class="frow">
+        <div><b style="color:var(--ink)">Stoch<span style="color:var(--accent)">ops</span></b> · منصة الفاضل</div>
+        <div class="links">
+          <a href="/apply">طلب الاستفادة</a>
+          <a href="/signin">تسجيل الدخول</a>
+          <a href="/legal">المركز القانوني</a>
+          <a href="/legal/privacy">الخصوصية</a>
+        </div>
+      </div>
+      <div class="note">منصة الفاضل مبادرة فردية غير تجارية من محمد صالح حسن الحربي (تحت اسم المشروع التقني STOCHOPS). للتواصل: ops@stochops.com · البيانات محفوظة داخل المملكة العربية السعودية.</div>
+    </div>
+  </footer>
+</body>
+</html>

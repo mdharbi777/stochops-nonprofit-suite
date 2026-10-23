@@ -30,6 +30,11 @@ class LegalDocument(Document):
 
     def validate(self):
         before = self.get_doc_before_save()
+        # أمان (M6): تعقيم HTML للمحتوى قبل الحفظ ما دامت الوثيقة غير مقفلة (غير منشورة)،
+        # لإزالة أي سكربت/معالج أحداث قبل أن يُعرض للزوّار. القفل بعد النشر يمنع تغيّره لاحقاً.
+        not_locked = (not before) or before.status not in ("Published", "Superseded", "Archived")
+        if self.content and not_locked:
+            self.content = frappe.utils.sanitize_html(self.content)
         self._guard_transition(before)
         self._guard_immutable_after_publish(before)
         if self.status in APPROVE_PUBLISH_STATES and (not before or before.status != self.status):
