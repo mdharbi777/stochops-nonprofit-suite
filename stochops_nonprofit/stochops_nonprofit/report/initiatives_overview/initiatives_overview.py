@@ -30,7 +30,7 @@ def execute(filters=None):
     t = getdate(today())
     data = []
     for i in initiatives:
-        tasks = frappe.get_all(
+        tasks = frappe.get_list(
             "Initiative Task", filters={"initiative": i["name"]}, fields=["status", "due_date"]
         )
         actionable = [x for x in tasks if x["status"] != "Cancelled"]

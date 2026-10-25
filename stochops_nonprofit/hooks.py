@@ -38,6 +38,7 @@ permission_query_conditions = {
     "Security Incident": "stochops_nonprofit.multitenancy.security_incident_query",
     "Legal Acceptance": "stochops_nonprofit.multitenancy.legal_acceptance_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
+    "Association Approval": "stochops_nonprofit.multitenancy.association_approval_query",
 }
 
 has_permission = {
@@ -67,6 +68,7 @@ has_permission = {
     "Security Incident": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Legal Acceptance": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
+    "Association Approval": "stochops_nonprofit.multitenancy.has_charity_permission",
 }
 
 doc_events = {

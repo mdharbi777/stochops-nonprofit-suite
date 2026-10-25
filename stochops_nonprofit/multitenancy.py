@@ -167,6 +167,12 @@ def legal_acceptance_query(user):
     return _condition(user, "Legal Acceptance")
 
 
+def association_approval_query(user):
+    # شبكة أمان: Association Approval مُدار من المشغّل؛ العزل يضمن ألا ترى جمعية
+    # سجلّ اعتماد جمعية أخرى حتى لو مُنحت صلاحية قراءة مستقبلاً.
+    return _condition(user, "Association Approval")
+
+
 def charity_query(user):
     # كيان Charity: مشغّل المنصة يرى الكل، والجمعية ترى سجلّها فقط.
     if is_platform_admin(user):
