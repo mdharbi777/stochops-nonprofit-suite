@@ -25,7 +25,11 @@ SENDER_EMAIL = "ops@stochops.com"
 
 # ---------- توقيع الرموز (HMAC، بلا حالة مخزّنة) ----------
 def _secret():
-    return (frappe.conf.get("encryption_key") or frappe.conf.get("secret_key") or "stochops-nos-fallback")
+    # fail-closed: لا سرّ احتياطي ثابت (قابل للتخمين) — يُرفض التوقيع إن غاب المفتاح.
+    key = frappe.conf.get("encryption_key") or frappe.conf.get("secret_key")
+    if not key:
+        frappe.throw(_("تعذّر توقيع الرمز: مفتاح التشفير غير مُهيّأ على الموقع."))
+    return key
 
 
 def _sign(payload):
