@@ -94,6 +94,28 @@ NOTIFICATIONS = [
         "subject": "منصة الفاضل: تم البتّ في طلبك",
         "message": "تم البتّ في طلبك ({{ doc.name }}). ادخل للتفاصيل: {{ frappe.utils.get_url() }}/nos",
     },
+    # --- حوادث: نافذة 72 ساعة لإشعار الجهة المختصة (حرج PDPL) ---
+    {
+        "document_type": "Security Incident", "event": "Days Before", "date": "notice_window_deadline", "days": 1,
+        "field": "reporter",
+        "condition": "doc.requires_authority_notice and doc.status != 'مغلق' and not doc.authority_notified_on",
+        "subject": "حادثة: يقترب انتهاء نافذة 72 ساعة لإشعار الجهة: {{ doc.title }}",
+        "message": "نهاية النافذة: {{ doc.notice_window_deadline }} — راجِع إشعار الجهة المختصة قبل انقضائها.",
+    },
+    {
+        "document_type": "Security Incident", "event": "Days After", "date": "notice_window_deadline", "days": 1,
+        "field": "reporter",
+        "condition": "doc.requires_authority_notice and doc.status != 'مغلق' and not doc.authority_notified_on",
+        "subject": "حادثة: انقضت نافذة 72 ساعة دون إشعار الجهة: {{ doc.title }}",
+        "message": "انقضت النافذة ({{ doc.notice_window_deadline }}) دون تسجيل إشعار الجهة — يلزم إجراء عاجل.",
+    },
+    # --- إفصاح: اقتراب انتهاء إذن المشاركة ---
+    {
+        "document_type": "Disclosure Request", "event": "Days Before", "date": "expiry_date", "days": 7,
+        "field": "approved_by", "condition": "doc.status == 'معتمد'",
+        "subject": "إفصاح: يقترب انتهاء إذن المشاركة: {{ doc.name }}",
+        "message": "الجهة المستلمة: {{ doc.recipient }} — ينتهي الإذن: {{ doc.expiry_date }}.",
+    },
 ]
 
 
