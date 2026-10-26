@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### المرحلة 2.1 — عزل جداول ERPNext المالية + جسر مساعدة←قيد (شركة لكل جمعية) — 2026-10-26
+- **عزل ثلاثي الطبقات لجداول ERPNext المالية** (deny-by-default، كسر زجاج للمشغّل): (1) User Permission على Company لكل مستخدم جمعية (أصيل وواسع)، (2) `permission_query_conditions` + `has_permission` على الجداول الحرجة (GL Entry، Journal Entry، Payment Entry، Sales/Purchase Invoice، Account، Cost Center، Budget، Payment Ledger Entry، Bank Account، Bank Transaction)، (3) فرض الشركة عند الإنشاء (`set_company`، نظير H1). القائمة في `multitenancy.ERPNEXT_FINANCIAL_DOCTYPES`.
+- **شركة لكل جمعية:** `erpnext_bridge.provision_charity_company` (SAR/السعودية + حساب مصروف المساعدات) مربوطة بـ`activation.activate`؛ حقل `Charity.company`؛ `sync_user_company_permission` عند إنشاء أي مستخدم جمعية.
+- **جسر مساعدة مصروفة ← قيد محاسبي:** عند «مصروف» يُولَّد Journal Entry مسودة مربوط بالمستفيد/البرنامج (idempotent عبر `Assistance Request.journal_entry`)، يعتمده محاسب الجمعية (فصل المهام).
+- **توافق خلفي كامل:** كل التكامل محميّ بوجود erpnext ⇒ يعمل التطبيق على bench التطوير (بلا erpnext) والجمعيات غير المُفعَّلة محاسبياً كالسابق.
+- **اختبارات:** `test_erpnext_isolation.py` (15 اختباراً منطقياً، تعمل بلا erpnext). الاختبار الحيّ (جمعيتان) متبقٍّ على بيئة بها erpnext. التوثيق: [18_ERPNEXT_ISOLATION](18_ERPNEXT_ISOLATION.md) + alfadil-docs/phase2.1-*. **لا نشر على الإنتاج قبل إثبات العزل حيًّا.**
+
 ### نضج التدفّقات (Workflow Maturity) — تعميم آلة الحالات + فصل الصرف + إصلاح الفشل الصامت — 2026-10-26
 - **تعميم محرّك آلة الحالات (`guard_transition`)** من المالية/القانوني إلى كل خدمة ذات `status` تفتقر لآلة مفروضة: Decision، Initiative، Initiative Task، Grant، Donation، Compliance Obligation، Security Incident، Privacy Rights Request، Disclosure Request (أُكملت)، Beneficiary/Donor/Committee (أرشفة)، Contract، Legal Hold، Personnel، Consent Record، Privacy Impact Assessment، Meeting، Retention Schedule، Regulatory Rule — منع القفزات غير المشروعة وتجميد الحالات النهائية، مع كسر الزجاج للمشغّل. التوثيق: [17_WORKFLOW_STATE_MACHINES](17_WORKFLOW_STATE_MACHINES.md).
 - **فصل الصرف عن الاعتماد (maker–checker–payer) قابل للتفعيل** عبر `Charity.enforce_payer_separation` (معطّل افتراضياً): يمنع المُعتمِد من تنفيذ الصرف لما اعتمده، على المساعدة/الصرف/الشراء (ملاحظة المالك #14).

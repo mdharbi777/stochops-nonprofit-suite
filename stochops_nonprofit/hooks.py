@@ -39,6 +39,18 @@ permission_query_conditions = {
     "Legal Acceptance": "stochops_nonprofit.multitenancy.legal_acceptance_query",
     "Charity": "stochops_nonprofit.multitenancy.charity_query",
     "Association Approval": "stochops_nonprofit.multitenancy.association_approval_query",
+    # ===== المرحلة 2.1: عزل جداول ERPNext المالية بالشركة (خاملة إن لم يُثبَّت erpnext) =====
+    "GL Entry": "stochops_nonprofit.multitenancy.gl_entry_query",
+    "Journal Entry": "stochops_nonprofit.multitenancy.journal_entry_query",
+    "Payment Entry": "stochops_nonprofit.multitenancy.payment_entry_query",
+    "Sales Invoice": "stochops_nonprofit.multitenancy.sales_invoice_query",
+    "Purchase Invoice": "stochops_nonprofit.multitenancy.purchase_invoice_query",
+    "Account": "stochops_nonprofit.multitenancy.account_query",
+    "Cost Center": "stochops_nonprofit.multitenancy.cost_center_query",
+    "Budget": "stochops_nonprofit.multitenancy.budget_query",
+    "Payment Ledger Entry": "stochops_nonprofit.multitenancy.payment_ledger_entry_query",
+    "Bank Account": "stochops_nonprofit.multitenancy.bank_account_query",
+    "Bank Transaction": "stochops_nonprofit.multitenancy.bank_transaction_query",
 }
 
 has_permission = {
@@ -69,6 +81,18 @@ has_permission = {
     "Legal Acceptance": "stochops_nonprofit.multitenancy.has_charity_permission",
     "Charity": "stochops_nonprofit.multitenancy.has_charity_doc_permission",
     "Association Approval": "stochops_nonprofit.multitenancy.has_charity_permission",
+    # ===== المرحلة 2.1: has_permission على الجداول المالية (دفاع عميق على مستوى السجلّ) =====
+    "GL Entry": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Journal Entry": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Payment Entry": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Sales Invoice": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Purchase Invoice": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Account": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Cost Center": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Budget": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Payment Ledger Entry": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Bank Account": "stochops_nonprofit.multitenancy.has_erpnext_permission",
+    "Bank Transaction": "stochops_nonprofit.multitenancy.has_erpnext_permission",
 }
 
 doc_events = {
@@ -78,7 +102,11 @@ doc_events = {
     "Initiative": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Initiative Task": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Beneficiary": {"before_insert": "stochops_nonprofit.multitenancy.set_charity_case"},
-    "Assistance Request": {"before_insert": "stochops_nonprofit.multitenancy.set_charity_case"},
+    "Assistance Request": {
+        "before_insert": "stochops_nonprofit.multitenancy.set_charity_case",
+        # المرحلة 2.1: مساعدة مصروفة ← قيد محاسبي تلقائي (يُتخطّى إن لم تُفعّل المحاسبة)
+        "on_update": "stochops_nonprofit.erpnext_bridge.assistance_on_update",
+    },
     "Donor": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Donation": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Grant": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
@@ -97,6 +125,17 @@ doc_events = {
     "Legal Hold": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Security Incident": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
     "Legal Acceptance": {"before_insert": "stochops_nonprofit.multitenancy.set_charity"},
+    # ===== المرحلة 2.1: فرض الشركة عند إنشاء السجلات المالية (الطبقة 3، نظير H1) =====
+    "GL Entry": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Journal Entry": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Payment Entry": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Sales Invoice": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Purchase Invoice": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Account": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Cost Center": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Budget": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Bank Account": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
+    "Bank Transaction": {"before_insert": "stochops_nonprofit.multitenancy.set_company"},
 }
 
 # Apps

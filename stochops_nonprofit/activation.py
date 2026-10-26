@@ -67,6 +67,24 @@ def issue_activation(application):
     return out
 
 
+def _provision_accounting(charity, admin_user):
+    """ينشئ شركة ERPNext معزولة للجمعية ويربط مدير الجمعية بها (User Permission).
+
+    محميّ بوجود erpnext؛ أي فشل يُسجَّل ولا يُفشِل التفعيل (المحاسبة تُهيّأ لاحقاً يدوياً).
+    """
+    try:
+        from stochops_nonprofit.erpnext_bridge import erpnext_enabled, provision_charity_company
+        from stochops_nonprofit.multitenancy import sync_user_company_permission
+
+        if not erpnext_enabled():
+            return
+        company = provision_charity_company(charity)
+        if company:
+            sync_user_company_permission(admin_user, company)
+    except Exception:
+        frappe.log_error(f"provision accounting failed for {charity}", "stochops_nonprofit.activation")
+
+
 def _send_acceptance(email, name, link):
     try:
         frappe.sendmail(
@@ -169,6 +187,10 @@ def activate(approval):
     appr.status = "Activated"
     appr.save(ignore_permissions=True)
     frappe.db.commit()
+
+    # المرحلة 2.1: تهيئة المحاسبة المعزولة — شركة للجمعية + User Permission للمدير.
+    # يُتخطّى بأمان إن لم تُفعّل محاسبة ERPNext في البيئة (توافق خلفي).
+    _provision_accounting(appr.charity, user.name)
 
     # دعوة المدير لضبط كلمة مروره بنفسه (لا كلمة مرور في البريد)
     from stochops_nonprofit.accounts import _invite_token, _send_invite

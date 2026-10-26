@@ -272,3 +272,202 @@ def ensure_user_charity_field():
             }
         ).insert(ignore_permissions=True)
         frappe.db.commit()
+
+
+# ========================================================================
+# المرحلة 2.1 — عزل جداول ERPNext المالية بنموذج «شركة لكل جمعية»
+# ------------------------------------------------------------------------
+# ثلاث طبقات (defense-in-depth، بنفس صرامة المرحلة الأولى، deny-by-default):
+#   1) User Permission على Company لكل مستخدم جمعية (العزل الأصيل الواسع).
+#   2) permission_query_conditions + has_permission على الجداول المالية (دفاع عميق).
+#   3) set_company (before_insert): يفرض شركة المستخدم ويمنع الزرع في شركة أخرى.
+# كسر الزجاج: System Manager / Administrator (is_data_super).
+# التفاصيل: alfadil-docs/phase2.1-erpnext-isolation-design.md
+# ========================================================================
+
+# الجداول المالية الأساسية المعزولة (كلها تحوي حقل `company` قياسياً في ERPNext v15).
+# التوسعة بسطر واحد. الجداول الأبناء تُعزَل عبر آبائها، وبقية جداول ERPNext المرتبطة
+# بالشركة يغطّيها العزل الأصيل (الطبقة 1).
+ERPNEXT_FINANCIAL_DOCTYPES = (
+    "GL Entry",
+    "Journal Entry",
+    "Payment Entry",
+    "Sales Invoice",
+    "Purchase Invoice",
+    "Account",
+    "Cost Center",
+    "Budget",
+    "Payment Ledger Entry",
+    "Bank Account",
+    "Bank Transaction",
+)
+
+
+def _charity_has_company_field():
+    """هل حقل Charity.company موجود؟ (غائب على bench بلا erpnext ⇒ المحاسبة معطّلة)."""
+    try:
+        return bool(frappe.db.has_column("Charity", "company"))
+    except Exception:
+        return False
+
+
+def get_user_company(user=None):
+    """شركة ERPNext لجمعية المستخدم. يفشل مغلقاً: بلا حقل/بلا شركة ⇒ None."""
+    charity = get_user_charity(user)
+    if not charity:
+        return None
+    if not _charity_has_company_field():
+        return None
+    return frappe.db.get_value("Charity", charity, "company")
+
+
+def _company_condition(user, doctype):
+    """شرط عزل مالي: السجلّ يخصّ شركة جمعية المستخدم. deny-by-default."""
+    if is_data_super(user):
+        return ""
+    company = get_user_company(user)
+    if not company:
+        return "1=0"  # لا شركة مُسندة ⇒ لا يرى أي سجلّ مالي
+    return f"`tab{doctype}`.`company` = {frappe.db.escape(company)}"
+
+
+def erpnext_financial_query(user, doctype):
+    """permission_query_conditions مشترك للجداول المالية (الاسم يُمرَّر عبر الغلاف)."""
+    return _company_condition(user, doctype)
+
+
+def has_erpnext_permission(doc, ptype=None, user=None, permission_type=None):
+    """has_permission على مستوى السجلّ المالي: السجلّ يخصّ شركة جمعية المستخدم.
+
+    عند الإنشاء: دفاع عميق — لا يُنشئ غير المشغّل سجلاً بشركة غير شركته (تُفرَض
+    لاحقاً في set_company). من بلا شركة لا يرى/لا يُنشئ شيئاً (deny-by-default).
+    """
+    ptype = ptype or permission_type
+    user = user or frappe.session.user
+    if is_data_super(user):
+        return True
+    company = get_user_company(user)
+    if not company:
+        return False
+    if ptype == "create" or _is_new(doc):
+        c = doc.get("company") or None
+        return not (c and c != company)
+    return (doc.get("company") or None) == company
+
+
+def set_company(doc, method=None):
+    """يفرض حقل company من شركة جمعية المستخدم عند الإنشاء (نظير set_charity، H1).
+
+    لغير المشغّل تُفرَض شركة المستخدم دائماً وتُتجاهَل أي قيمة واردة من العميل،
+    لمنع زرع سجلّ مالي في شركة جمعية أخرى عبر الـAPI. من بلا شركة لا يُنشئ سجلاً.
+    """
+    if is_data_super():
+        return
+    company = get_user_company()
+    if not company:
+        frappe.throw(
+            frappe._("حسابك غير مرتبط بشركة محاسبية؛ لا يمكن إنشاء السجلّ المالي."),
+            frappe.PermissionError,
+        )
+    doc.company = company
+
+
+# دوال permission_query_conditions لكل جدول مالي (Frappe يمرّر `user` فقط).
+def gl_entry_query(user):
+    return erpnext_financial_query(user, "GL Entry")
+
+
+def journal_entry_query(user):
+    return erpnext_financial_query(user, "Journal Entry")
+
+
+def payment_entry_query(user):
+    return erpnext_financial_query(user, "Payment Entry")
+
+
+def sales_invoice_query(user):
+    return erpnext_financial_query(user, "Sales Invoice")
+
+
+def purchase_invoice_query(user):
+    return erpnext_financial_query(user, "Purchase Invoice")
+
+
+def account_query(user):
+    return erpnext_financial_query(user, "Account")
+
+
+def cost_center_query(user):
+    return erpnext_financial_query(user, "Cost Center")
+
+
+def budget_query(user):
+    return erpnext_financial_query(user, "Budget")
+
+
+def payment_ledger_entry_query(user):
+    return erpnext_financial_query(user, "Payment Ledger Entry")
+
+
+def bank_account_query(user):
+    return erpnext_financial_query(user, "Bank Account")
+
+
+def bank_transaction_query(user):
+    return erpnext_financial_query(user, "Bank Transaction")
+
+
+def ensure_charity_company_field():
+    """حقل مخصّص `company` (Link→Company) على Charity — فقط عند وجود erpnext (idempotent).
+
+    يُبقي التطبيق قابلاً للتثبيت على bench بلا erpnext (بيئة التطوير): لا يُنشَأ الحقل
+    ما لم يوجد دكتايب Company.
+    """
+    if not frappe.db.exists("DocType", "Company"):
+        return
+    if not frappe.db.exists("Custom Field", {"dt": "Charity", "fieldname": "company"}):
+        frappe.get_doc(
+            {
+                "doctype": "Custom Field",
+                "dt": "Charity",
+                "fieldname": "company",
+                "label": "الشركة المحاسبية (ERPNext Company)",
+                "fieldtype": "Link",
+                "options": "Company",
+                "insert_after": "registration_number",
+                "read_only": 1,
+                "description": "تُنشأ تلقائياً عند التفعيل؛ أساس عزل البيانات المالية.",
+            }
+        ).insert(ignore_permissions=True)
+        frappe.db.commit()
+
+
+def sync_user_company_permission(user, company=None):
+    """الطبقة 1: يضمن User Permission على Company للمستخدم (العزل المالي الأصيل).
+
+    idempotent. يتطلّب وجود erpnext (دكتايب Company). يُقيّد المستخدم تلقائياً لكل
+    جدول مرتبط بالشركة في ERPNext. يُتخطّى بأمان إن لم تُسنَد شركة بعد.
+    """
+    if not frappe.db.exists("DocType", "Company"):
+        return
+    if user in ("Administrator", "Guest"):
+        return
+    company = company or get_user_company(user)
+    if not company:
+        return
+    exists = frappe.db.exists(
+        "User Permission",
+        {"user": user, "allow": "Company", "for_value": company},
+    )
+    if exists:
+        return
+    frappe.get_doc(
+        {
+            "doctype": "User Permission",
+            "user": user,
+            "allow": "Company",
+            "for_value": company,
+            "apply_to_all_doctypes": 1,
+        }
+    ).insert(ignore_permissions=True)
+    frappe.db.commit()

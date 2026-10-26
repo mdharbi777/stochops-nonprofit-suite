@@ -101,6 +101,14 @@ def _new_user(email, full_name, role, charity, mobile=None, password=None, enabl
     user = frappe.get_doc(doc).insert(ignore_permissions=True)
     user.add_roles(role)
     frappe.db.set_value("User", user.name, "charity", charity)
+    # المرحلة 2.1: يربط المستخدم بشركة جمعيته (العزل المالي الأصيل — User Permission).
+    # يُتخطّى بأمان إن لم تُفعّل المحاسبة أو لم تُسنَد شركة بعد.
+    try:
+        from stochops_nonprofit.multitenancy import sync_user_company_permission
+
+        sync_user_company_permission(user.name)
+    except Exception:
+        frappe.log_error(f"sync company permission failed for {user.name}", "stochops_nonprofit.accounts")
     _log_perm(user.name, f"create {role} ({'invite' if not password else 'direct'})")
     frappe.db.commit()
     return user
