@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from stochops_nonprofit.governance import guard_transition
+from stochops_nonprofit.governance import guard_transition, payer_separation_enabled
 
 DECISION_STATES = ("معتمد", "مرفوض")
 
@@ -40,7 +40,10 @@ class ExpenseRequest(Document):
             self.requested_by = frappe.session.user
         elif self.has_value_changed("requested_by"):
             frappe.throw(_("لا يمكن تغيير مُقدّم الطلب بعد الإنشاء."), frappe.PermissionError)
-        guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف")
+        guard_transition(
+            self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف",
+            payer_separation=payer_separation_enabled(self.charity),
+        )
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة البتّ مطلوبة عند الاعتماد أو الرفض."))

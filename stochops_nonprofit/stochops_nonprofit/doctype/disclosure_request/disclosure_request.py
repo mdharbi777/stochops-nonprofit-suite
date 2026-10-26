@@ -3,8 +3,18 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from stochops_nonprofit.governance import guard_transition
+
 DECISION_STATES = ("معتمد", "مرفوض")
 APPROVER_ROLES = {"Nonprofit Admin", "System Manager"}
+
+# آلة حالات الإفصاح (deny-by-default): «مرفوض» نهائية، و«معتمد» ينتهي بـ«منتهٍ».
+STATUS_FLOW = {
+    "مطلوب": {"معتمد", "مرفوض"},
+    "معتمد": {"منتهٍ"},
+    "مرفوض": set(),
+    "منتهٍ": set(),
+}
 
 
 class DisclosureRequest(Document):
@@ -13,6 +23,7 @@ class DisclosureRequest(Document):
     معزول بالجمعية."""
 
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة القرار مطلوبة عند الاعتماد أو الرفض."))

@@ -55,6 +55,23 @@ class TestPrivacyRightsDpiaConsentCase(FrappeTestCase):
         finally:
             frappe.set_user("Administrator")
 
+    def test_rights_no_reopen_after_close(self):
+        """آلة الحالات: الطلب المكتمل (نهائي) لا يُعاد إلى قيد المعالجة (كمدير جمعية)."""
+        frappe.set_user(self.admin)
+        try:
+            d = frappe.get_doc(
+                {"doctype": "Privacy Rights Request", "request_type": "وصول",
+                 "subject_name": f"غلق {self.tok}", "received_on": today()}
+            ).insert()
+            d.status = "مكتمل"  # مستلم → مكتمل مسموح
+            d.save()
+            d.reload()
+            d.status = "قيد المعالجة"  # إعادة فتح — ممنوع
+            with self.assertRaises(frappe.PermissionError):
+                d.save()
+        finally:
+            frappe.set_user("Administrator")
+
     def test_rights_isolation(self):
         frappe.set_user(self.admin)
         try:

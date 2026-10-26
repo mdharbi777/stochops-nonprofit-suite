@@ -3,11 +3,22 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime, nowdate, today
 
+from stochops_nonprofit.governance import guard_transition
+
 CLOSED_STATES = ("Completed", "Cancelled")
+
+# آلة حالات القرار: لا قفزة غير مشروعة، و«ملغى» نهائية. يُسمح بإعادة فتح المكتمل.
+STATUS_FLOW = {
+    "Open": {"In Progress", "Completed", "Cancelled"},
+    "In Progress": {"Open", "Completed", "Cancelled"},
+    "Completed": {"In Progress"},
+    "Cancelled": set(),
+}
 
 
 class Decision(Document):
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         self._validate_completion()
         self._log_status_change()
         self._stamp_followups_and_last()

@@ -31,7 +31,11 @@
   }
   function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
   function badge(s){ return '<span class="ds-badge ds-badge--'+(BADGE[s]||"muted")+'">'+esc(AR[s]||s)+'</span>'; }
-  function toast(msg,isErr){ var t=document.createElement("div"); t.className="ds-toast "+(isErr?"ds-toast--err":"ds-toast--ok"); t.textContent=msg; document.body.appendChild(t); setTimeout(function(){t.remove();},3000); }
+  function toast(msg,isErr){ var t=document.createElement("div"); t.className="ds-toast "+(isErr?"ds-toast--err":"ds-toast--ok"); t.textContent=msg; if(isErr){ var x=document.createElement("span"); x.className="x"; x.textContent="✕"; t.appendChild(x); } document.body.appendChild(t);
+    if(isErr){ t.onclick=function(){ t.remove(); }; } else { setTimeout(function(){t.remove();},3000); } }
+  function showAlert(box,msg,isErr){ if(!box) return; box.innerHTML='<div class="ds-alert ds-alert--'+(isErr?"err":"ok")+'"><span class="ico">'+(isErr?"⚠":"✓")+'</span>'+
+    '<div class="bd"><b>'+(isErr?"تعذّر تنفيذ العملية":"تم")+'</b>'+esc(msg)+'</div><button type="button" class="x" aria-label="إغلاق">✕</button></div>';
+    var x=box.querySelector(".x"); if(x) x.onclick=function(){ box.innerHTML=""; }; }
 
   if(!USER || USER==="Guest"){
     app.innerHTML='<div class="ds-state"><h3>لوحة المشغّل</h3><p>يجب تسجيل الدخول بحساب مشغّل المنصّة.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to=/nos/applications">تسجيل الدخول</a></div>';
@@ -167,10 +171,13 @@
     });
   }
   function saveScores(){
-    var payload={}; SCORES.forEach(function(s){ payload[s[0]]=parseInt(document.getElementById("s_"+s[0]).value||"0",10); });
+    // تقييد كل درجة ضمن [0, الحدّ الأقصى للمعيار] مع تصحيح الإدخال في الواجهة (ملاحظة #4)
+    var payload={}, clamped=false;
+    SCORES.forEach(function(s){ var el=document.getElementById("s_"+s[0]); var raw=parseInt(el.value||"0",10); if(isNaN(raw)) raw=0;
+      var v=Math.max(0,Math.min(s[2],raw)); if(v!==raw){ clamped=true; el.value=v; } payload[s[0]]=v; });
     payload.recommendation=document.getElementById("s_recommendation").value||"";
     api("frappe.client.set_value",{doctype:"Association Application",name:state.name,fieldname:JSON.stringify(payload)},true).then(function(res){
-      if(res.ok){ toast("حُفظ التقييم"); detail(); } else { toast(errMsg(res),true); }
+      if(res.ok){ toast(clamped?"حُفظ التقييم (صُحِّحت درجات تجاوزت الحدّ الأقصى)":"حُفظ التقييم"); detail(); } else { toast(errMsg(res),true); }
     });
   }
   function decide(to){
@@ -182,16 +189,19 @@
       document.getElementById("dcancel").onclick=function(){ box.innerHTML=""; };
       document.getElementById("dok").onclick=function(){
         var reason=(document.getElementById("dreason").value||"").trim();
-        if(!reason){ document.getElementById("dm").textContent="مبرّر القرار مطلوب."; return; }
-        this.disabled=true; applyTransition(to, reason);
+        if(!reason){ showAlert(document.getElementById("dm"),"مبرّر القرار مطلوب قبل البتّ.",true); return; }
+        this.disabled=true; applyTransition(to, reason, this);
       };
-    } else { applyTransition(to, null); }
+    } else {
+      var box2=document.getElementById("decform"); box2.innerHTML='<div id="dm" class="ds-err"></div>';
+      applyTransition(to, null, null);
+    }
   }
-  function applyTransition(to, reason){
+  function applyTransition(to, reason, btn){
     var payload={status:to}; if(reason!=null) payload.decision_reason=reason;
     api("frappe.client.set_value",{doctype:"Association Application",name:state.name,fieldname:JSON.stringify(payload)},true).then(function(res){
       if(res.ok){ toast("تم تحديث الحالة إلى "+(AR[to]||to)); detail(); }
-      else { var box=document.getElementById("decform"); if(box) box.innerHTML=""; toast(errMsg(res),true); }
+      else { var m=errMsg(res); showAlert(document.getElementById("dm"),m,true); toast(m,true); if(btn) btn.disabled=false; }
     });
   }
 

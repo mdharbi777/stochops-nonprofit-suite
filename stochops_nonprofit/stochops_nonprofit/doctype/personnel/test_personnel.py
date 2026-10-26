@@ -158,3 +158,54 @@ class TestPersonnelContractsProcurement(FrappeTestCase):
                 frappe.get_doc({"doctype": "Personnel", "full_name": f"v {self.tok}"}).insert()
         finally:
             frappe.set_user("Administrator")
+
+    def test_procurement_payer_separation_enabled(self):
+        """فصل الصرف عن الاعتماد مُفعّلاً: المُعتمِد لا يُنفّذ ما اعتمده؛ مدير آخر يُنفّذ."""
+        frappe.db.set_value("Charity", self.ca, "enforce_payer_separation", 1)
+        try:
+            req = procurement_as(self.ua, f"فصل {self.tok}", 1000)  # requested_by = ua
+            # ua2 يعتمد (المُقدّم ua ≠ المُعتمِد ua2)
+            frappe.set_user(self.ua2)
+            try:
+                d = frappe.get_doc("Procurement Request", req)
+                d.status = "معتمد"
+                d.decision_note = "أوافق"
+                d.save()  # approved_by = ua2
+            finally:
+                frappe.set_user("Administrator")
+            # ua2 (المُعتمِد) يحاول التنفيذ → ممنوع
+            frappe.set_user(self.ua2)
+            try:
+                d = frappe.get_doc("Procurement Request", req)
+                d.status = "مُنفّذ"
+                with self.assertRaises(frappe.PermissionError):
+                    d.save()
+            finally:
+                frappe.set_user("Administrator")
+            # ua (غير المُعتمِد) يُنفّذ → مسموح
+            frappe.set_user(self.ua)
+            try:
+                d = frappe.get_doc("Procurement Request", req)
+                d.status = "مُنفّذ"
+                d.save()
+            finally:
+                frappe.set_user("Administrator")
+            self.assertEqual(frappe.db.get_value("Procurement Request", req, "status"), "مُنفّذ")
+        finally:
+            frappe.db.set_value("Charity", self.ca, "enforce_payer_separation", 0)
+
+    def test_procurement_payer_separation_disabled_default(self):
+        """الافتراضي معطّل: يجوز للمُعتمِد أن يُنفّذ ما اعتمده (لا إلزام بثلاثة مستخدمين)."""
+        self.assertFalse(frappe.db.get_value("Charity", self.ca, "enforce_payer_separation"))
+        req = procurement_as(self.ua, f"بلا فصل {self.tok}", 1000)
+        frappe.set_user(self.ua2)
+        try:
+            d = frappe.get_doc("Procurement Request", req)
+            d.status = "معتمد"
+            d.decision_note = "ok"
+            d.save()  # approved_by = ua2
+            d.status = "مُنفّذ"
+            d.save()  # نفس المُعتمِد يُنفّذ — مسموح لأن الفصل معطّل
+        finally:
+            frappe.set_user("Administrator")
+        self.assertEqual(frappe.db.get_value("Procurement Request", req, "status"), "مُنفّذ")

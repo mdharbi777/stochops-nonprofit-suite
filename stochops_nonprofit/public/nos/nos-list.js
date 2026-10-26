@@ -15,6 +15,9 @@
     return fetch(url,opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); });
   }
   function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
+  function showAlert(box,msg,isErr){ if(!box) return; box.innerHTML='<div class="ds-alert ds-alert--'+(isErr?"err":"ok")+'"><span class="ico">'+(isErr?"⚠":"✓")+'</span>'+
+    '<div class="bd"><b>'+(isErr?"تعذّر الحفظ":"تم")+'</b>'+esc(msg)+'</div><button type="button" class="x" aria-label="إغلاق">✕</button></div>';
+    var x=box.querySelector(".x"); if(x) x.onclick=function(){ box.innerHTML=""; }; }
   var BMAP={ "نشط":"ok","نشطة":"ok","معتمد":"ok","معتمدة":"ok","مصروف":"ok","مُنفّذ":"ok","مكتمل":"ok","ساري":"ok","مرفوض":"danger","مرفوضة":"danger","متأخر":"danger","قيد المراجعة":"warn","قيد الإعداد":"warn","قيد التنفيذ":"warn","عالية":"warn","موقوف":"warn","High":"warn","In Progress":"warn","مؤرشف":"muted","مؤرشفة":"muted","مقدم":"muted","مقدّم":"muted","مقترحة":"muted","مقدَّمة":"muted","مغلقة":"muted","منتهٍ":"muted","قادم":"muted","ملغى":"muted","مسودة":"muted","Open":"muted","Completed":"ok","Cancelled":"muted","Normal":"muted","Draft":"muted","Approved":"ok" };
   function badge(v){ return '<span class="ds-badge ds-badge--'+(BMAP[v]||"muted")+'">'+esc(v||"—")+'</span>'; }
   function money(v){ return v!=null ? Number(v).toLocaleString("en") : "—"; }
@@ -120,16 +123,19 @@
   function addRec(){
     var em=document.getElementById("addmsg"), doc={doctype:C.doctype};
     for(var i=0;i<C.addFields.length;i++){
-      var f=C.addFields[i], v=(document.getElementById("f_"+f.field).value||"").trim();
-      if(f.required && !v){ em.textContent=esc(f.label)+" مطلوب."; return; }
-      if(v && f.pattern && !f.pattern.test(v)){ em.textContent=f.patternMsg||"قيمة غير صحيحة."; return; }
-      if(v!==""){ doc[f.field]= f.type==="number"?parseInt(v,10):v; }
+      var f=C.addFields[i], el=document.getElementById("f_"+f.field), v=(el.value||"").trim();
+      if(f.required && !v){ showAlert(em,esc(f.label)+" مطلوب.",true); return; }
+      if(v && f.pattern && !f.pattern.test(v)){ showAlert(em,f.patternMsg||"قيمة غير صحيحة.",true); return; }
+      if(v!==""){
+        if(f.type==="number"){ var n=parseInt(v,10); if(isNaN(n)) n=0; if(n<0){ n=0; el.value="0"; } // لا قيم سالبة (مبالغ/أعداد)
+          doc[f.field]=n; } else { doc[f.field]=v; }
+      }
     }
-    var btn=document.getElementById("addbtn"); btn.disabled=true; em.textContent="";
+    var btn=document.getElementById("addbtn"); btn.disabled=true; em.innerHTML="";
     api("frappe.client.insert",{doc:doc},true).then(function(res){
       btn.disabled=false;
       if(res.ok && res.j.message){ toggleAdd(); state.page=1; state.search=""; var q=document.getElementById("q"); if(q)q.value=""; load(); }
-      else { em.textContent=errMsg(res); }
+      else { showAlert(em,errMsg(res),true); }
     });
   }
 

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### نضج التدفّقات (Workflow Maturity) — تعميم آلة الحالات + فصل الصرف + إصلاح الفشل الصامت — 2026-10-26
+- **تعميم محرّك آلة الحالات (`guard_transition`)** من المالية/القانوني إلى كل خدمة ذات `status` تفتقر لآلة مفروضة: Decision، Initiative، Initiative Task، Grant، Donation، Compliance Obligation، Security Incident، Privacy Rights Request، Disclosure Request (أُكملت)، Beneficiary/Donor/Committee (أرشفة)، Contract، Legal Hold، Personnel، Consent Record، Privacy Impact Assessment، Meeting، Retention Schedule، Regulatory Rule — منع القفزات غير المشروعة وتجميد الحالات النهائية، مع كسر الزجاج للمشغّل. التوثيق: [17_WORKFLOW_STATE_MACHINES](17_WORKFLOW_STATE_MACHINES.md).
+- **فصل الصرف عن الاعتماد (maker–checker–payer) قابل للتفعيل** عبر `Charity.enforce_payer_separation` (معطّل افتراضياً): يمنع المُعتمِد من تنفيذ الصرف لما اعتمده، على المساعدة/الصرف/الشراء (ملاحظة المالك #14).
+- **إصلاح الفشل الصامت في الواجهة (#10):** تنبيه خطأ ثابت بارز عند كل حفظ/انتقال في `/nos` لا يختفي تلقائياً ويبقي النموذج وملاحظة القرار؛ وتقييد مدخلات الدرجات (#4) والمبالغ في الواجهة.
+- **تذكيرات الحالات العالقة:** إشعارات «Days After» لطلب حق متأخر/مبادرة غير مغلقة/إذن إفصاح منقضٍ.
+- **اختبارات (ضمن حزمة `--app`):** قفزات ممنوعة + حالات نهائية + كسر الزجاج (test_donor/test_compliance_obligation/test_privacy_rights_request)، وفصل الصرف مُفعّل/معطّل (test_beneficiary للمساعدة، test_personnel للمشتريات). لا نشر على الإنتاج — يُطبَّق عند إعادة بناء الصورة.
+
 ### نشر تجريبي حيّ على AWS + تصحيح سكربت البناء — 2026-10-20
 - **تشغيل حيّ ناجح:** منصة الفاضل على AWS EC2 (Ubuntu 24.04، 2GB+Swap) بـHTTPS صالح من Let's Encrypt؛ `verify_install=all_ok`، بيانات مصطنعة ظاهرة، `production_privacy_gate` مغلقة، `PILOT_SANDBOX`.
 - **أربعة إصلاحات مثبّتة لبناء frappe_docker** (في [`deploy/`](../deploy/) و[15_TRIAL_DEPLOY_ORACLE](15_TRIAL_DEPLOY_ORACLE.md)):

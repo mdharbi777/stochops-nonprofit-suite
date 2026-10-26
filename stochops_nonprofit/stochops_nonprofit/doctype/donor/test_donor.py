@@ -118,3 +118,31 @@ class TestDonorsGrants(FrappeTestCase):
         finally:
             frappe.set_user("Administrator")
         self.assertNotIn(ga, vis)
+
+    def test_grant_terminal_state_frozen(self):
+        """آلة حالات المنحة: المرفوضة (نهائية) لا تُعاد إلى معتمدة (كمدير جمعية)."""
+        frappe.set_user(self.ua)
+        try:
+            g = frappe.get_doc(
+                {"doctype": "Grant", "grant_title": f"نهائية {self.tok}", "grantor_name": "جهة"}
+            ).insert()
+            g.status = "مرفوضة"  # مقترحة → مرفوضة مسموح
+            g.save()
+            g.reload()
+            g.status = "معتمدة"  # من حالة نهائية — ممنوع
+            with self.assertRaises(frappe.PermissionError):
+                g.save()
+        finally:
+            frappe.set_user("Administrator")
+
+    def test_grant_break_glass_for_super(self):
+        """كسر الزجاج: مشغّل المنصّة (Administrator = System Manager) يتجاوز آلة الحالات."""
+        g = frappe.get_doc(
+            {"doctype": "Grant", "grant_title": f"كسر {self.tok}", "grantor_name": "جهة", "charity": self.ca}
+        ).insert(ignore_permissions=True)
+        g.status = "مرفوضة"
+        g.save()
+        g.reload()
+        g.status = "معتمدة"  # قفزة ممنوعة لغير المشغّل — تمرّ للمشغّل
+        g.save()
+        self.assertEqual(frappe.db.get_value("Grant", g.name, "status"), "معتمدة")

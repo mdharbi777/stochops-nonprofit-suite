@@ -15,6 +15,7 @@
   "contact_mobile",
   "max_accounts",
   "expense_approval_limit",
+  "enforce_payer_separation",
   "onboarding_completed"
  ],
  "fields": [
@@ -26,6 +27,7 @@
   {"fieldname": "contact_mobile", "fieldtype": "Data", "label": "جوال التواصل"},
   {"fieldname": "max_accounts", "fieldtype": "Int", "label": "حد الحسابات", "default": "5", "non_negative": 1},
   {"fieldname": "expense_approval_limit", "fieldtype": "Currency", "label": "حدّ اعتماد الصرف لمدير الجمعية (ريال)", "default": "50000", "non_negative": 1, "description": "أعلى مبلغ صرف يعتمده مدير الجمعية؛ ما يتجاوزه يتطلّب تصعيداً لمشغّل المنصّة."},
+  {"fieldname": "enforce_payer_separation", "fieldtype": "Check", "label": "فصل الصرف عن الاعتماد (الصارف ≠ المُعتمِد)", "default": "0", "description": "عند التفعيل: لا يُنفّذ الصرف/التنفيذ مَن اعتمد الطلب (maker-checker-payer). معطّل افتراضياً لتفادي إلزام الجمعيات الصغيرة بثلاثة مستخدمين."},
   {"fieldname": "onboarding_completed", "fieldtype": "Check", "label": "اكتملت رحلة التهيئة", "default": "0", "read_only": 1}
  ],
  "index_web_pages_for_search": 1,

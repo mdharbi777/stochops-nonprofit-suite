@@ -3,6 +3,11 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
+from stochops_nonprofit.governance import guard_transition
+
+# آلة حالات المحضر: مسودة ⇄ معتمد (الرجوع للمسودة يمسح ختم الاعتماد).
+STATUS_FLOW = {"Draft": {"Approved"}, "Approved": {"Draft"}}
+
 # الحقول التي تُقفل بعد اعتماد المحضر (لا تُعدّل إلا بدور إداري)
 LOCKED_AFTER_APPROVAL = [
     "committee",
@@ -16,6 +21,7 @@ LOCKED_AFTER_APPROVAL = [
 
 class Meeting(Document):
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         self._handle_approval_stamp()
         self._guard_approved_edit()
 

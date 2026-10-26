@@ -52,6 +52,18 @@
 .ds-toast--ok{ border-color:rgba(74,222,128,.5); }
 .ds-toast--err{ border-color:rgba(248,113,113,.5); }
 .ds-toast .ref{ color:var(--ds-muted); font-size:12px; }
+.ds-toast--err{ cursor:pointer; }
+.ds-toast--err .x{ margin-inline-start:10px; color:var(--ds-muted); font-weight:700; }
+
+/* تنبيه ثابت بارز (لا يختفي تلقائياً) — لإبراز سبب منع إجراء حوكمة حرج */
+.ds-alert{ display:flex; align-items:flex-start; gap:10px; border-radius:var(--ds-radius); padding:12px 14px;
+  font-size:13.5px; line-height:1.6; margin:12px 0; border:1px solid var(--ds-border); background:var(--ds-navy2); color:var(--ds-text); }
+.ds-alert--err{ border-color:rgba(248,113,113,.55); background:rgba(248,113,113,.08); }
+.ds-alert--ok{ border-color:rgba(74,222,128,.5); background:rgba(74,222,128,.08); }
+.ds-alert .ico{ flex:0 0 auto; font-weight:800; }
+.ds-alert .bd{ flex:1 1 auto; }
+.ds-alert .bd b{ display:block; margin-bottom:2px; }
+.ds-alert .x{ flex:0 0 auto; cursor:pointer; color:var(--ds-muted); font-weight:700; background:none; border:0; font-size:15px; line-height:1; padding:0 2px; }
 
 /* ===== النماذج ===== */
 .ds-field{ margin-bottom:14px; }

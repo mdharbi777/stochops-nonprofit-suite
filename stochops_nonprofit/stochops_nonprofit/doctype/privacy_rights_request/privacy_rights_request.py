@@ -3,7 +3,19 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_days, getdate, today
 
+from stochops_nonprofit.governance import guard_transition
+
 CLOSED = ("مكتمل", "مرفوض جزئياً", "مرفوض")
+
+# آلة حالات طلب الحق: الحالات المغلقة نهائية (لا إعادة فتح — يُنشأ طلب جديد).
+STATUS_FLOW = {
+    "مستلم": {"قيد التحقق", "قيد المعالجة", "مكتمل", "مرفوض جزئياً", "مرفوض"},
+    "قيد التحقق": {"قيد المعالجة", "مكتمل", "مرفوض جزئياً", "مرفوض"},
+    "قيد المعالجة": {"مكتمل", "مرفوض جزئياً", "مرفوض"},
+    "مكتمل": set(),
+    "مرفوض جزئياً": set(),
+    "مرفوض": set(),
+}
 
 
 class PrivacyRightsRequest(Document):
@@ -12,6 +24,7 @@ class PrivacyRightsRequest(Document):
     لا يُرَدّ آلياً — تبقى المعالجة بشرية بإشراف مسؤول الخصوصية."""
 
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         if self.received_on and not self.due_date:
             self.due_date = add_days(getdate(self.received_on), 30)
         if self.extended:

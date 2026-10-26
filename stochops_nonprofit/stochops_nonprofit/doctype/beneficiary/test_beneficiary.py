@@ -143,3 +143,65 @@ class TestBeneficiaryAssistance(FrappeTestCase):
                 ).insert()
         finally:
             frappe.set_user("Administrator")
+
+    def test_beneficiary_archive_reversible(self):
+        """آلة حالات المستفيد: أرشفة قابلة للاستعادة (نشط ⇄ مؤرشف) بلا قفزة غير مشروعة."""
+        ben = beneficiary_as(self.ua, f"أرشفة {self.tok}")
+        frappe.set_user(self.ua)
+        try:
+            b = frappe.get_doc("Beneficiary", ben)
+            b.status = "مؤرشف"
+            b.save()
+            b.reload()
+            b.status = "نشط"
+            b.save()
+            self.assertEqual(frappe.db.get_value("Beneficiary", ben, "status"), "نشط")
+        finally:
+            frappe.set_user("Administrator")
+
+    def test_assistance_payer_separation_configurable(self):
+        """فصل الصرف عن الاعتماد (قابل للتفعيل): عند التفعيل لا يصرف المُعتمِد ما اعتمده،
+        ويصرفه مدير آخر. (ملاحظة المالك #14؛ الضابط معطّل افتراضياً.)"""
+        frappe.db.set_value("Charity", self.ca, "enforce_payer_separation", 1)
+        admin2 = make_charity_user(f"n2a2_{self.tok}@t.local", self.ca, ["Nonprofit Admin"])
+        try:
+            ben = beneficiary_as(self.ua, f"فصل {self.tok}")
+            # المنشئ (منسّق) ≠ المُعتمِد
+            frappe.set_user(self.coord)
+            try:
+                req = frappe.get_doc(
+                    {"doctype": "Assistance Request", "beneficiary": ben, "request_type": "مالية", "amount": 200}
+                ).insert().name
+            finally:
+                frappe.set_user("Administrator")
+            # ua يعتمد → approved_by = ua
+            frappe.set_user(self.ua)
+            try:
+                d = frappe.get_doc("Assistance Request", req)
+                d.status = "معتمد"
+                d.decision_note = "موافقة"
+                d.save()
+            finally:
+                frappe.set_user("Administrator")
+            # ua (المُعتمِد) يحاول الصرف → ممنوع عند تفعيل الفصل
+            frappe.set_user(self.ua)
+            try:
+                d = frappe.get_doc("Assistance Request", req)
+                d.status = "مصروف"
+                with self.assertRaises(frappe.PermissionError):
+                    d.save()
+            finally:
+                frappe.set_user("Administrator")
+            # مدير آخر (غير المُعتمِد) يصرف → مسموح
+            frappe.set_user(admin2)
+            try:
+                d = frappe.get_doc("Assistance Request", req)
+                d.status = "مصروف"
+                d.save()
+            finally:
+                frappe.set_user("Administrator")
+            self.assertEqual(frappe.db.get_value("Assistance Request", req, "status"), "مصروف")
+        finally:
+            frappe.db.set_value("Charity", self.ca, "enforce_payer_separation", 0)
+            if frappe.db.exists("User", admin2):
+                frappe.delete_doc("User", admin2, force=1, ignore_permissions=True)

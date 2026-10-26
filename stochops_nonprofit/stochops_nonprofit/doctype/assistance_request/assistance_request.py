@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from stochops_nonprofit.governance import guard_transition
+from stochops_nonprofit.governance import guard_transition, payer_separation_enabled
 
 DECISION_STATES = ("معتمد", "مرفوض")
 APPROVER_ROLES = {"Nonprofit Admin", "System Manager"}
@@ -29,7 +29,10 @@ class AssistanceRequest(Document):
         if self.amount and float(self.amount) < 0:
             frappe.throw(_("المبلغ لا يكون سالباً."))
         self._guard_beneficiary_same_charity()
-        guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف")
+        guard_transition(
+            self, STATUS_FLOW, DISBURSE_STATES, disburse_label="الصرف",
+            payer_separation=payer_separation_enabled(self.charity),
+        )
         if self.status in DECISION_STATES:
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة القرار مطلوبة عند الاعتماد أو الرفض."))

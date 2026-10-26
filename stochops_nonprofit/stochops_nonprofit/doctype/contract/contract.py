@@ -3,7 +3,17 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import getdate, today
 
+from stochops_nonprofit.governance import guard_transition
+
 CLOSED = ("منتهٍ", "ملغى")
+
+# آلة حالات العقد: «منتهٍ» و«ملغى» نهائيتان.
+STATUS_FLOW = {
+    "مسودة": {"ساري", "ملغى"},
+    "ساري": {"منتهٍ", "ملغى"},
+    "منتهٍ": set(),
+    "ملغى": set(),
+}
 
 
 class Contract(Document):
@@ -11,6 +21,7 @@ class Contract(Document):
     معزول بالجمعية."""
 
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         if self.value and float(self.value) < 0:
             frappe.throw(_("قيمة العقد لا تكون سالبة."))
         if self.start_date and self.end_date and getdate(self.end_date) < getdate(self.start_date):

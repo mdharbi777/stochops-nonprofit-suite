@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from stochops_nonprofit.governance import guard_transition
+from stochops_nonprofit.governance import guard_transition, payer_separation_enabled
 
 DECISION_STATES = ("معتمد", "مرفوض")
 
@@ -30,7 +30,10 @@ class ProcurementRequest(Document):
             frappe.throw(_("القيمة لا تكون سالبة."))
         if self.is_new() and not self.requested_by:
             self.requested_by = frappe.session.user
-        guard_transition(self, STATUS_FLOW, DISBURSE_STATES, disburse_label="التنفيذ/الصرف")
+        guard_transition(
+            self, STATUS_FLOW, DISBURSE_STATES, disburse_label="التنفيذ/الصرف",
+            payer_separation=payer_separation_enabled(self.charity),
+        )
         if self.status in DECISION_STATES and self.has_value_changed("status"):
             if not (self.decision_note or "").strip():
                 frappe.throw(_("ملاحظة البتّ مطلوبة عند الاعتماد أو الرفض."))

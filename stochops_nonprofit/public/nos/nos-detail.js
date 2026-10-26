@@ -19,7 +19,12 @@
   var BMAP={ "نشط":"ok","نشطة":"ok","معتمد":"ok","معتمدة":"ok","مصروف":"ok","مُنفّذ":"ok","مكتمل":"ok","ساري":"ok","مرفوض":"danger","مرفوضة":"danger","متأخر":"danger","قيد المراجعة":"warn","قيد الإعداد":"warn","قيد التنفيذ":"warn","عالية":"warn","موقوف":"warn","High":"warn","In Progress":"warn","مؤرشف":"muted","مؤرشفة":"muted","مقدم":"muted","مقدّم":"muted","مقترحة":"muted","مقدَّمة":"muted","مغلقة":"muted","منتهٍ":"muted","قادم":"muted","ملغى":"muted","مسودة":"muted","Open":"muted","Completed":"ok","Cancelled":"muted","Normal":"muted","Draft":"muted","Approved":"ok" };
   function badge(v){ return '<span class="ds-badge ds-badge--'+(BMAP[v]||"muted")+'">'+esc(v||"—")+'</span>'; }
   function money(v){ return v!=null?Number(v).toLocaleString("en"):"—"; }
-  function toast(msg,ref,isErr){ var t=document.createElement("div"); t.className="ds-toast "+(isErr?"ds-toast--err":"ds-toast--ok"); t.innerHTML=esc(msg)+(ref?' <span class="ref">('+esc(ref)+')</span>':""); document.body.appendChild(t); setTimeout(function(){t.remove();},3000); }
+  function toast(msg,ref,isErr){ var t=document.createElement("div"); t.className="ds-toast "+(isErr?"ds-toast--err":"ds-toast--ok"); t.innerHTML=esc(msg)+(ref?' <span class="ref">('+esc(ref)+')</span>':"")+(isErr?' <span class="x">✕</span>':""); document.body.appendChild(t);
+    if(isErr){ t.onclick=function(){ t.remove(); }; } else { setTimeout(function(){t.remove();},3000); } }
+  // تنبيه ثابت بارز داخل الصفحة لإبراز سبب منع الإجراء (لا يختفي تلقائياً)
+  function showAlert(box,msg,isErr){ if(!box) return; box.innerHTML='<div class="ds-alert ds-alert--'+(isErr?"err":"ok")+'"><span class="ico">'+(isErr?"⚠":"✓")+'</span>'+
+    '<div class="bd"><b>'+(isErr?"تعذّر تنفيذ العملية":"تم")+'</b>'+esc(msg)+'</div><button type="button" class="x" aria-label="إغلاق">✕</button></div>';
+    var x=box.querySelector(".x"); if(x) x.onclick=function(){ box.innerHTML=""; }; }
 
   if(!USER || USER==="Guest"){ app.innerHTML='<div class="ds-state"><h3>التفاصيل</h3><p>يجب تسجيل الدخول.</p><a class="ds-btn ds-btn--primary" href="/login?redirect-to='+esc(C.loginRedirect||C.listRoute)+'">تسجيل الدخول</a></div>'; return; }
   if(!NAME){ app.innerHTML='<div class="ds-state ds-state--error"><h3>سجل غير محدد</h3><p>لم يُحدَّد السجل.</p><a class="ds-btn ds-btn--secondary" href="'+esc(C.listRoute)+'">عودة للقائمة</a></div>'; return; }
@@ -70,22 +75,26 @@
     if(a.note){
       box.innerHTML='<div class="ds-field" style="margin-top:12px"><label>ملاحظة القرار <span class="req">*</span></label>'+
         '<textarea class="ds-input" id="dnote" rows="2" placeholder="سبب الاعتماد أو الرفض — يُحفظ ويُدقَّق"></textarea></div>'+
-        '<div id="actmsg" class="ds-err"></div>'+
+        '<div id="actalert"></div>'+
         '<div class="nd-actions"><button class="ds-btn ds-btn--'+(a.variant||"primary")+'" id="actok">'+esc(a.label)+'</button>'+
         '<button class="ds-btn ds-btn--secondary" id="actcancel">إلغاء</button></div>';
       document.getElementById("actcancel").onclick=function(){ box.innerHTML=""; };
       document.getElementById("actok").onclick=function(){
         var note=(document.getElementById("dnote").value||"").trim();
-        if(!note){ document.getElementById("actmsg").textContent="ملاحظة القرار مطلوبة."; return; }
-        this.disabled=true; transition(a.to,note);
+        if(!note){ showAlert(document.getElementById("actalert"),"ملاحظة القرار مطلوبة قبل البتّ.",true); return; }
+        this.disabled=true; transition(a.to,note,this,document.getElementById("actalert"));
       };
-    } else { transition(a.to,null); }
+    } else {
+      // إجراء بلا ملاحظة: نوفّر منطقة تنبيه ثابتة لإبراز أي سبب منع من الخادم
+      box.innerHTML='<div id="actalert"></div>';
+      transition(a.to,null,null,document.getElementById("actalert"));
+    }
   }
-  function transition(to,note){
+  function transition(to,note,btn,alertBox){
     var payload={status:to}; if(note!=null) payload.decision_note=note;
     api("frappe.client.set_value",{doctype:C.doctype,name:NAME,fieldname:JSON.stringify(payload)},true).then(function(res){
       if(res.ok){ toast("تم تحديث الحالة إلى "+to,NAME); load(); }
-      else { var box=document.getElementById("actform"); if(box) box.innerHTML=""; toast(errMsg(res),null,true); }
+      else { var m=errMsg(res); showAlert(alertBox||document.getElementById("actform"),m,true); toast(m,null,true); if(btn) btn.disabled=false; }
     });
   }
 

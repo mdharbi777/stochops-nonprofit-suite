@@ -3,6 +3,17 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate
 
+from stochops_nonprofit.governance import guard_transition
+
+# آلة حالات المبادرة: «ملغى» نهائية. يُسمح بإعادة فتح المكتملة.
+STATUS_FLOW = {
+    "Planned": {"Active", "On Hold", "Completed", "Cancelled"},
+    "Active": {"On Hold", "Completed", "Cancelled"},
+    "On Hold": {"Active", "Completed", "Cancelled"},
+    "Completed": {"Active"},
+    "Cancelled": set(),
+}
+
 NON_NEGATIVE_FIELDS = [
     ("planned_budget_sar", "الميزانية المخططة"),
     ("actual_spend_sar", "الصرف الإداري"),
@@ -13,6 +24,7 @@ NON_NEGATIVE_FIELDS = [
 
 class Initiative(Document):
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         self._validate_dates()
         self._validate_non_negative()
         self._validate_closing()

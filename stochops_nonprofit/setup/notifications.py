@@ -116,6 +116,25 @@ NOTIFICATIONS = [
         "subject": "إفصاح: يقترب انتهاء إذن المشاركة: {{ doc.name }}",
         "message": "الجهة المستلمة: {{ doc.recipient }} — ينتهي الإذن: {{ doc.expiry_date }}.",
     },
+    # --- تذكيرات الحالات العالقة (Axis 3): Days After على الموعد للحالات غير المنتهية ---
+    {
+        "document_type": "Privacy Rights Request", "event": "Days After", "date": "due_date", "days": 1,
+        "field": "assigned_to", "condition": "doc.status not in ['مكتمل', 'مرفوض جزئياً', 'مرفوض']",
+        "subject": "طلب حق متأخر عن موعده النظامي: {{ doc.name }}",
+        "message": "نوع الطلب: {{ doc.request_type }} — تجاوز الاستحقاق: {{ doc.due_date }} والحالة ما تزال مفتوحة.",
+    },
+    {
+        "document_type": "Initiative", "event": "Days After", "date": "end_date", "days": 1,
+        "field": "initiative_owner", "condition": "doc.status not in ['Completed', 'Cancelled']",
+        "subject": "مبادرة تجاوزت تاريخ نهايتها دون إغلاق: {{ doc.title }}",
+        "message": "تاريخ النهاية: {{ doc.end_date }} والحالة: {{ doc.status }} — راجِع إغلاقها أو تمديدها.",
+    },
+    {
+        "document_type": "Disclosure Request", "event": "Days After", "date": "expiry_date", "days": 1,
+        "field": "approved_by", "condition": "doc.status == 'معتمد'",
+        "subject": "إفصاح: انقضى إذن المشاركة دون إنهاء: {{ doc.name }}",
+        "message": "انتهى الإذن ({{ doc.expiry_date }}) والحالة ما تزال «معتمد» — يلزم إنهاؤه.",
+    },
 ]
 
 

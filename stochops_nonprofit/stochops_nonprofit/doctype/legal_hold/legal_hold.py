@@ -2,12 +2,18 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import today
 
+from stochops_nonprofit.governance import guard_transition
+
+# آلة حالات الحجز: يُسمح بإعادة الفرض بعد الرفع (نشط ⇄ مرفوع).
+STATUS_FLOW = {"نشط": {"مرفوع"}, "مرفوع": {"نشط"}}
+
 
 class LegalHold(Document):
     """حجز قانوني يمنع إتلاف السجلات أثناء نزاع/متطلب نظامي (وثيقة PDPL §10).
     معزول بالجمعية. يُفحص عبر privacy_core.assert_no_legal_hold قبل أي إتلاف."""
 
     def validate(self):
+        guard_transition(self, STATUS_FLOW)
         if not self.placed_on:
             self.placed_on = today()
         if not self.placed_by:

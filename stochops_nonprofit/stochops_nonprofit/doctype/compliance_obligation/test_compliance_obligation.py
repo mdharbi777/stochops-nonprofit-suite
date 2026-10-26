@@ -100,3 +100,33 @@ class TestComplianceObligation(FrappeTestCase):
                 ).insert()
         finally:
             frappe.set_user("Administrator")
+
+    def test_state_machine_completed_reopens(self):
+        """آلة الحالات: المكتمل يُعاد فتحه (التزامات متكرّرة)."""
+        name = obligation_as(self.ua, f"متكرّر {self.tok}", add_days(today(), 5))
+        frappe.set_user(self.ua)
+        try:
+            d = frappe.get_doc("Compliance Obligation", name)
+            d.status = "مكتمل"  # قادم → مكتمل مسموح
+            d.save()
+            d.reload()
+            d.status = "قيد الإعداد"  # إعادة فتح — مسموح
+            d.save()
+            self.assertEqual(frappe.db.get_value("Compliance Obligation", name, "status"), "قيد الإعداد")
+        finally:
+            frappe.set_user("Administrator")
+
+    def test_state_machine_cancelled_is_terminal(self):
+        """آلة الحالات: الملغى نهائي — لا يُعاد تفعيله (كمدير جمعية)."""
+        name = obligation_as(self.ua, f"ملغى {self.tok}", add_days(today(), 5))
+        frappe.set_user(self.ua)
+        try:
+            d = frappe.get_doc("Compliance Obligation", name)
+            d.status = "ملغى"  # قادم → ملغى مسموح
+            d.save()
+            d.reload()
+            d.status = "قادم"  # من حالة نهائية — ممنوع
+            with self.assertRaises(frappe.PermissionError):
+                d.save()
+        finally:
+            frappe.set_user("Administrator")
