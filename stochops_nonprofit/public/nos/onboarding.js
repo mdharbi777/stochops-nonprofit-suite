@@ -32,7 +32,7 @@
     api("stochops_nonprofit.accounts.onboarding_status").then(function(res){
       if(!res.ok){
         var m=errMsg(res), np=/صلاحية|permitted|permission/i.test(m);
-        app.innerHTML='<div class="ds-state '+(np?'':'ds-state--error')+'"><h3>'+(np?'لمدير الجمعية فقط':'تعذّر التحميل')+'</h3><p>'+esc(m)+'</p><a class="ds-btn ds-btn--secondary" href="/nos/console">لوحة التشغيل</a></div>';
+        app.innerHTML='<div class="ds-state '+(np?'':'ds-state--error')+'"><h3>'+(np?'لمدير الجمعية فقط':'تعذّر التحميل')+'</h3><p>'+esc(m)+'</p><a class="ds-btn ds-btn--secondary" href="/nos/console">لوحة التحكم</a></div>';
         return;
       }
       S=res.j.message||{};
@@ -52,7 +52,7 @@
       '<h1>تهيئة الجمعية</h1>'+
       '<p class="muted">'+esc(S.charity_name||S.charity||"")+' — رحلة إعداد أوّلي لمرة واحدة. يمكنك العودة لاحقاً من الإعدادات.</p>'+
       (S.complete
-        ? '<div class="ds-state" style="border-color:#22c55e"><h3>اكتملت التهيئة الأساسية</h3><p>ضبطت هوية الجمعية وحدّ الاعتماد المالي. يمكنك دعوة بقية الفريق في أي وقت.</p><a class="ds-btn ds-btn--primary" href="/nos/console">الذهاب إلى لوحة التشغيل</a></div>'
+        ? '<div class="ds-state" style="border-color:#22c55e"><h3>اكتملت التهيئة الأساسية</h3><p>ضبطت هوية الجمعية وحدّ الاعتماد المالي. يمكنك دعوة بقية الفريق في أي وقت.</p><a class="ds-btn ds-btn--primary" href="/nos/console">الذهاب إلى لوحة التحكم</a></div>'
         : '<div class="ob-prog"><i style="width:'+pct+'%"></i></div><p class="muted">أنجزت '+(S.steps_done||0)+' من '+(S.steps_total||3)+' خطوات.</p>');
 
     var step1=

@@ -5,7 +5,7 @@
   "use strict";
 
   var NAV = [
-    { items: [["لوحة التشغيل", "/nos/console"]] },
+    { items: [["لوحة التحكم", "/nos/console"]] },
     { sec: "المستفيدون", items: [["المستفيدون", "/nos/beneficiaries"], ["طلبات المساعدة", "/nos/assistance"]] },
     { sec: "الموارد والمالية", items: [["المتبرعون", "/nos/donors"], ["المنح", "/nos/grants"], ["المصروفات", "/nos/expenses"], ["المشتريات", "/nos/procurement"]] },
     { sec: "الحوكمة", items: [["اللجان", "/nos/committees"], ["الاجتماعات", "/nos/meetings"], ["القرارات", "/nos/decisions"], ["المبادرات", "/nos/initiatives"], ["المهام", "/nos/tasks"], ["الالتزامات الحكومية", "/nos/compliance"]] },
