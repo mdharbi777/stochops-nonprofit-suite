@@ -14,6 +14,46 @@ def after_install():
     ensure_arabic()
     _ensure_privacy_core()
     _ensure_erpnext_integration()
+    _ensure_branding()
+
+
+BRAND_LOGO = "/assets/stochops_nonprofit/nos/brand-logo.svg"
+BRAND_NAME = "منصة الفاضل"
+
+
+def _ensure_branding():
+    """يفرض هوية «منصة الفاضل» على صفحة الدخول وإعدادات الموقع (idempotent).
+
+    يُعاد تطبيقه في كل ترحيل (after_migrate) فلا تُفقد الهوية عند أي تثبيت يعيد
+    الافتراضي (مثل install-app erpnext الذي يُرجِع شعار Frappe). يُعيّن فقط الحقول
+    الموجودة فعلاً في Website Settings / Navbar Settings (توافق بين الإصدارات).
+    """
+    try:
+        desired = {
+            "app_name": BRAND_NAME,       # نص «تسجيل الدخول إلى منصة الفاضل»
+            "app_logo": BRAND_LOGO,       # شعار صفحة الدخول
+            "banner_image": BRAND_LOGO,   # شعار شريط الموقع
+            "splash_image": BRAND_LOGO,   # شاشة التحميل
+            "disable_signup": 1,          # لا تسجيل عام عبر Frappe
+        }
+        meta_fields = {f.fieldname for f in frappe.get_meta("Website Settings").fields}
+        ws = frappe.get_doc("Website Settings")
+        changed = False
+        for key, val in desired.items():
+            if key in meta_fields and ws.get(key) != val:
+                ws.set(key, val)
+                changed = True
+        if changed:
+            ws.flags.ignore_permissions = True
+            ws.save(ignore_permissions=True)
+        # شعار لوحة التحكم (الديسك)
+        if frappe.db.exists("DocType", "Navbar Settings"):
+            nb_fields = {f.fieldname for f in frappe.get_meta("Navbar Settings").fields}
+            if "app_logo" in nb_fields and frappe.db.get_value("Navbar Settings", "Navbar Settings", "app_logo") != BRAND_LOGO:
+                frappe.db.set_value("Navbar Settings", "Navbar Settings", "app_logo", BRAND_LOGO)
+        frappe.db.commit()
+    except Exception:
+        frappe.log_error("ensure_branding failed", "stochops_nonprofit.setup")
 
 
 def _ensure_erpnext_integration():
