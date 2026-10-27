@@ -28,7 +28,10 @@
     .muted { color:var(--muted); font-size:14px; }
     .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px;
       font-size:12px; color:var(--muted); margin:16px 0; }
-    .tabs { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+    .tabs { display:flex; flex-direction:column; gap:12px; margin-top:18px; }
+    .tabgroup { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .tglabel { font-size:12px; color:var(--muted); font-weight:700; min-width:76px; }
+    .tgrow { display:flex; flex-wrap:wrap; gap:8px; }
     .tab { background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:999px;
       padding:9px 18px; font-size:14px; font-family:inherit; cursor:pointer; }
     .tab:hover { border-color:var(--cyan); } .tab.active { background:var(--blue); border-color:var(--blue); color:#fff; font-weight:700; }
@@ -57,7 +60,7 @@
   </style>
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=2" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
-  <script src="/assets/stochops_nonprofit/nos/shell.js?v=6" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=7" defer></script>
 </head>
 <body>
   <div class="wrap">
@@ -80,12 +83,14 @@
     document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
 
     var REPORTS = [
-      {name:"Executive Summary", label:"الملخص التنفيذي", desc:"مؤشرات الفترة من الوحدتين (قرارات ومبادرات)، مع أساس كل رقم.", dated:true},
-      {name:"Overdue Decisions", label:"القرارات المتأخرة", desc:"قرارات تجاوزت تاريخ الاستحقاق وليست مكتملة/ملغاة.", dated:false},
-      {name:"Decisions by Committee", label:"القرارات حسب اللجنة", desc:"توزيع القرارات وحالاتها على اللجان.", dated:false},
-      {name:"Initiatives Overview", label:"نظرة على المبادرات", desc:"المبادرات وحالتها والميزانية الإدارية وإنجاز المهام.", dated:false},
-      {name:"Compliance Obligations", label:"الالتزامات المحكومة", desc:"التزامات الحوكمة والجهات المشرفة وأيامها المتبقية والمتأخر منها.", dated:false},
-      {name:"Beneficiary Categories", label:"فئات المستفيدين (مُجهّل)", desc:"توزيع مُجمّع لفئات المستفيدين بلا معرّفات، مع إخفاء الخلايا الصغيرة.", dated:false}
+      {group:"الحوكمة", name:"Executive Summary", label:"الملخص التنفيذي", desc:"مؤشرات الفترة من الوحدتين (قرارات ومبادرات)، مع أساس كل رقم.", dated:true},
+      {group:"الحوكمة", name:"Overdue Decisions", label:"القرارات المتأخرة", desc:"قرارات تجاوزت تاريخ الاستحقاق وليست مكتملة/ملغاة.", dated:false},
+      {group:"الحوكمة", name:"Decisions by Committee", label:"القرارات حسب اللجنة", desc:"توزيع القرارات وحالاتها على اللجان.", dated:false},
+      {group:"البرامج", name:"Initiatives Overview", label:"نظرة على المبادرات", desc:"المبادرات وحالتها والميزانية الإدارية وإنجاز المهام.", dated:false},
+      {group:"المستفيدون", name:"Beneficiary Categories", label:"فئات المستفيدين (مُجهّل)", desc:"توزيع مُجمّع لفئات المستفيدين بلا معرّفات، مع إخفاء الخلايا الصغيرة.", dated:false},
+      {group:"الامتثال", name:"Compliance Obligations", label:"الالتزامات المحكومة", desc:"التزامات الحوكمة والجهات المشرفة وأيامها المتبقية والمتأخر منها.", dated:false},
+      {group:"المالية", label:"إجمالي الصرف حسب الحساب", desc:"إجمالي المدين المُرحّل محاسبياً لكل حساب (معزول بشركة جمعيتك).", dated:false, method:"stochops_nonprofit.accounting.financial_report", kind:"spend_by_account"},
+      {group:"المالية", label:"القيود حسب الحالة", desc:"عدد القيود وإجماليها: مسودات بانتظار الاعتماد مقابل المعتمدة.", dated:false, method:"stochops_nonprofit.accounting.financial_report", kind:"entries_by_status"}
     ];
     var current = 0;
     var lastCols = [], lastRows = [], groupField = null;
@@ -99,8 +104,12 @@
     } else { shell(); run(); }
 
     function shell(){
-      var tabs = REPORTS.map(function(r,i){
-        return '<button class="tab'+(i===current?' active':'')+'" onclick="pick('+i+')">'+esc(r.label)+'</button>';
+      var order=[], seen={};
+      REPORTS.forEach(function(r,i){ if(!seen[r.group]){ seen[r.group]=[]; order.push(r.group); } seen[r.group].push(i); });
+      var tabs = order.map(function(g){
+        return '<div class="tabgroup"><div class="tglabel">'+esc(g)+'</div><div class="tgrow">'+
+          seen[g].map(function(i){ return '<button class="tab'+(i===current?' active':'')+'" onclick="pick('+i+')">'+esc(REPORTS[i].label)+'</button>'; }).join("")+
+          '</div></div>';
       }).join("");
       app.innerHTML =
         '<h1>التقارير</h1>'+
@@ -136,11 +145,19 @@
       }
       var out = document.getElementById("out");
       out.innerHTML = '<div class="panel"><div class="empty">…جارِ التحميل</div></div>';
-      fetch("/api/method/frappe.desk.query_report.run", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", "X-Frappe-CSRF-Token":CSRF },
-        body: JSON.stringify({ report_name:r.name, filters:filters })
-      }).then(function(resp){ return resp.json().then(function(j){ return {ok:resp.ok, j:j}; }); })
+      var p;
+      if (r.method){
+        // تقرير مالي عبر طريقة المنصّة (يعيد {columns, result} معزولة بالشركة)
+        p = fetch("/api/method/"+r.method+"?"+new URLSearchParams({kind:r.kind||""}).toString(),
+          { headers:{ "X-Frappe-CSRF-Token":CSRF } });
+      } else {
+        p = fetch("/api/method/frappe.desk.query_report.run", {
+          method:"POST",
+          headers:{ "Content-Type":"application/json", "X-Frappe-CSRF-Token":CSRF },
+          body: JSON.stringify({ report_name:r.name, filters:filters })
+        });
+      }
+      p.then(function(resp){ return resp.json().then(function(j){ return {ok:resp.ok, j:j}; }); })
         .then(function(res){ renderReport(res); })
         .catch(function(){ out.innerHTML = '<div class="panel"><div class="empty">تعذّر تحميل التقرير.</div></div>'; });
     }
@@ -181,7 +198,7 @@
         '<div class="panel">'+
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">'+
             '<div><div class="rtitle">'+esc(r.label)+'</div><div class="rdesc">'+esc(r.desc)+'</div></div>'+
-            (rows.length ? '<div style="display:flex;gap:8px;margin-top:12px">'+
+            (rows.length && !r.method ? '<div style="display:flex;gap:8px;margin-top:12px">'+
               '<button class="btn-sm" onclick="exportReport(\'Excel\')">تصدير Excel</button>'+
               '<button class="btn-sm" onclick="exportReport(\'PDF\')">تصدير PDF</button></div>' : '')+
           '</div>'+

@@ -1,0 +1,152 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>المحاسبة | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; --amber:#f59e0b; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .note { background:var(--navy2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--muted); margin:16px 0; }
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+    .kpi { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+    .kpi .t { font-size:12.5px; color:var(--muted); } .kpi .v { font-size:26px; font-weight:800; color:#fff; margin-top:6px; font-variant-numeric:tabular-nums; }
+    .kpi .s { font-size:11px; color:var(--muted); margin-top:4px; }
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:18px 0 4px; }
+    select { background:#0c1424; border:1px solid var(--border); border-radius:10px; padding:9px 12px; color:#fff; font-family:inherit; font-size:14px; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:8px 18px 18px; margin-top:14px; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:right; padding:11px 10px; border-bottom:1px solid var(--border); font-size:13.5px; }
+    th { color:var(--muted); font-weight:600; font-size:12.5px; white-space:nowrap; }
+    td { color:#fff; }
+    .num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .rem { color:var(--text); max-width:360px; }
+    .badge { display:inline-block; font-size:12px; border-radius:999px; padding:2px 10px; font-weight:700; }
+    .badge.draft { background:rgba(245,158,11,.15); color:var(--amber); }
+    .badge.posted { background:rgba(34,197,94,.14); color:var(--green); }
+    .badge.cancelled { background:rgba(148,163,184,.15); color:var(--muted); }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:8px 16px; font-weight:700; font-size:13px; font-family:inherit; cursor:pointer; } .btn:hover{ background:#1d4ed8; } .btn:disabled{ opacity:.5; cursor:default; }
+    .ds-alert { display:flex; gap:10px; align-items:flex-start; border-radius:12px; padding:12px 14px; margin:12px 0; font-size:14px; }
+    .ds-alert .x { margin-inline-start:auto; background:none; border:none; color:inherit; cursor:pointer; font-size:15px; }
+    .ds-alert--ok { background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.4); color:var(--green); }
+    .ds-alert--err { background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    .empty { text-align:center; color:var(--muted); padding:36px 0; font-size:14px; }
+    .center { text-align:center; padding:60px 0; }
+    .acc { font-size:12.5px; color:var(--muted); } .acc b { color:var(--text); font-weight:600; }
+    @media (max-width:760px){ .cards{ grid-template-columns:1fr; } .rem{ max-width:none; } }
+  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=2" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=7" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right"><a href="/nos/console">لوحة التحكم</a><span id="whoami"></span><a href="/api/method/logout">خروج</a></div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+    var state = { status:"" };
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function money(v){ return v!=null ? Number(v).toLocaleString("en-US") : "—"; }
+    function api(method, args, isPost){
+      var opt={ headers:{ "X-Frappe-CSRF-Token":CSRF } }, url="/api/method/"+method;
+      if(isPost){ opt.method="POST"; opt.headers["Content-Type"]="application/json"; opt.body=JSON.stringify(args||{}); }
+      else if(args){ url+="?"+new URLSearchParams(args).toString(); }
+      return fetch(url,opt).then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); });
+    }
+    function errMsg(res){ try{ var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); }catch(e){} return "تعذّر تنفيذ العملية."; }
+    function badge(ds){ var m={0:["draft","مسودة"],1:["posted","معتمد"],2:["cancelled","ملغى"]}; var x=m[ds]||["cancelled","—"]; return '<span class="badge '+x[0]+'">'+x[1]+'</span>'; }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>المحاسبة</h1><p class="muted">يجب تسجيل الدخول كمدير/محاسب الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/accounting">تسجيل الدخول</a></p></div>';
+    } else { load(); }
+
+    function load(){
+      app.innerHTML = '<h1>المحاسبة</h1><p class="muted" id="sub"></p>'+
+        '<div class="note">القيود تُولَّد تلقائياً (مسودات) عند صرف المساعدات، ويعتمدها المحاسب فيُرحَّل القيد. كل القيود معزولة بشركة جمعيتك، وتحمل مرجعاً مستعاراً للمستفيد لا اسمه.</div>'+
+        '<div class="cards" id="cards"></div>'+
+        '<div class="toolbar"><label class="muted">تصفية:</label>'+
+          '<select id="fstatus"><option value="">كل القيود</option><option value="draft">مسودات (بانتظار الاعتماد)</option><option value="submitted">معتمدة</option></select>'+
+          '<button class="btn" id="refresh" type="button">تحديث</button></div>'+
+        '<div id="msg"></div><div class="panel" id="list"></div>';
+      document.getElementById("fstatus").onchange=function(e){ state.status=e.target.value; loadList(); };
+      document.getElementById("refresh").onclick=function(){ loadSummary(); loadList(); };
+      loadSummary(); loadList();
+    }
+
+    function loadSummary(){
+      api("stochops_nonprofit.accounting.finance_summary").then(function(res){
+        var sub=document.getElementById("sub"), cards=document.getElementById("cards");
+        if(!res.ok){ if(sub) sub.textContent=""; cards.innerHTML='<div class="kpi"><div class="t">'+esc(errMsg(res))+'</div></div>'; return; }
+        var d=res.j.message||{};
+        if(sub) sub.textContent = d.company || "";
+        cards.innerHTML =
+          '<div class="kpi"><div class="t">إجمالي المُرحّل (معتمد)</div><div class="v">'+money(d.total_posted)+'</div><div class="s">ريال — قيود مُرحّلة محاسبياً</div></div>'+
+          '<div class="kpi"><div class="t">مسودات بانتظار الاعتماد</div><div class="v">'+(d.draft_count||0)+'</div><div class="s">تحتاج اعتماد المحاسب</div></div>'+
+          '<div class="kpi"><div class="t">إجمالي القيود</div><div class="v">'+(d.total_count||0)+'</div><div class="s">عدا الملغاة</div></div>';
+      });
+    }
+
+    function loadList(){
+      var lp=document.getElementById("list");
+      lp.innerHTML='<div class="empty">…جارِ التحميل</div>';
+      api("stochops_nonprofit.accounting.list_journal_entries", state.status?{status:state.status}:{}).then(function(res){
+        if(!res.ok){ lp.innerHTML='<div class="empty">'+esc(errMsg(res))+'</div>'; return; }
+        var rows=(res.j.message&&res.j.message.entries)||[];
+        if(!rows.length){ lp.innerHTML='<div class="empty">لا توجد قيود'+(state.status==="draft"?" مسودة":"")+' بعد. تُنشأ تلقائياً عند صرف المساعدات.</div>'; return; }
+        var body=rows.map(function(r){
+          var acc='<div class="acc">مدين: <b>'+esc(r.debit_account||"—")+'</b></div><div class="acc">دائن: <b>'+esc(r.credit_account||"—")+'</b></div>';
+          var act = r.can_approve ? '<button class="btn" data-n="'+esc(r.name)+'">اعتماد</button>' : '<span class="muted">—</span>';
+          return '<tr><td class="num">'+esc(r.posting_date||"—")+'</td><td class="rem">'+esc(r.user_remark||"—")+'</td><td>'+acc+'</td>'+
+            '<td class="num">'+money(r.total_debit)+'</td><td>'+badge(r.docstatus)+'</td><td>'+act+'</td></tr>';
+        }).join("");
+        lp.innerHTML='<table><thead><tr><th>التاريخ</th><th>الوصف</th><th>الحسابان</th><th>المبلغ</th><th>الحالة</th><th></th></tr></thead><tbody>'+body+'</tbody></table>'+
+          '<div class="muted" style="margin:8px 4px;font-size:12px">عدد القيود: '+rows.length+'</div>';
+        lp.querySelectorAll("button[data-n]").forEach(function(b){ b.onclick=function(){ approve(b.getAttribute("data-n"), b); }; });
+      });
+    }
+
+    function showMsg(text, isErr){
+      var m=document.getElementById("msg");
+      m.innerHTML='<div class="ds-alert ds-alert--'+(isErr?"err":"ok")+'"><span>'+(isErr?"⚠":"✓")+'</span><div><b>'+(isErr?"تعذّر الاعتماد":"تم")+'</b> '+esc(text)+'</div><button class="x" type="button">✕</button></div>';
+      var x=m.querySelector(".x"); if(x) x.onclick=function(){ m.innerHTML=""; };
+    }
+
+    function approve(name, btn){
+      if(btn){ btn.disabled=true; btn.textContent="…"; }
+      api("stochops_nonprofit.accounting.approve_journal_entry",{name:name},true).then(function(res){
+        if(res.ok && res.j.message){ showMsg("اعتُمد القيد "+name+" ورُحِّل محاسبياً.", false); loadSummary(); loadList(); }
+        else { if(btn){ btn.disabled=false; btn.textContent="اعتماد"; } showMsg(errMsg(res), true); }
+      });
+    }
+  </script>
+</body>
+</html>

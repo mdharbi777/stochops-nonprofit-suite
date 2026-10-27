@@ -7,7 +7,7 @@
   var NAV = [
     { items: [["لوحة التحكم", "/nos/console"]] },
     { sec: "المستفيدون", items: [["المستفيدون", "/nos/beneficiaries"], ["طلبات المساعدة", "/nos/assistance"]] },
-    { sec: "الموارد والمالية", items: [["المتبرعون", "/nos/donors"], ["المنح", "/nos/grants"], ["المصروفات", "/nos/expenses"], ["المشتريات", "/nos/procurement"]] },
+    { sec: "الموارد والمالية", items: [["المتبرعون", "/nos/donors"], ["المنح", "/nos/grants"], ["المصروفات", "/nos/expenses"], ["المشتريات", "/nos/procurement"], ["المحاسبة", "/nos/accounting"]] },
     { sec: "الحوكمة", items: [["اللجان", "/nos/committees"], ["الاجتماعات", "/nos/meetings"], ["القرارات", "/nos/decisions"], ["المبادرات", "/nos/initiatives"], ["المهام", "/nos/tasks"], ["الالتزامات الحكومية", "/nos/compliance"]] },
     { sec: "الموارد البشرية", items: [["الموظفون والعقود", "/nos/personnel"]] },
     { sec: "التقارير والتحليلات", items: [["التقارير", "/nos/reports"], ["المساعد الذكي", "/nos/ai"]] },
@@ -16,7 +16,7 @@
   ];
   var FULL_ROLES = ["Nonprofit Admin", "System Manager", "Administrator"];
   var OPERATOR_ROLES = ["System Manager", "Stochops Admin", "Administrator"];
-  var ADMIN_ONLY = ["/nos/profile", "/nos/accounts", "/nos/settings", "/nos/agreements"];
+  var ADMIN_ONLY = ["/nos/profile", "/nos/accounts", "/nos/settings", "/nos/agreements", "/nos/accounting"];
   var OPERATOR_ONLY = ["/nos/applications"];
   var COORD = {
     "Committee Coordinator": ["/nos/console", "/nos/committees", "/nos/meetings", "/nos/decisions", "/nos/initiatives", "/nos/tasks", "/nos/compliance", "/nos/reports", "/nos/templates", "/nos/guide"],
