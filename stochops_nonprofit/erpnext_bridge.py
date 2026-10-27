@@ -35,6 +35,18 @@ def _company_abbr(charity_name):
     return abbr
 
 
+def _ensure_erpnext_masters():
+    """يضمن مسترات ERPNext الدنيا اللازمة لإنشاء Company (قد تغيب إن لم يكتمل معالج
+    التهيئة setup wizard). idempotent. حالياً: Warehouse Type «Transit» المطلوب لإنشاء
+    مستودع العبور الافتراضي عند إنشاء الشركة."""
+    if frappe.db.exists("DocType", "Warehouse Type") and not frappe.db.exists(
+        "Warehouse Type", "Transit"
+    ):
+        frappe.get_doc({"doctype": "Warehouse Type", "name": "Transit"}).insert(
+            ignore_permissions=True
+        )
+
+
 def provision_charity_company(charity):
     """ينشئ/يضمن Company لجمعية ويربطها بحقل Charity.company. idempotent.
 
@@ -45,6 +57,7 @@ def provision_charity_company(charity):
     from stochops_nonprofit.multitenancy import ensure_charity_company_field
 
     ensure_charity_company_field()
+    _ensure_erpnext_masters()
     charity_doc = frappe.get_doc("Charity", charity)
     existing = frappe.db.get_value("Charity", charity, "company")
     if existing and frappe.db.exists("Company", existing):
