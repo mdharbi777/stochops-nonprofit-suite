@@ -201,10 +201,13 @@ def _resolve_accounts(company):
 def _create_assistance_journal_entry(doc, company, amount):
     """ينشئ Journal Entry مسودة (docstatus=0) لصرف المساعدة. يعيد اسم القيد."""
     debit, credit = _resolve_accounts(company)
-    ben_name = frappe.db.get_value("Beneficiary", doc.beneficiary, "beneficiary_name") or doc.beneficiary
+    # تقليل البيانات (PDPL): نشير في الدفتر المالي بمعرّف BEN المستعار فقط — لا نُكرّر
+    # اسم المستفيد الصريح في النظام المحاسبي. الهوية تبقى في سجلّ المستفيد المعزول،
+    # ويحلّها محاسب الجمعية عند الحاجة. يبسّط ذلك «الحق في المحو»: المحو/الإخفاء يجري
+    # في سجلّ المستفيد، والقيد يحمل مرجعاً مستعاراً فقط (يُحتفظ به لمقتضيات الدفاتر النظامية).
     program = doc.get("initiative") or ""
     remark = _("صرف مساعدة — طلب {0} — المستفيد {1}{2}").format(
-        doc.name, ben_name, _(" — البرنامج ") + program if program else ""
+        doc.name, doc.beneficiary, _(" — البرنامج ") + program if program else ""
     )
     je = frappe.get_doc(
         {
