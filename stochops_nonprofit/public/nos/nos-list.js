@@ -41,14 +41,18 @@
     }).join("");
     app.innerHTML=
       '<div class="pagehdr"><div><h1>'+esc(C.title)+'</h1>'+(C.desc?'<p class="muted">'+esc(C.desc)+'</p>':'')+'</div>'+
-      (C.addFields?'<button class="ds-btn ds-btn--primary" id="addToggle" type="button">'+esc(C.addLabel||"إضافة")+'</button>':'')+'</div>'+
+      '<div class="nl-hdr-actions">'+
+        (C.importable?'<button class="ds-btn ds-btn--secondary" id="importToggle" type="button">استيراد ملف</button>':'')+
+        (C.addFields?'<button class="ds-btn ds-btn--primary" id="addToggle" type="button">'+esc(C.addLabel||"إضافة")+'</button>':'')+
+      '</div></div>'+
       (C.note?'<div class="nl-note">'+esc(C.note)+'</div>':'')+
       '<div class="nl-toolbar">'+
         (C.search?'<input class="nl-search" id="q" placeholder="'+esc(C.search.placeholder||"بحث...")+'" autocomplete="off">':'')+
         filtersHtml+
         '<select id="fsize"><option value="10">10 لكل صفحة</option><option value="25">25</option><option value="50">50</option></select>'+
-      '</div><div id="addpanel"></div><div class="panel" id="listpanel"></div>';
+      '</div><div id="addpanel"></div><div id="importpanel"></div><div class="panel" id="listpanel"></div>';
     var at=document.getElementById("addToggle"); if(at) at.onclick=toggleAdd;
+    var it=document.getElementById("importToggle"); if(it) it.onclick=toggleImport;
     var q=document.getElementById("q"); if(q) q.oninput=function(e){ clearTimeout(tmr); tmr=setTimeout(function(){ state.search=e.target.value.trim(); state.page=1; load(); },350); };
     document.querySelectorAll("[data-flt]").forEach(function(s){ s.onchange=function(){ state.filters[s.getAttribute("data-flt")]=s.value; state.page=1; load(); }; });
     document.getElementById("fsize").onchange=function(e){ state.size=parseInt(e.target.value,10); state.page=1; load(); };
@@ -138,6 +142,129 @@
       else { showAlert(em,errMsg(res),true); }
     });
   }
+
+  /* ========== الاستيراد الجماعي (CSV/Excel) ========== */
+  var IMP=null; // مخطّط الاستيراد المحمّل من الخادم {doctype,label,max_rows,fields}
+  function csvCell(v){ v=String(v==null?"":v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+  function norm(s){ return String(s==null?"":s).replace(/^﻿/,"").replace(/\s+/g," ").trim().toLowerCase(); }
+  function parseCSV(text){
+    text=String(text||"").replace(/^﻿/,"");
+    var rows=[],row=[],cur="",q=false,i=0,n=text.length;
+    while(i<n){ var c=text[i];
+      if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i+=2;continue;} q=false;i++;continue; } cur+=c;i++;continue; }
+      if(c==='"'){ q=true;i++;continue; }
+      if(c===','){ row.push(cur);cur="";i++;continue; }
+      if(c==='\r'){ i++;continue; }
+      if(c==='\n'){ row.push(cur);rows.push(row);row=[];cur="";i++;continue; }
+      cur+=c;i++;
+    }
+    if(cur!==""||row.length){ row.push(cur); rows.push(row); }
+    // تجاهل الصفوف الفارغة تماماً
+    return rows.filter(function(r){ return r.some(function(x){ return (x||"").trim()!==""; }); });
+  }
+  function download(name,text){
+    var blob=new Blob([text],{type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },0);
+  }
+  function fieldHint(f){
+    if(f.options) return esc(f.options.join(" / "));
+    if(f.pattern) return "نمط: "+esc(f.pattern);
+    if(f.type==="int") return "رقم ≥ 0";
+    return "نص";
+  }
+  function toggleImport(){
+    var p=document.getElementById("importpanel"); if(p.innerHTML){ p.innerHTML=""; return; }
+    var ap=document.getElementById("addpanel"); if(ap) ap.innerHTML="";
+    p.innerHTML='<div class="panel"><div class="ds-state ds-state--loading"><div class="ds-spinner"></div><p>جارٍ التحضير…</p></div></div>';
+    api("stochops_nonprofit.imports.get_import_schema",{doctype:C.doctype}).then(function(res){
+      if(!res.ok || !res.j.message){ p.innerHTML='<div class="panel"><div class="ds-alert ds-alert--err"><span class="ico">⚠</span><div class="bd"><b>تعذّر</b>'+esc(errMsg(res))+'</div></div></div>'; return; }
+      IMP=res.j.message; renderImport(p);
+    });
+  }
+  function renderImport(p){
+    var cols=IMP.fields.map(function(f){
+      return '<tr><td>'+esc(f.label)+(f.required?' <span class="req">*</span>':'')+'</td><td class="muted">'+fieldHint(f)+'</td></tr>';
+    }).join("");
+    p.innerHTML='<div class="panel">'+
+      '<h3 style="color:#fff;margin-bottom:6px">استيراد '+esc(IMP.label)+' من ملف</h3>'+
+      '<p class="muted" style="margin-bottom:10px">نزّل القالب، املأه في Excel، ثم ارفعه أو الصق محتواه. العناوين تطابق أسماء الأعمدة أدناه. الحدّ الأقصى '+esc(String(IMP.max_rows))+' صفّاً للدفعة. كل سجلّ يُربط بجمعيتك تلقائياً.</p>'+
+      '<div class="nl-imp-cols"><table class="ds-table"><thead><tr><th>العمود</th><th>المسموح</th></tr></thead><tbody>'+cols+'</tbody></table></div>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">'+
+        '<button class="ds-btn ds-btn--secondary" id="impTpl" type="button">تنزيل قالب CSV</button>'+
+        '<label class="ds-btn ds-btn--secondary" style="cursor:pointer">رفع ملف CSV<input type="file" id="impFile" accept=".csv,text/csv" style="display:none"></label>'+
+      '</div>'+
+      '<label style="display:block;font-size:13px;color:var(--nl-text,#e2e8f0);margin:4px 0 6px">أو الصق محتوى CSV هنا:</label>'+
+      '<textarea class="ds-input" id="impText" rows="5" style="width:100%;font-family:monospace;direction:ltr" placeholder="name,phone,..."></textarea>'+
+      '<div id="impmsg"></div>'+
+      '<div style="margin-top:10px;display:flex;gap:10px"><button class="ds-btn ds-btn--primary" id="impParse" type="button">تحليل ومعاينة</button>'+
+      '<button class="ds-btn ds-btn--secondary" id="impCancel" type="button">إغلاق</button></div>'+
+      '<div id="imppreview"></div></div>';
+    document.getElementById("impTpl").onclick=function(){
+      var header=IMP.fields.map(function(f){ return csvCell(f.field); }).join(",");
+      download(C.doctype.toLowerCase()+"_template.csv","﻿"+header+"\r\n");
+    };
+    document.getElementById("impFile").onchange=function(e){
+      var f=e.target.files&&e.target.files[0]; if(!f) return;
+      var rd=new FileReader(); rd.onload=function(){ document.getElementById("impText").value=rd.result; parseImport(); }; rd.readAsText(f,"utf-8");
+    };
+    document.getElementById("impParse").onclick=parseImport;
+    document.getElementById("impCancel").onclick=toggleImport;
+  }
+  function parseImport(){
+    var msg=document.getElementById("impmsg"), prev=document.getElementById("imppreview");
+    prev.innerHTML=""; msg.innerHTML="";
+    var raw=document.getElementById("impText").value||"";
+    var grid=parseCSV(raw);
+    if(grid.length<2){ showAlert(msg,"الملف يحتاج صفّ عناوين وصفّ بيانات واحداً على الأقل.",true); return; }
+    var headers=grid[0].map(norm);
+    // طابق كل عمود بحقلٍ (بالاسم البرمجي أو التسمية العربية)
+    var colField=headers.map(function(h){
+      for(var i=0;i<IMP.fields.length;i++){ var f=IMP.fields[i];
+        if(h===norm(f.field)||h===norm(f.label)) return f.field;
+      } return null;
+    });
+    var matched=colField.filter(Boolean);
+    var missingReq=IMP.fields.filter(function(f){ return f.required && matched.indexOf(f.field)<0; });
+    if(!matched.length){ showAlert(msg,"لم يُطابَق أي عمود. استخدم القالب (عناوين الأعمدة بالأسماء البرمجية).",true); return; }
+    if(missingReq.length){ showAlert(msg,"عمود مطلوب مفقود: "+missingReq.map(function(f){return f.label;}).join("، "),true); return; }
+    var rows=[];
+    for(var r=1;r<grid.length;r++){ var obj={}, line=grid[r];
+      for(var c=0;c<colField.length;c++){ if(colField[c]) obj[colField[c]]=(line[c]==null?"":line[c]).trim(); }
+      rows.push(obj);
+    }
+    if(rows.length>IMP.max_rows){ showAlert(msg,"عدد الصفوف ("+rows.length+") يتجاوز الحدّ ("+IMP.max_rows+"). قسّم الملف.",true); return; }
+    IMP._rows=rows;
+    // معاينة أول 5 صفوف
+    var show=rows.slice(0,5);
+    var th=IMP.fields.filter(function(f){ return matched.indexOf(f.field)>=0; });
+    var head=th.map(function(f){ return '<th>'+esc(f.label)+'</th>'; }).join("");
+    var body=show.map(function(o){ return '<tr>'+th.map(function(f){ return '<td>'+esc(o[f.field]||"—")+'</td>'; }).join("")+'</tr>'; }).join("");
+    prev.innerHTML='<div class="nl-note" style="margin-top:12px">جاهز للاستيراد: <b>'+rows.length+'</b> صفّاً. معاينة أول '+show.length+':</div>'+
+      '<div class="ds-table-wrap"><table class="ds-table"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>'+
+      '<button class="ds-btn ds-btn--primary" id="impRun" type="button" style="margin-top:10px">استيراد '+rows.length+' سجلّاً</button>';
+    document.getElementById("impRun").onclick=runImport;
+  }
+  function runImport(){
+    var msg=document.getElementById("impmsg"), btn=document.getElementById("impRun");
+    if(!IMP||!IMP._rows||!IMP._rows.length){ showAlert(msg,"لا توجد بيانات.",true); return; }
+    btn.disabled=true; btn.textContent="جارٍ الاستيراد…"; msg.innerHTML="";
+    api("stochops_nonprofit.imports.bulk_import",{doctype:C.doctype,rows:JSON.stringify(IMP._rows)},true).then(function(res){
+      btn.disabled=false; btn.textContent="استيراد";
+      if(!res.ok || !res.j.message){ showAlert(msg,errMsg(res),true); return; }
+      var m=res.j.message, prev=document.getElementById("imppreview");
+      var failHtml="";
+      if(m.failed && m.failed.length){
+        failHtml='<div class="nl-note" style="margin-top:10px;border-color:var(--nl-red,#f87171)">تعذّر استيراد '+m.failed.length+' صفّاً:</div>'+
+          '<div class="ds-table-wrap"><table class="ds-table"><thead><tr><th>الصفّ</th><th>السبب</th></tr></thead><tbody>'+
+          m.failed.map(function(f){ return '<tr><td>'+esc(String(f.row))+'</td><td>'+esc(f.error)+'</td></tr>'; }).join("")+'</tbody></table></div>';
+      }
+      prev.innerHTML='<div class="ds-alert ds-alert--ok"><span class="ico">✓</span><div class="bd"><b>اكتمل</b>استُورد '+m.inserted+' من '+m.total+' صفّاً.</div></div>'+failHtml;
+      state.page=1; load();
+    });
+  }
+  window.__nosToggleImport=toggleImport;
 
   render();
 })();

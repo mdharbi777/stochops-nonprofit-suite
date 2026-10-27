@@ -9,6 +9,9 @@ h1{ color:#fff; font-size:24px; font-weight:800; margin:22px 0 2px; }
 
 /* القائمة */
 .pagehdr{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.nl-hdr-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.nl-imp-cols{ max-height:220px; overflow:auto; border:1px solid var(--nc-border); border-radius:10px; margin:8px 0; }
+.nl-imp-cols .ds-table th, .nl-imp-cols .ds-table td{ font-size:12.5px; }
 .nl-note{ background:var(--nc-navy2); border:1px solid var(--nc-border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--nc-muted); margin:14px 0; }
 .nl-toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 4px; }
 .nl-toolbar input, .nl-toolbar select{ background:var(--nc-navy); border:1px solid var(--nc-border); border-radius:9px; padding:9px 12px; color:#fff; font-family:inherit; font-size:14px; }

@@ -1,0 +1,138 @@
+{%- set no_cache = 1 -%}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ملف الجمعية | منصة الفاضل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --navy:#0b1220; --navy2:#101b2b; --blue:#2563eb; --cyan:#06b6d4; --text:#e2e8f0;
+      --muted:#94a3b8; --card:#111a2e; --border:#1e293b; --green:#22c55e; --red:#f87171; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:"Tajawal",sans-serif; color:var(--text); background:var(--navy);
+      background-image: radial-gradient(1000px 500px at 85% -10%, #16233f 0%, transparent 60%); min-height:100vh; }
+    a { color:var(--cyan); text-decoration:none; }
+    .wrap { max-width:920px; margin:0 auto; padding:0 20px; }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; direction:ltr; }
+    .logo .mark { width:26px; height:26px; border-radius:7px; background:var(--navy2);
+      display:inline-grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:5px; align-items:end; }
+    .logo .mark i { display:block; background:var(--blue); border-radius:1px; }
+    .logo .mark i:nth-child(2){ background:var(--cyan); height:70%; } .logo .mark i:nth-child(1){ height:45%; } .logo .mark i:nth-child(3){ height:100%; }
+    .logo b { color:#fff; } .logo span { color:var(--cyan); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border); }
+    .topbar .right { display:flex; align-items:center; gap:16px; font-size:14px; color:var(--muted); }
+    h1 { color:#fff; font-size:26px; font-weight:800; margin:24px 0 2px; }
+    .muted { color:var(--muted); font-size:14px; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; margin-top:18px; }
+    .phead { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+    .panel h3 { color:#fff; font-size:16px; }
+    .ps { color:var(--muted); font-size:13px; margin-bottom:12px; }
+    .kv { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px; }
+    .kv:last-child { border-bottom:none; } .kv .k { color:var(--muted); } .kv .v { color:#fff; font-weight:500; text-align:left; }
+    .pill { display:inline-block; font-size:12px; border-radius:999px; padding:2px 10px; font-weight:700; }
+    .pill.ok { background:rgba(34,197,94,.14); color:var(--green); } .pill.warn { background:rgba(248,113,113,.14); color:var(--red); }
+    .edit { background:transparent; border:1px solid var(--border); color:var(--text); border-radius:999px; padding:7px 16px; font-size:13px; font-weight:700; }
+    .edit:hover { border-color:var(--cyan); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { text-align:right; padding:10px 8px; font-size:13.5px; border-bottom:1px solid var(--border); }
+    th { color:var(--muted); font-weight:600; font-size:12.5px; }
+    td { color:#fff; }
+    .rolechips { display:flex; flex-wrap:wrap; gap:6px; }
+    .chip { background:var(--navy2); border:1px solid var(--border); color:var(--text); border-radius:999px; padding:2px 10px; font-size:12px; }
+    .st { font-size:12px; font-weight:700; } .st.on { color:var(--green); } .st.off { color:var(--red); }
+    .center { text-align:center; padding:60px 0; }
+    .btn { background:var(--blue); color:#fff; border:none; border-radius:999px; padding:11px 24px; font-weight:700; font-family:inherit; cursor:pointer; }
+    .msg { margin-top:14px; padding:11px 14px; border-radius:10px; font-size:14px; background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.4); color:var(--red); }
+    @media (max-width:620px){ .kv .v{ text-align:right; } }
+  </style>
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=2" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
+  <script src="/assets/stochops_nonprofit/nos/shell.js?v=6" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="logo" href="/nos"><span class="mark"><i></i><i></i><i></i></span> <b>Stoch</b><span>ops</span></a>
+      <div class="right">
+        <a href="/nos/console">لوحة التحكم</a>
+        <span id="whoami"></span>
+        <a href="/api/method/logout">خروج</a>
+      </div>
+    </div>
+    <div id="app"></div>
+  </div>
+
+  <script>
+    var CSRF = "{{ frappe.session.csrf_token or '' }}";
+    var USER = "{{ frappe.session.user }}";
+    var app = document.getElementById("app");
+    document.getElementById("whoami").textContent = (USER && USER!=="Guest") ? USER : "";
+
+    var ROLE_AR = {
+      "Nonprofit Admin":"مدير الجمعية", "Executive Viewer":"مُطّلِع تنفيذي",
+      "Committee Coordinator":"منسّق لجان", "Program Coordinator":"منسّق برامج"
+    };
+
+    function esc(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+    function api(method){
+      return fetch("/api/method/"+method, { headers:{ "X-Frappe-CSRF-Token":CSRF } })
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); });
+    }
+    function errMsg(res){
+      try { var sm=JSON.parse(res.j._server_messages||"[]"); if(sm.length) return (JSON.parse(sm[0]).message||"").replace(/<[^>]+>/g,""); } catch(e){}
+      return "حدث خطأ.";
+    }
+
+    if (!USER || USER==="Guest"){
+      app.innerHTML = '<div class="center"><h1>ملف الجمعية</h1><p class="muted">يجب تسجيل الدخول كمدير الجمعية.</p><p style="margin-top:16px"><a class="btn" href="/login?redirect-to=/nos/profile">تسجيل الدخول</a></p></div>';
+    } else { load(); }
+
+    function load(){
+      Promise.all([
+        api("stochops_nonprofit.accounts.get_charity_settings"),
+        api("stochops_nonprofit.accounts.list_accounts")
+      ]).then(function(r){
+        var s=r[0], a=r[1];
+        if(!s.ok){ app.innerHTML='<h1>ملف الجمعية</h1><div class="msg">'+esc(errMsg(s))+'</div>'; return; }
+        var d=s.j.message||{}, acc=(a.ok && a.j.message) ? a.j.message : {accounts:[], used:0, max_accounts:d.max_accounts||5, remaining:0};
+        var statusAr = d.status==="Suspended" ? "موقوفة" : "نشطة";
+        var statusCls = d.status==="Suspended" ? "warn" : "ok";
+
+        var rows = (acc.accounts||[]).map(function(u){
+          var chips = (u.roles||[]).map(function(x){ return '<span class="chip">'+esc(ROLE_AR[x]||x)+'</span>'; }).join("") || '<span class="muted">—</span>';
+          var on = u.enabled;
+          return '<tr><td>'+esc(u.full_name||u.name)+'</td><td class="muted">'+esc(u.name)+'</td>'+
+            '<td><div class="rolechips">'+chips+'</div></td>'+
+            '<td><span class="st '+(on?'on':'off')+'">'+(on?'مُفعّل':'مُعطّل')+'</span></td></tr>';
+        }).join("") || '<tr><td colspan="4" class="muted" style="padding:16px 8px">لا حسابات بعد.</td></tr>';
+
+        app.innerHTML =
+          '<h1>ملف الجمعية</h1>'+
+          '<p class="muted">نظرة موحّدة على هوية جمعيتك وفريقها — للعرض؛ التعديل من الأزرار أدناه.</p>'+
+
+          '<div class="panel">'+
+            '<div class="phead"><h3>هوية الجمعية</h3>'+
+              '<a class="edit" href="/nos/settings">تعديل البيانات</a></div>'+
+            '<p class="ps">الاسم والحالة وحدّ الحسابات تُدار من منصّة STOCHOPS؛ رقم التسجيل وبيانات التواصل يعدّلها مدير الجمعية.</p>'+
+            '<div class="kv"><span class="k">اسم الجمعية</span><span class="v">'+esc(d.charity_name||"—")+'</span></div>'+
+            '<div class="kv"><span class="k">الحالة</span><span class="v"><span class="pill '+statusCls+'">'+esc(statusAr)+'</span></span></div>'+
+            '<div class="kv"><span class="k">رقم التسجيل/الترخيص</span><span class="v">'+esc(d.registration_number||"— (غير محدّد)")+'</span></div>'+
+            '<div class="kv"><span class="k">البريد الرسمي</span><span class="v">'+esc(d.contact_email||"— (غير محدّد)")+'</span></div>'+
+            '<div class="kv"><span class="k">جوال التواصل</span><span class="v">'+esc(d.contact_mobile||"— (غير محدّد)")+'</span></div>'+
+            '<div class="kv"><span class="k">حدّ اعتماد الصرف لمدير الجمعية</span><span class="v">'+esc(Number(d.expense_approval_limit||0).toLocaleString("en"))+' ريال</span></div>'+
+          '</div>'+
+
+          '<div class="panel">'+
+            '<div class="phead"><h3>فريق الجمعية ('+esc(String(acc.used||0))+' من '+esc(String(acc.max_accounts||5))+')</h3>'+
+              '<a class="edit" href="/nos/accounts">إدارة الحسابات</a></div>'+
+            '<p class="ps">المستخدمون المرتبطون بجمعيتك وصلاحياتهم. المتبقّي: '+esc(String(acc.remaining!=null?acc.remaining:Math.max(0,(acc.max_accounts||5)-(acc.used||0))))+' حساب.</p>'+
+            '<table><thead><tr><th>الاسم</th><th>البريد</th><th>الصلاحيات</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+          '</div>';
+      });
+    }
+  </script>
+</body>
+</html>

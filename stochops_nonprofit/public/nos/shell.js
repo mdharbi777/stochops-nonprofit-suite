@@ -12,11 +12,11 @@
     { sec: "الموارد البشرية", items: [["الموظفون والعقود", "/nos/personnel"]] },
     { sec: "التقارير والتحليلات", items: [["التقارير", "/nos/reports"], ["المساعد الذكي", "/nos/ai"]] },
     { sec: "الخصوصية وحماية البيانات", items: [["الخصوصية", "/nos/privacy"], ["حقوق الأفراد", "/nos/rights"], ["الإفصاح والمشاركة", "/nos/disclosures"], ["الحوادث والاحتفاظ", "/nos/incidents"]] },
-    { sec: "الإدارة", items: [["إدارة الحسابات", "/nos/accounts"], ["إعدادات الجمعية", "/nos/settings"], ["مكتبة الامتثال", "/nos/templates"], ["الاتفاقيات والإقرارات", "/nos/agreements"], ["طلبات الاستفادة (المشغّل)", "/nos/applications"], ["الدليل", "/nos/guide"]] }
+    { sec: "الإدارة", items: [["ملف الجمعية", "/nos/profile"], ["إدارة الحسابات", "/nos/accounts"], ["إعدادات الجمعية", "/nos/settings"], ["مكتبة الامتثال", "/nos/templates"], ["الاتفاقيات والإقرارات", "/nos/agreements"], ["طلبات الاستفادة (المشغّل)", "/nos/applications"], ["الدليل", "/nos/guide"]] }
   ];
   var FULL_ROLES = ["Nonprofit Admin", "System Manager", "Administrator"];
   var OPERATOR_ROLES = ["System Manager", "Stochops Admin", "Administrator"];
-  var ADMIN_ONLY = ["/nos/accounts", "/nos/settings", "/nos/agreements"];
+  var ADMIN_ONLY = ["/nos/profile", "/nos/accounts", "/nos/settings", "/nos/agreements"];
   var OPERATOR_ONLY = ["/nos/applications"];
   var COORD = {
     "Committee Coordinator": ["/nos/console", "/nos/committees", "/nos/meetings", "/nos/decisions", "/nos/initiatives", "/nos/tasks", "/nos/compliance", "/nos/reports", "/nos/templates", "/nos/guide"],
