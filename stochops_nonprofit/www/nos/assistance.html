@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=2" />
+  <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/nos-crud.css?v=3" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/design-system.css?v=2" />
   <link rel="stylesheet" href="/assets/stochops_nonprofit/nos/shell.css?v=3" />
   <script>
@@ -34,7 +34,7 @@
       ],
       defaultSort:"creation", addLabel:"طلب مساعدة جديد",
       addFields:[
-        {field:"beneficiary", label:"المستفيد (معرّف BEN)", type:"text", required:true},
+        {field:"beneficiary", label:"المستفيد", type:"search", searchMethod:"stochops_nonprofit.beneficiaries.search_beneficiaries", placeholder:"ابحث باسم المستفيد أو معرّف BEN...", required:true},
         {field:"request_type", label:"نوع الطلب", type:"select", options:["مالية","عينية","خدمية","أخرى"], required:true},
         {field:"amount", label:"المبلغ المطلوب (ريال)", type:"number"},
         {field:"priority", label:"الأولوية", type:"select", options:["عادية","عالية"]},
@@ -43,7 +43,7 @@
     };
   </script>
   <script src="/assets/stochops_nonprofit/nos/shell.js?v=6" defer></script>
-  <script src="/assets/stochops_nonprofit/nos/nos-list.js?v=4" defer></script>
+  <script src="/assets/stochops_nonprofit/nos/nos-list.js?v=5" defer></script>
 </head>
 <body><div class="wrap"><div id="app"></div></div></body>
 </html>

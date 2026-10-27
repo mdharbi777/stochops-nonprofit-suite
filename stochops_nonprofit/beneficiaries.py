@@ -29,3 +29,32 @@ def reveal_national_id(beneficiary):
 
     log_sensitive_access("reveal", "Beneficiary", beneficiary, field="national_id", charity=charity)
     return {"beneficiary": beneficiary, "national_id": nid or ""}
+
+
+@frappe.whitelist()
+def search_beneficiaries(q=None, limit=15):
+    """بحث عن مستفيدي جمعية المستخدم بالاسم أو بمعرّف BEN — لحقل بحث طلب المساعدة.
+
+    العزل تلقائي: `frappe.get_list` يطبّق permission_query_conditions فلا يُرجَع
+    إلا مستفيدو جمعية المستخدم. يعيد [{value: معرّف BEN, label: الاسم}].
+    """
+    q = (q or "").strip()
+    try:
+        limit = max(1, min(int(limit), 25))
+    except (ValueError, TypeError):
+        limit = 15
+    or_filters = None
+    if q:
+        or_filters = [["beneficiary_name", "like", f"%{q}%"], ["name", "like", f"%{q}%"]]
+    rows = frappe.get_list(
+        "Beneficiary",
+        or_filters=or_filters,
+        fields=["name", "beneficiary_name", "social_category"],
+        order_by="beneficiary_name asc",
+        limit_page_length=limit,
+    )
+    return [
+        {"value": r["name"], "label": r.get("beneficiary_name") or r["name"],
+         "hint": r.get("social_category") or ""}
+        for r in rows
+    ]

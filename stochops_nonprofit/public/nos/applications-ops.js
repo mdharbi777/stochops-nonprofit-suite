@@ -89,7 +89,9 @@
       '</div>';
       var verify='<div class="chkrow">'+
         chk("email_verified","تحقّق البريد",d.email_verified)+chk("license_verified","تحقّق الترخيص",d.license_verified)+chk("representative_authorized","تحقّق التفويض",d.representative_authorized)+
-        '</div><button class="ds-btn ds-btn--secondary ds-btn--sm" id="savev">حفظ التحقّق</button>';
+        '</div>'+
+        (d.email_verified_on?'<p class="muted" style="margin:6px 0">✓ أكّد المتقدّم ملكية البريد الرسمي عبر الرابط بتاريخ '+esc(d.email_verified_on)+'.</p>':'<p class="muted" style="margin:6px 0">لم يؤكّد المتقدّم البريد عبر الرابط بعد (أُرسل تلقائياً عند التقديم).</p>')+
+        '<button class="ds-btn ds-btn--secondary ds-btn--sm" id="savev">حفظ التحقّق</button>';
       var scores='<div class="scoregrid">'+SCORES.map(function(s){ return '<div class="fld"><label>'+esc(s[1])+'</label><input id="s_'+s[0]+'" type="number" min="0" max="'+s[2]+'" value="'+(d[s[0]]||0)+'"></div>'; }).join("")+
         '<div class="fld" style="grid-column:1 / -1"><label>توصية المُقيّم</label><input id="s_recommendation" value="'+esc(d.recommendation||"")+'"></div></div>'+
         '<p class="muted" style="margin:8px 0">الإجمالي الحالي: <b>'+(d.score_total||0)+'</b> / 100 (استرشادي).</p>'+

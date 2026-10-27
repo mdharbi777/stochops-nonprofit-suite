@@ -117,3 +117,78 @@ class TestAssociationApplication(FrappeTestCase):
             self.assertFalse(frappe.has_permission("Association Application", "read"))
         finally:
             frappe.set_user("Administrator")
+
+    def test_email_verification_sets_flag_via_link(self):
+        from stochops_nonprofit.applications import _app_verify_token, verify_application_email
+
+        res = self._submit()
+        app = res["application"]
+        self.assertEqual(frappe.db.get_value("Association Application", app, "email_verified"), 0)
+        token = _app_verify_token(app, f"app_{self.tok}@assoc.local")
+        out = verify_application_email(token)
+        self.assertTrue(out["verified"])
+        self.assertEqual(frappe.db.get_value("Association Application", app, "email_verified"), 1)
+        self.assertTrue(frappe.db.get_value("Association Application", app, "email_verified_on"))
+
+    def test_email_verification_invalid_token_rejected(self):
+        from stochops_nonprofit.applications import verify_application_email
+
+        with self.assertRaises(frappe.ValidationError):
+            verify_application_email("not-a-valid-token")
+
+
+class TestBeneficiarySearch(FrappeTestCase):
+    """بحث المستفيدين (name→BEN) مقيّد بجمعية المستخدم."""
+
+    def setUp(self):
+        self.tok = frappe.generate_hash(length=6)
+        self.ca = make_charity(f"جمعية بحث أ {self.tok}")
+        self.cb = make_charity(f"جمعية بحث ب {self.tok}")
+        self.ua = make_charity_user(f"srcha_{self.tok}@t.local", self.ca, ["Nonprofit Admin"])
+        self.ub = make_charity_user(f"srchb_{self.tok}@t.local", self.cb, ["Nonprofit Admin"])
+        self._mk(self.ua, f"سعيد {self.tok}")
+        self._mk(self.ua, f"سعاد {self.tok}")
+        self._mk(self.ub, f"سعيد ب {self.tok}")
+        frappe.db.commit()
+
+    def _mk(self, user, name):
+        frappe.set_user(user)
+        try:
+            return frappe.get_doc({"doctype": "Beneficiary", "beneficiary_name": name}).insert().name
+        finally:
+            frappe.set_user("Administrator")
+
+    def tearDown(self):
+        frappe.set_user("Administrator")
+        for n in frappe.get_all("Beneficiary", filters={"charity": ["in", [self.ca, self.cb]]}, pluck="name"):
+            frappe.delete_doc("Beneficiary", n, force=1, ignore_permissions=True)
+        for e in (self.ua, self.ub):
+            if frappe.db.exists("User", e):
+                frappe.delete_doc("User", e, force=1, ignore_permissions=True)
+        for c in (self.ca, self.cb):
+            if frappe.db.exists("Charity", c):
+                frappe.delete_doc("Charity", c, force=1, ignore_permissions=True)
+        frappe.db.commit()
+
+    def test_search_scoped_to_charity(self):
+        from stochops_nonprofit.beneficiaries import search_beneficiaries
+
+        frappe.set_user(self.ua)
+        try:
+            labels = [r["label"] for r in search_beneficiaries(q="سع")]
+        finally:
+            frappe.set_user("Administrator")
+        self.assertIn(f"سعيد {self.tok}", labels)
+        self.assertIn(f"سعاد {self.tok}", labels)
+        self.assertNotIn(f"سعيد ب {self.tok}", labels)  # جمعية أخرى — معزولة
+
+    def test_search_by_ben_id(self):
+        from stochops_nonprofit.beneficiaries import search_beneficiaries
+
+        bid = self._mk(self.ua, f"فلان {self.tok}")
+        frappe.set_user(self.ua)
+        try:
+            values = [r["value"] for r in search_beneficiaries(q=bid)]
+        finally:
+            frappe.set_user("Administrator")
+        self.assertIn(bid, values)

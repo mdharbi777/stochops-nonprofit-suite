@@ -113,6 +113,7 @@
       if(f.type==="select"){ inp='<select class="ds-select" id="f_'+f.field+'"><option value="">—</option>'+f.options.map(function(o){return '<option>'+esc(o)+'</option>';}).join("")+'</select>'; }
       else if(f.type==="number"){ inp='<input class="ds-input" id="f_'+f.field+'" type="number" min="0" value="'+esc(f.default||"0")+'">'; }
       else if(f.type==="date"){ inp='<input class="ds-input" id="f_'+f.field+'" type="date">'; }
+      else if(f.type==="search"){ inp='<div class="nl-srch"><input class="ds-input" id="f_'+f.field+'" autocomplete="off" placeholder="'+esc(f.placeholder||"ابحث بالاسم...")+'"><input type="hidden" id="h_'+f.field+'"><div class="nl-srch-menu" id="m_'+f.field+'" hidden></div></div>'; }
       else { inp='<input class="ds-input" id="f_'+f.field+'">'; }
       return '<div class="ds-field"><label>'+esc(f.label)+(f.required?' <span class="req">*</span>':'')+'</label>'+inp+'</div>';
     }).join("");
@@ -121,14 +122,34 @@
       '<button class="ds-btn ds-btn--primary" id="addbtn">حفظ</button><button class="ds-btn ds-btn--secondary" id="addcancel">إلغاء</button></div></div>';
     document.getElementById("addbtn").onclick=addRec;
     document.getElementById("addcancel").onclick=toggleAdd;
+    C.addFields.forEach(function(f){ if(f.type==="search") bindSearch(f); });
   }
   window.__nosToggleAdd=toggleAdd;
+
+  function bindSearch(f){
+    var inp=document.getElementById("f_"+f.field), hid=document.getElementById("h_"+f.field), menu=document.getElementById("m_"+f.field), t;
+    function close(){ menu.hidden=true; menu.innerHTML=""; }
+    function pick(it){ hid.value=it.value; inp.value=it.label+" ("+it.value+")"; close(); }
+    inp.oninput=function(){
+      hid.value=""; var q=inp.value.trim(); clearTimeout(t);
+      t=setTimeout(function(){
+        api(f.searchMethod,{q:q}).then(function(res){
+          var list=(res.ok && res.j.message)||[];
+          if(!list.length){ menu.innerHTML='<div class="nl-srch-empty">لا نتائج مطابقة</div>'; menu.hidden=false; return; }
+          menu.innerHTML=list.map(function(it,i){ return '<div class="nl-srch-item" data-i="'+i+'">'+esc(it.label)+' <span class="muted">('+esc(it.value)+(it.hint?" · "+esc(it.hint):"")+')</span></div>'; }).join("");
+          menu.hidden=false;
+          menu.querySelectorAll(".nl-srch-item").forEach(function(el){ el.onclick=function(){ pick(list[parseInt(el.getAttribute("data-i"),10)]); }; });
+        });
+      },300);
+    };
+    inp.onblur=function(){ setTimeout(close,180); }; // تأخير يسمح بنقرة العنصر قبل الإغلاق
+  }
 
   function addRec(){
     var em=document.getElementById("addmsg"), doc={doctype:C.doctype};
     for(var i=0;i<C.addFields.length;i++){
-      var f=C.addFields[i], el=document.getElementById("f_"+f.field), v=(el.value||"").trim();
-      if(f.required && !v){ showAlert(em,esc(f.label)+" مطلوب.",true); return; }
+      var f=C.addFields[i], el=document.getElementById((f.type==="search"?"h_":"f_")+f.field), v=(el.value||"").trim();
+      if(f.required && !v){ showAlert(em,esc(f.label)+(f.type==="search"?" مطلوب — اختر من نتائج البحث.":" مطلوب."),true); return; }
       if(v && f.pattern && !f.pattern.test(v)){ showAlert(em,f.patternMsg||"قيمة غير صحيحة.",true); return; }
       if(v!==""){
         if(f.type==="number"){ var n=parseInt(v,10); if(isNaN(n)) n=0; if(n<0){ n=0; el.value="0"; } // لا قيم سالبة (مبالغ/أعداد)

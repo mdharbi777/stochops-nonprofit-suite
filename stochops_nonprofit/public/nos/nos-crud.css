@@ -12,6 +12,12 @@ h1{ color:#fff; font-size:24px; font-weight:800; margin:22px 0 2px; }
 .nl-hdr-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .nl-imp-cols{ max-height:220px; overflow:auto; border:1px solid var(--nc-border); border-radius:10px; margin:8px 0; }
 .nl-imp-cols .ds-table th, .nl-imp-cols .ds-table td{ font-size:12.5px; }
+.nl-srch{ position:relative; }
+.nl-srch-menu{ position:absolute; z-index:20; top:calc(100% + 4px); inset-inline-start:0; width:100%; max-height:240px; overflow:auto; background:var(--nc-card); border:1px solid var(--nc-border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+.nl-srch-item{ padding:9px 12px; cursor:pointer; font-size:14px; color:#fff; border-bottom:1px solid var(--nc-border); }
+.nl-srch-item:last-child{ border-bottom:none; } .nl-srch-item:hover{ background:var(--nc-navy2); }
+.nl-srch-item .muted{ color:var(--nc-muted); font-size:12.5px; }
+.nl-srch-empty{ padding:10px 12px; color:var(--nc-muted); font-size:13px; }
 .nl-note{ background:var(--nc-navy2); border:1px solid var(--nc-border); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--nc-muted); margin:14px 0; }
 .nl-toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:14px 0 4px; }
 .nl-toolbar input, .nl-toolbar select{ background:var(--nc-navy); border:1px solid var(--nc-border); border-radius:9px; padding:9px 12px; color:#fff; font-family:inherit; font-size:14px; }
